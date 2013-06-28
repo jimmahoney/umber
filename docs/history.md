@@ -61,6 +61,7 @@ All this is currently on my MacPro, OS X 10.8.4 .
   and planet_express.py renamed umber.py
 
 * Installing Flask, SQLAlchemy (and anything else listed in requirements.txt).
+
         $ . env/bin/activate
         $ (env)$ pip install -r requirements.txt
         ...
@@ -68,11 +69,18 @@ All this is currently on my MacPro, OS X 10.8.4 .
         itsdangerous markupsafe
 
 * Fetched various wikiacademia resource files :
+
         $ mkdir static/images; mkdir static/styles
         $ scp cs.marlboro.edu:/var/www/cs/htdocs/courses/source/images/* \
            static/images/
         $ scp cs.marlboro.edu:/var/www/cs/htdocs/courses/source/styles/* \
            static/styles/
+
+* Started work on sqlite database based on wikiacademia's 
+  but using planet_express conventions. 
+
+        # Create database
+        $ cd database; sqlite3 umber.db < create_umber_db.sql
 
 - - - 
 
