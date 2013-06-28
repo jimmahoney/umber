@@ -19,9 +19,9 @@ cs.marlboro.edu/var/www/cs stripped out all but the essential code for
 wikiacademia and put it and the 2006 version in
 ~/academics/wikiacademia/ .
 
-Working on my MacPro, OS X 10.8.4 .
+All this is currently on my MacPro, OS X 10.8.4 .
 
-* Update the basic tools: python (2.7.5), pip (1.31), virtualenv (1.9.1),
+* Updated the basic tools: python (2.7.5), pip (1.31), virtualenv (1.9.1),
   and git (to 1.8.3.1, manually from git-scm.com, including running 
   a script to make its environment available to non-terminal applications.)
 
@@ -29,14 +29,15 @@ Working on my MacPro, OS X 10.8.4 .
         $ sudo pip install --upgrade pip
         $ sudo pip install --upgrade virtualenv
 
-* Use markdown for docs, with html conversion (when needed)
+* Using markdown for docs, with html conversion (when needed)
   by a [python markdown package](https://pypi.python.org/pypi/Markdown) :
  
         $ sudo pip install markdown
         # e.g. "markdown_py file.md > file.html"
 
-* Set up initial directories, environment, git repo.
-  (Just like last year's ~/academics/web_development/flask/planet_express )
+* Setup initial directories, environment, git repo.
+  (See ~/academics/web_development/flask/planet_express from 
+   my Fall '12 Web Programming.)
 
         $ cd /Users/mahoney/academics/
         $ mkdir umber; cd umber ; mkdir docs
@@ -50,20 +51,42 @@ Working on my MacPro, OS X 10.8.4 .
 
         # Setup project's source git repo :
         $ git init ; git add * ; git commit -m "initial commit"
+        # (Workflow after changes will be "git add ...; git commit -m ...".)
 
-* 
+## June 27 ##
+
+* Copyied and adapted basic Flask resources from planet_express,
+  including requirements.txt, __init__.py, templates/index.html,
+  src/utilities.py, and planet_express.py renamed umber.py
+
+* Installing Flask, SQLAlchemy (and anything else listed in requirements.txt).
+        $ . env/bin/activate
+        $ (env)$ pip install -r requirements.txt
+        ...
+        Successfully installed Flask SQLAlchemy Werkzeug Jinja2 
+        itsdangerous markupsafe
+
+* Fetched various wikiacademia resource files :
+        $ mkdir static/images; mkdir static/styles
+        $ scp cs.marlboro.edu:/var/www/cs/htdocs/courses/source/images/* \
+           static/images/
+        $ scp cs.marlboro.edu:/var/www/cs/htdocs/courses/source/styles/* \
+           static/styles/
 
 - - - 
 
+# Thinking / TODO #
 
-
-## TODO #3
-
-* requirements.txt, __init__.py , rest of planet_express-like stuff.
-
- Git within the project : 
+* Git within the project : 
  http://stackoverflow.com/questions/1456269/python-git-module-experiences
+ Do I need to think about directory structure for git repo
+ of web app source vs site course files ??
 
- Stare at sqlite3 tables ; think about mapping to SQLAlchemy stuff.
+* Review SQLAlchemy & sqlite3
+
+* Stare at wikacademia sqlite3 tables,
+  and think about functions, mapping, and all that.
+
+
 
 

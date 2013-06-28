@@ -1,0 +1,1106 @@
+/*****************************
+ * Based closely on wikipedia.org's "monobook" style,
+ * GPL'ed by Gabriel Wicke, http://wikidev.net/.
+ * 
+ * colors: 
+ *    I'm using a green-ish theme, close to teal=#008080
+ * 
+ * There are a couple InternetExplorer fixes at the bottom of the page,
+ * but this will need more attention; monobook has a whole slew of 
+ * IE special cases.  At this point I'm only really looking at how
+ * this displays under Firefox.
+ *
+ * Positioning is done almost entirely with <div> tags and css2 placement.
+ *
+ * body:
+ *       ----------------------------------------------------------
+ *      | header                                                   |
+ *      |----------------------------------------------------------|
+ *      | column-one(float:left)   | column-two(margin:...)        |
+ *       ----------------------------------------------------------
+ *
+ * header:
+ *       -------------------------------------------------------
+ *      |  cs-logo(float:left)     |   login(text-align:right)  |
+ *       -------------------------------------------------------
+ *
+ * column-one:
+ *       ------------------------------------------------
+ *      | h1        margin:...                         course title
+ *      | div      
+ *      |   div     border:solid; background:white     nav menus
+ *      | ...
+ *      | mc-logo   position:relative
+ *       ------------------------------------------------
+ *
+ *
+ * column-two:
+ *       ------------------------------------------------
+ *      | component border:solid; background:white     content
+ *      | footer    text-align:right                   contact etc.
+ *       ------------------------------------------------
+ *
+ * $Id: wikiacademia.css 22681 2008-08-26 20:48:31Z mahoney $
+ *********************************************************/
+
+/* -- global elements ------------------------------------------- */
+
+ /***  wikipedia monobook :
+  * Font size via "keyword scaling" : browsers won't go below 9px.
+  * See http://www.w3.org/2003/07/30-font-size,
+  *     http://style.cleverchimp.com/font_size_intervals/altintervals.html
+  ***/
+
+/**** 
+ The url here is relative to this style sheet, not the loading .html page
+ I'm assuming a directory structure like this:
+   source/
+       styles/wikiacademia.css  (eg this file)
+       images/background.png    (images refered to here)
+****/  
+
+body { 
+  background: #f9fcf9 url('../images/random_background.png') 0px 0px no-repeat;
+  /* font: x-small serif; */                          /* start too small */
+  /* font: x-small sans-serif; */
+  margin: 0;
+  padding: 0;
+  color: black;
+}
+
+img { 
+  border: none; 
+  vertical-align: middle;
+}
+
+a { 
+  text-decoration: none;
+  color: #002bb8;
+  background: none;
+}
+a:hover { 
+  text-decoration: underline;
+  color: #5a3696;
+}
+/* a:visited { color: #5a3696; } */     
+/* not in nav menu; but see .component */
+
+p { margin: 1em 0 .5em 0; }    /* vertical break height for <p /> */
+p img { margin: 0; }
+
+h1, h2, h3, h4, h5, h6 {
+    color: Black;
+    background: none;
+    font-weight: normal;
+    margin: 0;
+    padding-top: 0.5em;
+    padding-bottom: 0.17em;
+}
+h4, h5, h6 { font-weight: bold; }   /* include h3 here ? */
+h1 { font-size: 188%; }
+h2 { font-size: 150%; }
+h3 { font-size: 132%; }
+h4 { font-size: 116%; }
+h5 { font-size: 100%; }
+h6 { font-size: 80%;  }
+
+hr { 
+  height: 1px;
+  border: 0;
+  margin: .2em 0 .2em 0;
+  color: #90C0C0;
+  background-color: #90C0C0;
+}
+
+form {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+div.indent { 
+  margin-left: 5em;
+}
+
+textarea {
+  /* border: 1px solid #90C0C0;   */   /* doesn't make it clear can edit  */
+  /* border-color: #90C0C0; */
+  color: Black;
+  background-color: #FCFCFC;
+  width: 100%;
+  padding: 0.3em;
+  overflow: auto;
+  font-family: monospace;
+  font-size: 100%;
+
+}
+
+#editform textarea { 
+  margin: 0;
+}
+
+#edit textarea { 
+  font-family: monospace;
+}
+
+
+/* I'm not sure this changes dialogs in file upload;
+   I think it's best to leave these white. */
+/* input[type="text"] { background-color: #FFFFFA; } */
+
+input[type="radio"], input[type="checkbox"] { border:none; }
+select {
+    border: 1px solid #90C0C0;  
+    color: Black;
+    vertical-align: top;
+}
+
+/***
+ * from wikimedia's monobook; not using here (yet)
+ *
+ * fieldset {
+ *    border: 1px solid #90C0C0;
+ *    margin: 1em 0em 1em 0em;
+ *    padding: 0em 1em 1em 1em;
+ *    line-height: 1.5em;
+ * }
+ * legend {
+ *    background: White;
+ *    padding: 0.5em;
+ *    font-size: 95%;
+ * }
+ * abbr, acronym, .explain {
+ *    border-bottom: 1px dotted Black;
+ *    color: Black;
+ *    background: none;
+ *    cursor: help;
+ * }
+ * q {
+ *    font-family: Times, "Times New Roman", serif;
+ *    font-style: italic;
+ * }
+ * 
+ * blockquote {
+ *     font-family: Times, "Times New Roman", serif;
+ *     font-style: italic;
+ * }
+ *************/
+
+ul { 
+  list-style: disc outside;
+  margin-left:  0;
+  padding-left: 1em;
+}
+
+/* --- header (across top)------------------------------------- */
+
+div#header {  
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 3.1em;             /* height of header */
+  /* border-bottom: solid black 1px; */
+}
+
+#cs-logo {
+  position: absolute;
+  left: 0;
+  /* float: left; */
+  /* display: inline; */
+  background: none;
+  margin: 0;
+  padding: 0;
+  /* width: 200px; */
+  /* height: 3em; */
+  /* border:1px solid teal; */
+}
+
+
+/* --- login css; the corresponding html is in /mason/login.mhtml ------ */
+
+#login { 
+  /* position:absolute; */
+  /* top: 0; */
+  /* left: 0; */
+  /* 100% seems to give scroll bars in at least linux Mozilla 1.7 */
+  /* height: 3em; */
+  width: 99%;
+  min-width: 640px;
+  text-align: right;
+  padding: 0; 
+  margin: 0; 
+  /* border: solid 1px red; */
+}
+
+#login ul {
+  margin:0;
+  padding: 3px 3px 0 0;    /* top right bottom left */ 
+}
+#login li.first {
+  background: url('../images/user.gif') left center no-repeat;
+  display: inline;
+  margin: 0;
+  padding: 0 0 0 24px;
+}
+#login li.middle {
+  font-size: 85%;
+  display: inline;
+  margin: 0;
+  padding: 0 0 0 6px;
+}
+#login li.rest {
+  display: inline;
+  margin: 0;
+  padding: 0 4px 0 10px;
+}
+#login li input {
+  /* border: solid 1px #90C0C0; */
+  background-color: #FFFFFF;
+  margin: 0;
+  padding: 1px 1px 0 2px;
+}
+#login li input[type="submit"]{
+  background-color: transparent;
+  font-family: serif;
+  font-size: 1em;
+  color: #002bb8;
+  border: none;
+  margin: 0;
+  padding: 0;
+  /* line-height: 1em; */
+}
+#login li input[type="submit"]:hover{
+  text-decoration: underline;
+  cursor: pointer;
+  color: #5a3696;
+}
+
+form.login {
+  margin: 0;
+  padding: 0;
+}
+
+.error {
+  margin: 0; 
+  padding: 2px 10px 0 0;
+  color: #CC0000;
+  border-collapse: collapse;
+  font-style: italic; 
+  font-weight: bold;
+  /* border: solid 1px yellow; */
+}
+
+/* --- editform-actions ------------------------------------------ */
+
+#editform { 
+  position:relative;
+  z-index: 2;
+  border:1px solid #808080; 
+  padding: 0 1em; 
+  margin: 0; 
+  background-color:#fbfbfb;
+  min-width: 24em;
+}
+
+#editformcontents { 
+  border:0; 
+  padding:0; 
+  margin:0; 
+  position:relative; 
+  top:-1.5em;
+}
+
+#editformactions { 
+  position:relative;
+  top: -1.77em;
+  left: 9em;
+  width: 10em;
+  padding: 0 0 0 1em;
+  white-space: nowrap;
+  overflow: visible;
+  background: transparent;
+  border-collapse: collapse;
+  list-style: none;
+} 
+#editformactions ul {
+  position: relative;
+  margin: 0 0 0 2em;
+  padding: 0;
+  list-style: none;
+}
+#editformactions li {
+  position: relative;
+  display: inline;
+  border: 1px solid #808080;
+  border-bottom: none;
+  margin-left: 2em;            /* between tabs */
+  padding: 0 .5em 0 .5em;
+  line-height: 1.0em;
+  font-size: 100%;
+  overflow: visible;
+  background: #fbfbfb;
+}
+
+#editformactions .front { 
+  border-bottom: none;
+}
+#editformactions .behind {
+  border-color: #c0c0c0;
+  position:relative;
+  z-index: -1;  
+}
+
+
+/* --- wiki-actions ------------------------------------------ */
+#wiki-actions { 
+  position: absolute;
+  left: 11em;
+  top: 2em;       /* = 3.1em (position of column-two) - 1em (its height) - 0.1em (bottom edge fudge factor) */
+  height: 1em;
+  margin: 0;
+  padding: 0 0 0 1em;
+  white-space: nowrap;
+  overflow: visible;
+  background: transparent;
+  border-collapse: collapse;
+  list-style: none;
+}
+#wiki-actions a:hover {  
+  text-decoration: none; /* underline is close to border .. */
+  color: #5a3696;        /* so I'll try just a color change. */
+}
+#wiki-actions ul {
+  margin: 0 0 0 2em;
+  padding: 0;
+  list-style: none;
+}
+#wiki-actions li {
+  position: relative;
+  z-index: 2;                  /* in front of column-two */
+  display: inline;
+  border: 1px solid #90C0C0;   /* green-ish */
+  border-bottom: none;
+  margin-left: 1em;            /* between tabs */
+  padding: 0 .5em 0 .5em;
+  line-height: 1.0em;
+  font-size: 100%;
+  overflow: visible;
+  background: white;
+}
+#wiki-actions .front-yellow {
+  border: 1px solid #F0C0C0;   /* F0C0C0 is yellowish */
+  border-bottom: none;
+}
+#wiki-actions .behind-yellow {
+  border: 1px solid #F0C0C0;   /* F0C0C0 is yellowish */
+  /* border-bottom: none; */
+  position: relative;
+  z-index: 0;
+}
+#wiki-actions .front { 
+  border-bottom: none;
+}
+#wiki-actions .behind { 
+  position: relative;
+  z-index: 0;                 /* behind column-two */
+}
+#wiki-actions .front-gap {  
+  border-bottom: none;
+  margin-left: 2em;  /* instead of 1em */
+}
+#wiki-actions .behind-gap {  
+  position: relative;
+  margin-left: 2em;  /* instead of 1em */
+  z-index: 0;                 /* behind column-two */
+}
+#wiki-actions .front a{ color:black; text-decoration:none }
+#wiki-actions .front a:hover{  color:black; text-decoration:none }
+#wiki-actions .front-yellow a{ color:black; text-decoration:none }
+#wiki-actions .front-yellow a:hover{  color:black; text-decoration:none }
+#wiki-actions .front-gap a{ color:black; text-decoration:none }
+#wiki-actions .front-gap a:hover{  color:black; text-decoration:none }
+
+/* --- column 1 ------------------------------------------ */
+
+#column-one {
+  float: left;
+  padding: 0;
+  margin: 0;
+  /* position: absolute;  top: 3em;   left: 0;  */
+  /* width set in #column-one > div */
+  /* border: 1px solid yellow; */
+}
+
+/* course title */
+
+/*****
+ * #title { padding: 0; margin: 0; text-align: center;
+ *  border: 1px solid black;
+ * }
+ **** */
+
+#column-one  h1 {
+  color: #006030;
+  margin: 1px;             /* corresponds to border in .component */
+  padding: .2em 0 0 .2em;  /* !!! course title position; see .component h1 */
+  text-align: center;
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+
+}
+#column-one h1 a { 
+  padding: 0;
+  color: #006030;
+  margin: auto;
+}
+#column-one  h1  a:hover { 
+  text-decoration: none;
+}
+
+#column-one  div  #semester { 
+  color: #006030;
+  text-align: center;
+  font-size: 110%;
+}
+
+/* containers in column-one ("portlet" in monobook) */
+
+#column-one  div {
+  white-space: normal;
+  margin: 0;
+  padding: 0;
+  width: 10.5em;    /* !!! column-one width; see #column-two  */
+  /* border: solid 1px red; */
+}
+
+#column-one  div div {        
+  /* border: solid 1px; */
+  margin: 1em 0 0 0;
+  padding: 0;
+  /* width: 10.5em; */
+  /* float: none; */
+  /* overflow: hidden; */     
+}
+/* box with border in column-one */
+#column-one div div div  {
+  border: solid 1px #90C0C0;
+  border-left: none;
+  background-color: white; 
+  margin: 1px;
+  /* padding: .1em .5em .1em 0; */
+  padding: 0;
+}
+/* label above the box */
+#column-one h5 { 
+  margin: 0;
+  padding: 0 0 0 .5em;
+  font-weight: normal;
+  font-size: 90%;
+}
+
+#column-one ul { 
+  margin: .4em 1em .4em 1em;
+  padding: 0 0 0 .4em;
+}
+#column-one li.unselect { 
+  list-style-type: circle;
+  margin: .1em;
+  padding: 0;
+}
+#column-one li.select { 
+  margin: .1em;
+  padding: 0;
+  list-style-type: disc;
+  /* font-weight: bold; */
+  color: black;
+}
+#column-one li.external { 
+  list-style-type: none;
+  margin: .1em;
+  padding: 0;
+}
+
+#mc-logo { 
+  position: relative;
+  left: 40px;
+  padding: 1em 0 1em 0;
+}
+
+/* ---- edit tags ---------------------------------------------------  */
+
+.editsection { 
+  float: right;
+  margin-left: 5px;
+  position: relative;
+  top: 1em;
+}
+
+/* ---- column 2 ---------------------------------------------------  */
+
+#column-two { 
+  position: relative;  /* so that z-index does something */
+  top:0; left:0;       /* relative to where it should be */
+  z-index: 1;          /* actions can be in front of (2) or behind (0) this */
+  /*z-index: 0; */
+  /*position: absolute;  top: 0; left: 0; */
+  /*position: relative;*/     /* lets the z-index stuff do its thing ? */
+  top: 0; left: 0;
+  margin: 0 0 0 11em;         /* !!! column-two placement; see course title */
+  padding: 0;                 /* the 1px aligns border with #action items */
+  /* border: solid yellow 1px; */
+  min-width: 20em;
+
+}
+
+.footer {
+  font-size: 84%;
+  margin: 0;
+  padding: 0 1em 0 1em;           /* !!! right whitespace; see .component */
+}
+
+.footer ul { 
+  margin: 0;
+  padding: 0;
+  text-align: right;
+  list-style: none;
+  line-height: 1.2em;
+}
+
+.footer li { 
+  margin: 0;
+  padding: 0;
+}
+
+  
+.email {
+  font-style: italic;
+}
+
+.filename { 
+  font-size: 125%;
+}
+
+.component {
+  margin: 0;
+  padding: 0 1em 0 1em;             /* !!! right whitespace; see .footer */
+  border: 1px solid #90C0C0; 
+  border-right: none;
+  background-color: white;
+}
+
+/*** 
+ * The ""component+component" syntax selects adjacent siblings, 
+ * here the second div in the second column :
+ *
+ *  /----------------------------------------------------\
+ *  |  column-one    column-two                          |
+ *  |                                                    |
+ *  |                   edit   history                   |
+ *  |              /-------------------------------------|
+ *  |              | page content  (div class=component) |
+ *  |              |                                     |
+ *  |              |-------------------------------------|
+ *  |              | attachments   (div class=component) |
+ *  |              |                                     |
+ *  |              \-------------------------------------|
+ *  \----------------------------------------------------/
+ *
+ *
+ * Not sure yet what look I want here.
+ *  * On the one hand, the page content itself is a single "thing";
+ *    the file attachments are related but seperate.  
+ *  * Leaving them in the same div didn't feel quite right, 
+ *    but having a space between shuts down the connection, leaving
+ *    the "attachments" part without a direct reference to the page title.
+ *  * For now I've settled for having them adjacent, with no intervening
+ *    space, but with a solid "border" between.  I didn't want the
+ *    the border to be double wide (from both above and below), 
+ *    so this tries to suggest a light shadow instead.
+ *
+ * Too much of a comment for a tiny bit of CSS, but...
+ ***/
+.component + .component { 
+  border-top: 1px solid #e0f0f0;   /*#fffcfc; */
+} 
+
+/* ------------------- stuff within components --------------------- */
+
+/***
+ *  autohandler: 
+ *                <div id="component">< & **.html &></div>
+ *
+ *  .html file :
+ *                <h1>title</h1>
+ *                <h2>topic></h2>
+ *                <div>blurb</div>
+ *                <h2>topic></h2>
+ *                <div>blurb</div>
+ *                <div class="modified">last modified ...</div>       
+ ***/
+
+.component a:visited { color: #5a3696; }
+
+.component h1 { 
+  margin: 0;
+  padding: .2em 0 0 0; /* !!! component title position; see #column-one>a>h1 */
+  border-bottom: solid 1px #90C0C0;
+}
+
+.component h2 { 
+  /* line-height: 1.5em; */
+  margin: 1em 0 0 0;
+  padding: 0;
+  border-bottom: solid 1px #90C0C0;
+}
+
+.component h3 { 
+  /* line-height: 1.5em; */
+  /* margin:  0.5em 0 0.25em 1em; */
+  margin: 0.5em 0 0 0;
+  padding: 0;
+  /* border: 1px solid yellow; */
+}
+
+.component .h3Text { 
+  margin:  0.5em 0 0.25em 0.5em;
+  font-size: 0.75em;
+  padding: 1px;
+}
+
+.component div { 
+  margin: .75em 1em .75em 1em;
+  padding: 0;
+}
+
+.component .due { 
+  margin: 0 0 0 1em;
+  padding: 0;
+  /* border: 1px solid red; */
+}
+
+.component .dueEdit { 
+  margin: 0 0 0 1em;
+  padding: 3px;
+  /* border: 1px solid red; */
+}
+
+#modified {
+  width: 100%;
+  text-align: right;
+  font-size: 84%;
+  margin: 0;
+  padding: 1em 0 0 0;
+  /* border: solid 1px black; */
+}
+
+.component ul { 
+    /* line-height: 1.5em; */
+    /* list-style-image: url("bullet.gif"); */
+    /* list-style-type: circle; */
+  list-style-position: inside;
+  margin: 0.3em 0 0 1.5em;           /* INDENTATION OF BULLETS */
+  padding:0;
+}
+.component ol {
+    /* line-height: 1.5em; */
+    margin: 0.3em 0 0 1.5em;
+    padding:0;
+    list-style-image: none;
+}
+.component li { margin-bottom: 0.1em; }
+.component dt { 
+    font-weight: bold; 
+    margin-bottom: 0.1em;
+}
+.component dl{
+    margin-top: 0.2em;
+    margin-bottom: 0.5em;
+}
+.component dd {
+    /* line-height: 1.5em; */
+    margin-left: 2em;
+    margin-bottom: 0.1em;
+}
+
+/* Blocks that were <pre><code>...</code></pre> are now just <code>...</code>  */
+.component code, pre.code { 
+  font-family: monospace;      /* default for <pre> */
+  display: block;              /* default for <pre> */
+  white-space: pre;            /* default for <pre> */
+  background-color: #fffff6; 
+  padding: 1em;
+  margin: 0.5em 0 0 0;
+  border: 1px dashed #90C0C0;
+  color: black;
+  line-height: 1.1em;
+}
+
+.component div code {  
+  position: relative;
+  left: -1em;
+}
+
+/* 
+  ##### old
+  # .component pre {
+  #   padding: 1em;
+  #   margin: 0.5em 0 0 0;
+  #   border: 1px dashed #90C0C0;
+  #   color: black;
+  #   background-color: #fffff6;
+  #   line-height: 1.1em;
+  #  }
+*/
+
+.component h2.directory {
+  color: #606060;
+  border-bottom: none;
+  margin-top: 0.25em;  /* h1 is 0.2em, but it's bigger */
+}
+.directory img { 
+  position: relative;
+  left: 0.1em;
+  bottom: -10px;
+  margin: 0;
+  z-index: 2;
+}
+#dir-ls { 
+  font-family: monospace;              /* default for 'pre' */
+  white-space: pre;                    /* ditto; show spaces as-is */
+  padding: 0 1em 0.5em 1em;
+  margin: 0 0 0.5em 0;
+  border: solid 1px #e0f0f0;           /* #90C0C0; */
+  background-color: #fafafa;
+  color: #606060;
+  line-height: 1.1em;
+}
+#dir-ls hr {  
+  background-color: #999999;
+}
+
+#dir-ls img {
+  border: none; 
+  vertical-align: bottom;
+  margin: 2px;
+}
+.ls-button {  
+  border: solid 1px #000020;
+  border-bottom: solid 2px #101060;
+  border-right: solid 2px #101060;
+  background-color: #f3f3f3; /* fwhite; */ /* #f7f7ea; */  /* #e9e9d1; */
+  color: black;
+  padding: 1px 3px 1px 3px;
+  font-size: 90%;
+}
+.ls-button:hover {  
+  text-decoration: none;
+  /* background-color: #f0c6c6; */
+  color: #8B0000;
+}
+
+#oops {
+  padding: 1em;
+  margin: 0.5em 0 0.5em 0;
+  border: solid 1px #90C0C0;
+  /* background-color: #fafafa; */
+  background-color: #fcf0f0;
+  line-height: 1.1em;
+}
+#oops-title { 
+  font-size: 133%               ! important ; 
+  position :relative            ! important ; 
+  top: -0.5em                   ! important ;
+  left: -0.5em                  ! important ;
+}
+
+.component h2.upload {  
+  color: darkred;
+  border-bottom: none;
+}
+.upload-new {  
+  font-style: italic;
+  color: darkred;
+  font-weight: bold;
+}
+
+#oops-text { 
+  color: darkred;
+  font-size: 133%;
+  font-weight: bold;
+}
+#oops-msg { 
+  color: black;
+}
+
+.component .grade-h1 { 
+  /* same as h1 and component h1 */
+  font-size: 188%;
+  float: right;
+  margin: 0;
+  padding: .2em 0 0 0;
+  border: none;
+}
+
+/* due: , submitted: on student work submission page */
+.duesubmit { 
+  padding: 0.5em 0 0.5em 0;
+  margin: 0;
+  float: right;
+  font-size: 85%;
+}
+.grey {  
+  color: grey;
+}
+
+/* single grade on a student work submission page */
+.grade { 
+  /* float: right; */
+  font-size: 66%;
+  color: #606060;
+  /* position: absolute; */
+  /* right: 0px; */
+  /* top: 0.2em; */
+}
+
+/* single grade on a student work submission page */
+/* .grade > span { 
+    border: 1px solid #90C0C0;
+    padding: 0.2em;
+    margin: 0;
+   font-weight: bold;
+   color: black;
+ }
+*/
+
+.grade-red       { color: #DC143C;  font-weight:bold; }
+.grade-darkred   { color: #8B0000;  font-weight:bold; }
+.grade-green     { color: #3CB371;  font-weight:bold; }
+.grade-darkgreen { color: #006400;  font-weight:bold; }
+.grade-black     { color: #303030;  font-weight:bold; }
+
+.emphasize { color: #006400;  font-weight:bold; }
+
+/* returned message in choose_user.mhtml (and other?) color is saddlebrown */
+/* #message { 
+  font-family: serif;
+  white-space: normal;
+  color: #8B4513;  
+  padding: 0;
+  margin: 0.5em 0.5em 0 1em;
+}
+*/
+
+/* table with 
+ *  a) gray font for headings
+ *  b) cells adjacent, light grey, solid 1px borders darker horizontally
+ *  c) monospace, whitespace text
+ */
+table.layout {
+  border-collapse: collapse;
+  white-space: pre;
+}
+.layout td {
+  font-family: monospace;
+  vertical-align: top;
+  padding: 6px 9px 3px 8px;           /* top right bottom left */
+  border : 1px solid #778899;         /* was 2px */
+  border-right: 1px solid #D3D3D3;    /* was 778899 */
+  border-left: 1px solid #D3D3D3;     /* was 778899 */
+  background: #F9F9F9;
+}
+  /* .layout tr:first-child td { */
+.layout .heading, .layout .heading td {
+  /* font-family: default; */
+  /* text-align: center; */
+  vertical-align: bottom;
+  font-family: monospace;
+  color: #606060;
+  border: none;
+  background: none;
+}
+.layout .left-heading {
+  /* font-family: default; */
+  /* text-align: center; */
+  vertical-align: top;
+  font-family: monospace;
+  color: #606060;
+  border: none;
+  background: none;
+}
+.layout .heading-top td {
+  vertical-align: top;
+  font-family: monospace;
+  color: #606060;
+  border: none;
+  background: none;
+}
+.layout .borderless {
+  font-family: default;
+  border: none;
+  background: none;
+  vertical-align: bottom;
+}
+
+
+ /*****
+  * td {
+  *  border: dashed 1px #8B4513;
+  *  padding: 1em;
+  * }
+  *****/
+
+
+/****************
+ * This worked for the "Upload" button,
+ * but didn't do anything to the "Browse" button 
+ * created by the <input type='file' > that makes both 
+ * a text field and a button.
+ *    #attachment input { 
+ *      color: #606060;   
+ *      background-color: white; 
+ *    }
+ ****************/
+
+.assign-date-future { 
+  font-size: 88%;
+  padding: 0;
+  margin: 0;
+  margin-right: 1em;
+}
+
+.assign-date-past { 
+  font-size: 88%;
+  padding: 0;
+  margin: 0;
+  margin-right: 1em;
+  color: grey;
+}
+
+.assign-date { 
+  font-size: 88%;
+  padding: 0;
+  margin: 0;
+  margin-right: 1em;
+  overflow: visible;
+}
+
+.component .assign-right { 
+  float: right;
+  display: inline;
+  position: relative;
+  font-size: 150%;  /* same as component h2 to get alignment to work OK */
+  margin: 1em 0 0 0;
+  padding: 0;
+}
+
+.component .title-right { 
+  float: right;
+  display: inline;
+  position: relative;
+  font-size: 188%;  /* same as component h1 to get alignment to work OK */
+  margin: 1em 0 0 0;
+  padding: 0;
+}
+
+.assign-work { 
+  font-size: 77%;
+  padding: 0;
+  margin: 0;
+}
+
+/***
+ * delete button in edit directory
+ ***/
+.delete-button {  
+  font-size: 75%;
+  /* height: 2em; */
+  /* line-height: 85%; */
+}
+
+/****************************************************************** 
+ * InternetExplorer issues
+ * 
+ *  * IE:Mac 5.2 needs to quit application 
+ *    and restart to see .css changes... sigh.
+ *
+ *  * IE:Mac5.2 doesn't look too bad with these "absolute" replacements 
+ *    of the "float"'s above, though it doesn't handle the page width well.
+ *
+ *  * maybe eventually something like 
+ *
+ *    <!--[if IE]>
+ *      <link rel="stylesheet" type="text/css" href="/styles/plain.css">
+ *   or
+ *      <style type="text/css">@import "/styles/IEFixes.css";</style>
+ *    <![endif]-->
+ *
+ *    or just look for browser signature in mason's <init> and load 
+ *    a similar table version.
+ *
+ *  * IE 6 on windows is currently readable, but ...
+ *     - background is not displayed behind cs-logo png
+ *     - cs-logo and login are not horizontally aligned; 
+ *       logo is right but below
+ *     - component background alternates between green and white 
+ *       depending on scroll
+ *     - lots of extra whitespace at end of component 
+ *
+ *********************************************************************/
+
+* > html div#login {
+  width: 99%;
+  /* border: solid 1px red; */
+}
+
+* > html #cs-logo {
+  position: absolute; top: 0; left: 0;
+  margin: 0;
+  padding: 0;
+  /* width: 200px; */
+  /* height: 3em; */
+  /* border:1px solid teal; */
+}
+
+* > html #column-one {
+  position: absolute;
+  float: none;
+  left: 0;
+  top: 3em;
+  /* border: solid 1px red; */
+}
+
+/* --- math ---- */
+.matherror { 
+  color : #B22222 ;  /* crimson */
+}
+
+.math > table {  
+  display: inline;
+}
+
+.math hr { 
+  color : black;
+  background-color : black;
+}
+
+.math > table > tr > td { border: none;  }
+
+/* --- images in wiki pages ---- */
+
+.img-right { 
+  float: right;
+  padding: 0.5em;
+}
+
+.img-left { 
+  float: left;
+  padding: 0.5em;
+}
+
+/* --- assignment form fields ---- */
+.assignmentin { 
+  font-size: 70%;
+}
+
+

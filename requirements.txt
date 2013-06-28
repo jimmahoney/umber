@@ -1,0 +1,17 @@
+# -- requirements.txt --
+#
+# git >= 1.7
+# sqlite3 >= 3.7
+# virtualenv >= 1.9
+# python >= 2.7
+
+# You can install the remaining ones with
+#
+#  $ . env/bin/activate
+#  (env)$ pip install -r requirements.txt
+
+Flask >= 0.9
+SQLAlchemy >= 0.8
+
+# Flask-WTF >= 0.8
+
