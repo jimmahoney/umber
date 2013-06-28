@@ -57,7 +57,8 @@ All this is currently on my MacPro, OS X 10.8.4 .
 
 * Copyied and adapted basic Flask resources from planet_express,
   including requirements.txt, __init__.py, templates/index.html,
-  src/utilities.py, and planet_express.py renamed umber.py
+  src/utilities.py, src/console.py, console, 
+  and planet_express.py renamed umber.py
 
 * Installing Flask, SQLAlchemy (and anything else listed in requirements.txt).
         $ . env/bin/activate
