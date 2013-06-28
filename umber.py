@@ -8,11 +8,9 @@
 
 from flask import Flask, request, session, g, redirect, \
                   url_for, abort, render_template, flash
-
-from src.utilities import secret_key
-
-# from src.model import db_session, \
-#     Employee, HasClearance, Shipment, Planet, Package, Client
+from src.utilities import secret_key, project_path
+from src.model import db_session, \
+     Person, Role, Course, Registration, Assignment, Work
 
 app = Flask(__name__)
 
@@ -20,11 +18,11 @@ app = Flask(__name__)
 #def template_context():
 #    """ Add variables and/or functions to all template context """
 #    return dict(name=value, func=func_name, ...)
-#
-#@app.teardown_request
-#def shutdown_db_session(exception=None):
-#    # As suggested in http://flask.pocoo.org/docs/patterns/sqlalchemy/
-#    db_session.remove()
+
+@app.teardown_request
+def shutdown_db_session(exception=None):
+    # As suggested in http://flask.pocoo.org/docs/patterns/sqlalchemy/
+    db_session.remove()
 
 @app.template_filter('static_url')
 def static_url(filename):

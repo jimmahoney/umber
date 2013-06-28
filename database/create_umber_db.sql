@@ -99,10 +99,10 @@ CREATE TABLE Course (
 CREATE TABLE Registration (
   registration_id INTEGER PRIMARY KEY NOT NULL ,
   person_id INTEGER NOT NULL DEFAULT 0
-    CONSTRAINT fk_person_person_id REFERENCES Person(planet_id),
+    CONSTRAINT fk_person_person_id REFERENCES Person(person_id),
   course_id INTEGER NOT NULL DEFAULT 0
     CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
-  role INTEGER NOT NULL DEFAULT 0
+  role_id INTEGER NOT NULL DEFAULT 0
     CONSTRAINT fk_role_role_id REFERENCES Role(role_id),
   date TEXT,
   midterm TEXT NOT NULL DEFAULT '',
