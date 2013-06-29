@@ -40,21 +40,21 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from utilities import project_path
+from settings import project_path
 
-DATABASE_PATH = 'sqlite:///' + project_path + '/database/umber.db'
-
-engine = create_engine(DATABASE_PATH)
+db_path = 'sqlite:///' + project_path + '/database/umber.db'
+db_engine = create_engine(db_path, convert_unicode = True)
 db_session = scoped_session(sessionmaker(autocommit = False, 
-                                         autoflushf = False, 
-                                         bind = engine))
+                                         autoflush = False, 
+                                         bind = db_engine))
 
 class Umber(object):
     """ All of this project's database objects inherit from this class. """
 
-    def __init__(self):
-        """ Always add a new object to the current database session. """
-        db_session.add(self)
+    def __init__(self, db_session_add = True):
+        """ Add new objects automatically to the database session by default. """
+        if db_session_add:
+            db_session.add(self)
 
     @declared_attr
     def __tablename__(cls):
@@ -64,7 +64,7 @@ class Umber(object):
 
     # Define fields in each table for each column automatically,
     # e.g. Person.name , since Person table has a 'name' column.
-    __table_args__ = {'autoload':True, 'autoload_with': engine}
+    __table_args__ = {'autoload':True, 'autoload_with': db_engine}
 
     @classmethod
     def col(cls, column):
@@ -123,7 +123,25 @@ class Umber(object):
     def find_all_like(cls, **kwargs):
         """ Return a list of objects with column LIKE like_value. """
         return cls.filter_like(**kwargs).all()
-        
+
+    @classmethod
+    def find_or_create(cls, **kwargs):
+        """ Fetch the object with given properties from the database
+            or create a new one in the session."""
+        # (Note that here new objects are added to db_session by default;
+        # however, db_session needs .flush() or .commit() 
+        # to send modifications out to the database.)
+        #
+        # e.g. jon = Person(username = 'jon') # get or create it
+        #      jon.lastname = 'Smith'         # modifiy it
+        #      db_session.commit()            # save to databse
+        try:
+            result = cls.find_by(**kwargs)     # throw error if > 1 result
+            assert result != None              # throw error if < 1 result
+        except:
+            result = cls(**kwargs)
+        return result
+
     def __repr__(self):
         """ Default object representation """
         # e.g. <Person name='Philip J. Fry' id=xxxx>
@@ -133,7 +151,7 @@ class Umber(object):
         except:
             return "<{} id={}>".format(self.__class__.__name__, id(self))
             
-Base = declarative_base(cls=Umber)
+Base = declarative_base(cls = Umber)
 Base.query = db_session.query_property()
             
 # Define bare object class for each database table.
@@ -152,13 +170,11 @@ class Person(Base):
     # columns: person_id, ldap_id, username, firstname, lastname, email,
     #          password, crypto, notes
     # relations: courses, works
-                
     def __init__(*args, **kwargs):
         Base.__init__(*args, **kwargs)
                     
 class Role(Base):
     # columns: role_id, name, rank
-                        
     def __init__(*args, **kwargs):
         Base.__init__(*args, **kwargs)
                             
@@ -166,7 +182,6 @@ class Course(Base):
     # columns: course_id, name, name_as_title, directory, credits,
     #          start_date, end_date, assignments_md5, active, notes
     # relations: persons, assignments
-    
     def __init__(*args, **kwargs):
         Base.__init__(*args, **kwargs)
                                     
@@ -174,7 +189,6 @@ class Registration(Base):
     # columns: registration_id, person_id, course_id, role_id,
     #          date, midterm, grade, credits, status
     # relations: person, course, role
-    
     def __init__(*args, **kwargs):
         Base.__init__(*args, **kwargs)
   
@@ -182,7 +196,6 @@ class Assignment(Base):
     # columns: assignment_id, course_id, name, uriname, due, nth,
     #          blurb, active, notes
     # relations: course
-    
     def __init__(*args, **kwargs):
         Base.__init__(*args, **kwargs)
 

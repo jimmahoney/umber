@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 #@app.context_processor
 #def template_context():
-#    """ Add variables and/or functions to all template context """
+#    """ Add variables and/or functions to all template contexts. """
 #    return dict(name=value, func=func_name, ...)
 
 @app.teardown_request

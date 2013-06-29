@@ -8,11 +8,11 @@
  
 """
 
-from flask import url_for
+# from flask import url_for
 
 def _get_project_path():
-    """ Return absolute path to planet_express, without trailing slash"""
-    # Assumes that the project folder is one up from here, at ./..
+    """ Return absolute path to project folder without trailing slash."""
+    # i.e. the folder above the one containing this file.
     import sys, os
     my_folder = os.path.dirname(os.path.realpath(__file__))
     parent_folder = os.path.abspath(my_folder + '/..')
