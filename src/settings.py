@@ -1,5 +1,11 @@
 """
- utilities.py
+ settings.py
+
+ Project site-specific paths and names :
+
+    project_path
+    secret_key
+ 
 """
 
 from flask import url_for
