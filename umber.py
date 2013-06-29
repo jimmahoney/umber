@@ -8,7 +8,7 @@
 
 from flask import Flask, request, session, g, redirect, \
                   url_for, abort, render_template, flash
-from src.utilities import secret_key, project_path
+from src.settings import secret_key, project_path
 from src.model import db_session, \
      Person, Role, Course, Registration, Assignment, Work
 

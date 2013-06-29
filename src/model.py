@@ -42,94 +42,100 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from utilities import project_path
 
-DATABASE = 'sqlite:///' + project_path + '/database/umber.db'
+DATABASE_PATH = 'sqlite:///' + project_path + '/database/umber.db'
 
-engine = create_engine(DATABASE)
-db_session = scoped_session(
-    sessionmaker(autocommit=False, autoflush=False, bind=engine))
+engine = create_engine(DATABASE_PATH)
+db_session = scoped_session(sessionmaker(autocommit = False, 
+                                         autoflushf = False, 
+                                         bind = engine))
 
 class Umber(object):
-  """ All of this project's database objects inherit from this class. """
+    """ All of this project's database objects inherit from this class. """
 
-  @declared_attr
-  def __tablename__(cls):
-    """ Set name of database table from class name """
-    # e.g. "class Person" corresponds to SQL table 'Person'
-    return cls.__name__
+    def __init__(self):
+        """ Always add a new object to the current database session. """
+        db_session.add(self)
 
-  # Define fields in each table for each column automatically,
-  # e.g. Person.name , since Person table has a 'name' column.
-  __table_args__ = {'autoload':True, 'autoload_with': engine}
+    @declared_attr
+    def __tablename__(cls):
+        """ Set name of database table from class name """
+        # e.g. "class Person" corresponds to SQL table 'Person'
+        return cls.__name__
 
-  @classmethod
-  def col(cls, column):
-    """ Return given SqlAlchemy column object """
-    # e.g. Person.col('name') is same as Person.name
-    return cls.__dict__[column]
+    # Define fields in each table for each column automatically,
+    # e.g. Person.name , since Person table has a 'name' column.
+    __table_args__ = {'autoload':True, 'autoload_with': engine}
 
-  # Define shortcut methods for querying
-  # e.g. Class.filter(...) rather than Class.query.filter(...)
-  # for several of query's methods.
+    @classmethod
+    def col(cls, column):
+        """ Return given SqlAlchemy column object """
+        # e.g. Person.col('name') is same as Person.name
+        return cls.__dict__[column]
 
-  @classmethod
-  def filter(cls, *args):
-    return cls.query.filter(*args)
-
-  @classmethod
-  def filter_by(cls, *args):
-    return cls.query.filter_by(*args)
-
-  @classmethod
-  def all(cls, *args):
-    return cls.query.all(*args)
-
-  @classmethod
-  def query_by(cls, column, value):
-    """ Return query object with column == value """
-    return cls.query.filter(cls.col(column) == value)  
-
-  @classmethod
-  def find_by(cls, column, value):
-    """ Return database object with column=value """
-    # e.g. Person.find_by('name', 'Philip J. Fry')
-    # (Throws an error if there's more than one.)
-    return cls.query_by(column, value).one()
-
-  @classmethod
-  def find_all_by(cls, column, value):
-    """ Return list of database objects with column=value """
-    # e.g. Package.find_all_by('weight', 1.5)
-    return cls.query_by(column, value).all()
-
-  @classmethod
-  def query_like(cls, column, like_value):
-    """ Return query with SQL_LIKE(column, like_value) """
-    return cls.query.filter(cls.col(column).like(like_value))
-
-  @classmethod
-  def find_like(cls, column, like_value):
-    """ Return the database object with column LIKE like_value. """
-    # e.g. Person.find_like('name', '%Fry%')
-    # (Throw an error if there's more than one.)
-    return cls.query_like(column, like_value).one()
-
-  @classmethod
-  def find_all_like(cls, column, like_value):
-    """ Return list objects with column LIKE like_value. """
-    return cls.query_by(column, like_value).all()
-
-  def __repr__(self):
-    """ Default object representation """
-    # e.g. <Person name='Philip J. Fry' id=xxxx>
-    try:
-      return "<{} name='{}' id={}>".format(self.__class__.__name__,
-                                         self.name, id(self))
-    except:
-      return "<{} id={}>".format(self.__class__.__name__, id(self))
-
+    # Define shortcut methods for several database retrieval
+    # operations using sqlalchemy's query, filter, like, one, all,
+    # e.g. Class.filter(...) rather than Class.query.filter(...)
+    
+    @classmethod
+    def filter(cls, *args):
+        return cls.query.filter(*args)
+    
+    @classmethod
+    def all(cls, *args):
+        return cls.query.all(*args)
+    
+    @classmethod
+    def filter_by(cls, **kwargs):
+        """ Return query.filter_by(column=value, column=value, ...) """
+        return cls.query.filter_by(*args)
+    
+    @classmethod
+    def find_by(cls, **kwargs):
+        """ Return database object with column=value, column=value, ... """
+        # e.g. Person.find_by(name = 'Philip J. Fry', age = 32)
+        # Returns None if not found. Throws an error if more than one result found.
+        return cls.query.filter_by(**kwargs).one()
+    
+    @classmethod
+    def find_all_by(cls, **kwargs):
+        """ Return list of database objects with column=value, column=value, ... """
+        # e.g. Person.find_all_by(firstname = 'Jon')
+        return cls.query.filter_by(**kwargs).all()
+    
+    @classmethod
+    def filter_like(cls, **kwargs):
+        """ Return query made using SQL 'LIKE' matches in column=like_value """
+        # e.g. query = Person.query_like(name = '%Fry%')
+        q = cls.query
+        for (column, like_value) in kwargs:
+            q = q.filter(cls.col(column).like(like_value))
+        return q
+        
+    @classmethod
+    def find_like(cls, **kwargs):
+        """ Return the database object with column LIKE like_value. """
+        # SQL uses % as the wildcard character
+        # e.g. Person.find_like(name = '%Fry%')
+        # (Throw an error if there's more than one; return None if not found)
+        return cls.filter_like(**kwargs).one()
+        
+    @classmethod
+    def find_all_like(cls, **kwargs):
+        """ Return a list of objects with column LIKE like_value. """
+        return cls.filter_like(**kwargs).all()
+        
+    def __repr__(self):
+        """ Default object representation """
+        # e.g. <Person name='Philip J. Fry' id=xxxx>
+        try:
+            return "<{} name='{}' id={}>".format(self.__class__.__name__,
+                                                 self.name, id(self))
+        except:
+            return "<{} id={}>".format(self.__class__.__name__, id(self))
+            
 Base = declarative_base(cls=Umber)
 Base.query = db_session.query_property()
-
+            
 # Define bare object class for each database table.
 # Object methods for the table columns are created automatically.
 # Relation methods (many-to-one etc) for objects corresponding
@@ -141,43 +147,55 @@ Base.query = db_session.query_property()
 #   "not a good idea to use [..] “secondary” arg [..] mapped
 #    to a class unless the relationship is declared with viewonly=True
 #    Otherwise [..] may attempt duplicate INSERT and DELETE"
-
+           
 class Person(Base):
-  # columns: person_id, ldap_id, username, firstname, lastname, email,
-  #          password, crypto, notes
-  # relations: courses, works
-  pass
-
+    # columns: person_id, ldap_id, username, firstname, lastname, email,
+    #          password, crypto, notes
+    # relations: courses, works
+                
+    def __init__(*args, **kwargs):
+        Base.__init__(*args, **kwargs)
+                    
 class Role(Base):
-  # columns: role_id, name, rank
-  pass
-
+    # columns: role_id, name, rank
+                        
+    def __init__(*args, **kwargs):
+        Base.__init__(*args, **kwargs)
+                            
 class Course(Base):
-  # columns: course_id, name, name_as_title, directory, credits,
-  #          start_date, end_date, assignments_md5, active, notes
-  # relations: persons, assignments
-  pass
-
+    # columns: course_id, name, name_as_title, directory, credits,
+    #          start_date, end_date, assignments_md5, active, notes
+    # relations: persons, assignments
+    
+    def __init__(*args, **kwargs):
+        Base.__init__(*args, **kwargs)
+                                    
 class Registration(Base):
-  # columns: registration_id, person_id, course_id, role_id,
-  #          date, midterm, grade, credits, status
-  # relations: person, course, role
-  pass
-
+    # columns: registration_id, person_id, course_id, role_id,
+    #          date, midterm, grade, credits, status
+    # relations: person, course, role
+    
+    def __init__(*args, **kwargs):
+        Base.__init__(*args, **kwargs)
+  
 class Assignment(Base):
-  # columns: assignment_id, course_id, name, uriname, due, nth,
-  #          blurb, active, notes
-  # relations: course
-  pass
+    # columns: assignment_id, course_id, name, uriname, due, nth,
+    #          blurb, active, notes
+    # relations: course
+    
+    def __init__(*args, **kwargs):
+        Base.__init__(*args, **kwargs)
 
 class Work(Base):
-  # columns: work_id, person_id, assignment_id, submitted, 
-  #          studentLastSeen, studentLastModified,
-  #          facultyLastSeen, facultyLastModified,
-  #          grade, notes
-  # relations: person, assignment, course
-  pass
+    # columns: work_id, person_id, assignment_id, submitted, 
+    #          studentLastSeen, studentLastModified,
+    #          facultyLastSeen, facultyLastModified,
+    #          grade, notes
+    # relations: person, assignment, course
 
+    def __init__(*args, **kwargs):
+        Base.__init__(*args, **kwargs)
+  
 Person.courses = relationship(Course, viewonly = True,
                               secondary = Registration.__table__)
 Person.works = relationship(Work)
@@ -194,7 +212,6 @@ Assignment.course = relationship(Course)
 
 Work.person = relationship(Person)
 Work.assignment = relationship(Assignment)
-
 
 # if __name__ == "__main__":
 #     import doctest
