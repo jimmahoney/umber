@@ -2,39 +2,100 @@
 """
  sqlalchemy database model for umber
 
-  In sqlalchemy's view of the world, db_session holds 
-  the local memory state of this thread's interaction with the database.
-  Objects (e.g. a Person or Course, corresponding to a row in a sql table) 
-  exist in both the session and the database. When the two are synchronized
-  depends on the database settings and explicit transaction calls :
-
-   autoflush  : do model changes get added to session automatically?
-   autocommit : do model changes get written to database automatically?
-   db_session.flush() outputs to database, but does not complete transaction.
-   db_session.commit() completes an atomic transaction (calls .flush() too)
-
- The interface between the sqlite database and the object API is essentially
-
-   sqlite -- engine -- db_session -- Umber
-                                     [Person, Course, Assignment, ...]
-
- The find_or_create() methods from other relational database models
- (i.e. Rails ActiveRecord) corresponds roughly to the 'merge' concept 
- in sqlalchemy, which syncs a local session object with the database.
-   jon = Person(name='Jon Smith')   # local, session object - not in db yet
-   jon = db_session.merge(jon)      # sync session with db
- However, this approach assumes that the local jon was uniquely
- identified (including primary key) by its creation ... which is problematic.
- But probably a better approach is something like
-   jon = Person.find_by('name', 'Jon Smith')     # find
-   if not jon:      
-       jon = Person(name = 'Jon Smith')           # or create
-       db_session.add(jon)                             & put in session
-   db_session.commit()                           # save (or  with flush())
- TODO: put some sort of cls.find_or_create into Umber() ?
+ --- examples / tests ---
  
- See ../database/ for the sqlite schemas and default population
- and planet_express/src/model.py for more examples of sqlalchemy syntax.
+ (To run the following examples as tests do "python model.py".
+ The database must exist already; see create_umber_db.sql for the sqlite
+ schemas and init_db for database initialization, both in ../database/.)
+ 
+ >>> populate_db()
+ Populating database with default Roles and test data.
+ 
+ >>> john = Person.find_by(username = 'johnsmith')      # get table row
+ >>> print john.name                                    # display column
+ Johnny Smith
+ >>> john.name = 'John Z. Smith'                        # modify column
+ >>> db_session.flush()                                 # save changes
+ 
+ >>> demo = Course.find_by(name = 'Demo Course')
+ >>> demo.name = 'Demo Course - new name'
+ >>> db_session.flush()
+ >>> Course.find_all_by(name = 'Demo Course')           # Now can't find it.
+ []
+
+ Show the name of the first course John is in. 
+ (There's a lot going on behind the scenes here - the relationship()
+ method has setup a Person.courses field to follow the many-to-many connection
+ from Person through Registration to Course.
+ >>> print john.courses[0].name
+ Demo Course - new name
+
+ Find John's status in the demo course.
+ (This is also doing some tricky stuff, since we're using objects - 
+ not ids - to identify which registration to find.)
+ >>> print Registration.find_by(person = john, course = demo).role.name
+ student
+ 
+ >>> db_session.rollback()     # Undo these uncommited database modifications,
+ >>> db_session.remove()       # and close the session nicely.
+
+ --- discussion ---
+ 
+ Here are a few of the concepts behind all this.
+
+ For more details, see e.g.
+ http://flask.pocoo.org/docs/patterns/sqlalchemy/ ,
+ http://docs.sqlalchemy.org/en/rel_0_7/orm/query.html ,
+ and the other reams of stuff at docs.sqlalchemy.org
+ 
+  * In sqlalchemy's view of the world, db_session holds the local
+    memory state of this thread's interaction with the database.
+    Objects (e.g. a Person or Course, an instance of which corresponds
+    to a row in a sql table) exist in both the session and the
+    database. 
+
+    The picture looks something like this.
+
+      sqlite -- engine --   db_session -- Umber objects
+      data      software    memory        memory instances of rows
+      file      connection  state         e.g. Person, Course, ...
+    
+ * I've set things up (see below) so that all new object instances are 
+   added to db_session automatically. (This isn't the sqlalchemy default.)
+    
+ * Modifications to the objects can be sent to the database 
+   in two ways: via 'flush' (which continues the current transaction)
+   or 'commit' (which finishes this transaction). 'rollback' undoes
+   everything to the previous commit. (These three are all db_session
+   methods.) The flush or commit operations can be set to take
+   place automatically, whenever an instance is modified.
+   I've turned that off; see the creation of db_session below.
+
+ For this project, the database tables themselves and their schema
+ are defined with SQL, in database/create_umber_db.sql. Then the
+ parent Umber class automatically defines the methods and matching
+ fields within each inherited Person, Course, etc object.
+
+ Often this is done the other way around, with the database tables defined
+ by the python classes, and the SQL generated automatically. That way of
+ working is for example described at flask.pocoo.org/docs/patterns/sqlalchemy,
+ where the model is e.g.
+      class User(Base):
+          __tablename__ = 'users'
+          id = Column(Integer, primary_key=True)
+          name = Column(Integer, unique=True)
+          # and so on
+ Then the sqlite (or other) database itself can be created automatically 
+ via something like
+      Base.metadata.create_all(bind=engine)
+ But here I'm working in the direction, starting from the SQL 
+      CREATE TABLE Person (
+          person_id INTEGER PRIMARY KEY NOT NULL,
+          username TEXT UNIQUE NOT NULL,
+          # and so on )
+ and then use 'autoload' (see below) to generate the Person.username 
+ and similar object interfaces.
+   
  """
 
 from sqlalchemy import create_engine
@@ -58,8 +119,8 @@ class Umber(object):
         return cls.__name__
 
     # Define fields in each table for each column automatically,
-    # e.g. Person.name , since Person table has a 'name' column.
-    __table_args__ = {'autoload':True, 'autoload_with': db_engine}
+    # e.g. Person.username , since Person table has a 'username' column.
+    __table_args__ = {'autoload': True, 'autoload_with': db_engine}
 
     @classmethod
     def col(cls, column):
@@ -88,7 +149,7 @@ class Umber(object):
     def find_by(cls, **kwargs):
         """ Return database object with column=value, column=value, ... """
         # e.g. Person.find_by(name = 'Philip J. Fry', age = 32)
-        # Returns None if not found. Throws an error if more than one result found.
+        # Throws an error if not found, or if more than one result found.
         return cls.query.filter_by(**kwargs).one()
     
     @classmethod
@@ -171,6 +232,7 @@ def umber_object_init(self, *args, **kwargs):
     # But I'm unconvinced, and want each new object automatically added
     # to db_session. (Note that db_session.flush() or .commit() is 
     # still required after creating an object before the database is modified.)
+    #
     Base.__init__(self, *args, **kwargs)
     db_session.add(self)
 
@@ -227,13 +289,19 @@ Assignment.course = relationship(Course)
 Work.person = relationship(Person)
 Work.assignment = relationship(Assignment)
 
-def db_populate():
-    """ Create and save initial database objects """
-    # The .find*(...) methods look for things in the database,
-    # so they must already be committed. (And the *_id fields
-    # don't have values until after the object is in the database.)
-    # However, when accessing (or setting) related objects directly,
-    # other objects may be used, e.g. "work1.person = john".
+def populate_db():
+    """ Create and commit the initial database objects """
+    # The database should have already been created; see database/init_db.  
+    #
+    # The various .find*(...) methods look for things in the database,
+    # not just in the current session, so they must already be
+    # committed before they can be used. And the *_id fields don't
+    # have values until after the object is in the database.  However, 
+    # when accessing (or setting) related objects directly, other
+    # objects may be used, e.g. "work1.person = john". And that even
+    # can work with objects in the arguments - see my >>> tests above.
+    #
+    print "Populating database with default Roles and test data."
     for (what, digit) in (('admin', 5), 
                           ('administrator', 5),
                           ('faculty', 4),
@@ -243,10 +311,10 @@ def db_populate():
                           ('guest', 2),
                           ('anonymous', 1), 
                           ('all', 1)):
-        Rank.find_or_create(name = what, rank = digit)
+        Role.find_or_create(name = what, rank = digit)
     db_session.commit()
-    student = Role.find_by(name='student')   # Can only find after .commit().
-    faculty = Role.find_by(name='faculty')    
+    student = Role.find_by(name = 'student')
+    faculty = Role.find_by(name = 'faculty')    
     jane = Person.find_or_create(username = 'janedoe',
                                  password = 'test',
                                  firstname = 'Jane',
@@ -295,13 +363,114 @@ def db_populate():
                                    blurb = 'Write a four part fugue.')
     db_session.commit()
     Work.find_or_create(person_id = john.person_id,
-                        course_id = democourse.course_id,
                         assignment_id = a1.assignment_id,
-                        submitted = '2006-01-20 18:34:57',
-                        grade = 'ok')
+                        submitted = '2006-01-20 18:19:20',
+                        grade = 'B')
+    Work.find_or_create(person_id = jane.person_id,
+                        assignment_id = a1.assignment_id,
+                        submitted = '2006-01-21 16:01:01',
+                        grade = 'B-')
     db_session.commit()    
 
-# if __name__ == "__main__":
-#     import doctest
-#     doctest.testmod()
 
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+
+"""
+-- initialize database & run tests --
+    
+thirty-two:~$ cd academics/umber/
+thirty-two:umber$ pwd
+/Users/mahoney/academics/umber
+thirty-two:umber$ . env/bin/activate
+(env)thirty-two:umber$ cd database; ./init_db; cd ..
+copying previous database to umber.db_old
+initializing umber.db
+(env)thirty-two:umber$ python src/model.py -v
+Trying:
+    populate_db()
+Expecting:
+    Populating database with default Roles and test data.
+ok
+Trying:
+    john = Person.find_by(username = 'johnsmith')      # get table row
+Expecting nothing
+ok
+Trying:
+    print john.name                                    # display column
+Expecting:
+    Johnny Smith
+ok
+Trying:
+    john.name = 'John Z. Smith'                        # modify column
+Expecting nothing
+ok
+Trying:
+    db_session.flush()                                 # save changes
+Expecting nothing
+ok
+Trying:
+    demo = Course.find_by(name = 'Demo Course')
+Expecting nothing
+ok
+Trying:
+    demo.name = 'Demo Course - new name'
+Expecting nothing
+ok
+Trying:
+    db_session.flush()
+Expecting nothing
+ok
+Trying:
+    Course.find_all_by(name = 'Demo Course')           # Now can't find it.
+Expecting:
+    []
+ok
+Trying:
+    print john.courses[0].name
+Expecting:
+    Demo Course - new name
+ok
+Trying:
+    print Registration.find_by(person = john, course = demo).role.name
+Expecting:
+    student
+ok
+Trying:
+    db_session.rollback()     # Undo these uncommited database modifications,
+Expecting nothing
+ok
+Trying:
+    db_session.remove()       # and close the session nicely.
+Expecting nothing
+ok
+20 items had no tests:
+    __main__.Assignment
+    __main__.Course
+    __main__.Person
+    __main__.Registration
+    __main__.Role
+    __main__.Umber
+    __main__.Umber.__repr__
+    __main__.Umber.all
+    __main__.Umber.col
+    __main__.Umber.filter
+    __main__.Umber.filter_by
+    __main__.Umber.filter_like
+    __main__.Umber.find_all_by
+    __main__.Umber.find_all_like
+    __main__.Umber.find_by
+    __main__.Umber.find_like
+    __main__.Umber.find_or_create
+    __main__.Work
+    __main__.populate_db
+    __main__.umber_object_init
+1 items passed all tests:
+  13 tests in __main__
+13 tests in 21 items.
+13 passed and 0 failed.
+Test passed.
+(env)thirty-two:umber$ 
+
+"""
