@@ -82,6 +82,26 @@ All this is currently on my MacPro, OS X 10.8.4 .
         # Create database
         $ cd database; sqlite3 umber.db < create_umber_db.sql
 
+## June 28, 29 ##
+
+* Working on model.py basics
+
+        $ ssh cs.marlboro.edu
+        $ . /var/www/cs/conf/env
+        $ wsql
+        sqlite> .tables
+        sqlite> .schema Role
+        sqlite> select * from Role;
+        1|admin|5
+        2|administrator|5
+        3|student|3
+        4|guests|2
+        5|faculty|4
+        6|students|3
+        7|guest|2
+        8|anonymous|1
+        9|all|1
+
 - - - 
 
 # Thinking / TODO #
@@ -95,7 +115,6 @@ All this is currently on my MacPro, OS X 10.8.4 .
 
 * Stare at wikacademia sqlite3 tables,
   and think about functions, mapping, and all that.
-
 
 
 

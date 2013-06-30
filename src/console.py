@@ -5,21 +5,23 @@
 
  The intended invocation is from the umber/ folder :
    $ ./console
-   >>>          
+   == Umber console ==
+   >>>
 
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-from utilities import project_path
+from settings import project_path
 
-# umber.py is in in the project_path folder.
+# umber.py is in in the project_path folder;
+# this makes sure that it's in the import path.
 import sys
 sys.path.insert(0, project_path)
+
 from umber import *
 
-# Create a "context" variable
-c = app.test_request_context()
-c.push()
+flask_context = app.test_request_context()
+flask_context.push()
 
-print "Welcome to Umber."
+print "== Umber console =="
 

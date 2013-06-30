@@ -9,8 +9,8 @@
 from flask import Flask, request, session, g, redirect, \
                   url_for, abort, render_template, flash
 from src.settings import secret_key, project_path
-from src.model import db_session, \
-     Person, Role, Course, Registration, Assignment, Work
+from src.model import db_session, db_populate, \
+     Person, Role, Course, Registration, Assignment, Work, Rank
 
 app = Flask(__name__)
 
