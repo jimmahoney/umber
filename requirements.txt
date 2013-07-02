@@ -13,5 +13,14 @@
 Flask >= 0.9
 SQLAlchemy >= 0.8
 
+# wiki, markupdown to html
+python-creole >= 1.0
+markdown >= 2.0
+
+# syntax highligting
+Pygments >= 1.6
+
+
+
 # Flask-WTF >= 0.8
 

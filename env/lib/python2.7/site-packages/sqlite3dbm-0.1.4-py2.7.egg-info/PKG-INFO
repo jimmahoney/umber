@@ -1,0 +1,44 @@
+Metadata-Version: 1.1
+Name: sqlite3dbm
+Version: 0.1.4
+Summary: sqlite-backed dictionary
+Home-page: http://github.com/Yelp/sqlite3dbm/
+Author: Jason Fennell
+Author-email: jfennell@yelp.com
+License: Apache
+Description: sqlite3dbm
+        ==========
+        
+        Description
+        ===========
+        This module provides a sqlite-backed dictionary conforming to the dbm
+        interface, along with a shelve class that wraps the dict and provides
+        serialization for it.
+        
+        Installation
+        ============
+        * pip install sqlite3dbm
+        * easy_install sqlite3dbm
+        
+        Testing
+        =======
+        * `testify tests` from the root directory
+        
+        Links
+        =====
+        * source <http://github.com/Yelp/sqlite3dbm/>
+        * documentation <http://packages.python.org/sqlite3dbm/>
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.5
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Database :: Database Engines/Servers
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Provides: sqlite3dbm

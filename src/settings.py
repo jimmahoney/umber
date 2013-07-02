@@ -20,6 +20,8 @@ def _get_project_path():
 
 project_path = _get_project_path()
 
+url_course_prefix = '/courses'
+
 # TODO: generate this randomly for production deployment.
 secret_key = "umber - SEEKRIT"
 

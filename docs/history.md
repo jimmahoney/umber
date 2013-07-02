@@ -30,7 +30,8 @@ All this is currently on my MacPro, OS X 10.8.4 .
         $ sudo pip install --upgrade virtualenv
 
 * Using markdown for docs, with html conversion (when needed)
-  by a [python markdown package](https://pypi.python.org/pypi/Markdown) :
+  by a [python markdown package](https://pypi.python.org/pypi/Markdown) ;
+  see http://pythonhosted.org/Markdown/reference.html#markdown
  
         $ sudo pip install markdown
         # e.g. "markdown_py file.md > file.html"
@@ -87,6 +88,77 @@ All this is currently on my MacPro, OS X 10.8.4 .
 * Have basic database working, including Demo Course 
   and tests in model.py 
 
+## June 30 ##
+
+Looking at multiple-word search across text.
+The Aho-Corasick implementation at
+https://pypi.python.oerg/pypi/ahocorasick/0.9 looks interesting,
+but it crashed when I tried it.
+    $ (env) umber$ pip install ahocorasick
+    $ python
+    >>> import ahocorasick
+    >>> tree = ahocorasick.KeywordTree()
+    >>> tree.add("alpha")
+    Bus error: 10
+    $
+    $ pip uninstall ahocorisck
+
+This pure python implementation from http://0x80.pl/proj/pyahocorasick/ 
+looks fine for my purposes.
+    $ cd src; wget pyahocorasick.py
+    $ python
+    >>> from pyahocorasick import Trie
+    >>> t = Trie()
+    >>> for w in ('fall2012/algorithms', 'fall2012/python'):
+    ...   t.add_word(w, w)    # (word, value) ; same for my purposes
+    >>> t.make_automaton()    # finalize word collection as search engine
+    >>> 
+    >>> list(t.iter('This is a string that has no match'))  
+    []
+    >>> s = '/courses/fall2012/python/has/match'
+    >>> list(t.iter(s))
+    [(23, ['fall2012/python'])]    # (index of last char, [list_of_matches])
+    >>> s[23 - len('fall2012/python') + 1 : (23 + 1)]
+Can provide start or end for search string, e.g. iter('....', start) 
+or iter('',start,end). For my purposes, there is a prefix (e.g. '/courses'),
+a course directory stored in the database (e.g. '/
+
+## July 1 ##
+
+Looking at wiki parsers.
+
+mwlib is a python MediaWiki available via pip install, 
+but it took a bit of googling and futzing to get it working.
+stackoverflow.com/questions/7630388/how-can-i-install-the-python-library-gevent-on-mac-os-x-lion
+    $ sudo port install libevent
+    $ CFLAGS="-I /opt/local/include -L /opt/local/lib" pip install gevent
+
+See http://djangosnippets.org/snippets/1277/ for an example of using this
+
+Looks like overkill - huge, awkward, database-of-articles, ... eh.
+
+There are several simpler ones based on wiki creole, which is close
+to what I use. Main difference is they use {{{  }}} for code & preformatted.
+Not sure what they do with existing HTML, but could be worked around.
+Also HR is exactly four dashes : ---- . Links are [[url|name]] ...
+though I think I sometimes reverse that on my site.
+
+It would take some adapting and/or pre-processing, but I think 
+one of these may work.
+
+    $ pip info creole
+    python-creole  https://pypi.python.org/pypi/python-creole/ 
+                   pure python ; macros as <<...>> 
+    Flask-Creole   based on python-creole
+    Creoleparser   bigger; has some support for dialect customization ; requires Genshi
+    creole         somewhat smaller https://bitbucket.org/thesheep/wikicreole/wiki/Home
+
+Here's a "pass thru macro" for marking pieces of text to go through unchanged.
+Note that the input and output must be unicode; 
+see https://code.google.com/p/python-creole/wiki/CreoleMacros
+    >>> creole2html(u'one two <<html>><p>paragraph</p><</html>> three', 
+    ...             macros={'html':lambda text='':text})
+
 - - - 
 
 # Thinking / TODO #
@@ -95,8 +167,52 @@ All this is currently on my MacPro, OS X 10.8.4 .
  http://stackoverflow.com/questions/1456269/python-git-module-experiences
  Do I need to think about directory structure for git repo
  of web app source vs site course files ??
+ * I think I'll just use one git repo, and put site-specific files in a branch;
+   see http://www.atlassian.com/git/tutorial/git-branches
 
+* directory structure
+  * templates/   : the render engeine looks here; I'll leave 'em.
+  * static/      : may be redundant given I want a *.wiki etc hierarchy
+  * htdocs/      : my non-flasky file structure of .wiki, .md, .html, .txt, ...
+    or courses/    (i.e. the url prefix for these umber course wiki thingies)
 
+http://flask.pocoo.org/mailinglist/archive/2011/5/6/efficiency-and-large-numbers-of-routes/#84e814641458d772989f33af3e4b9548
+ * route efficiency?
+   * Yes, route search is O(n) worst.
+   * database access is typically much slower than in memory stuff,
+     so that may not matter anyway.
+ * If I just put in one route per course, that's only 
+   currently about 200 routes on cs; then match /<course>/<path>
+ * Not sure yet how I should handled the generic top-level 
+   'wikipedia course' that (in the old model) contained the other paths.
 
+This http://stackoverflow.com/questions/14023864/flask-url-route-route-all-other-urls-to-some-function
+suggests that there can be a "default" route after the others :
+
+    from flask import Flask
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return 'This is the front page'
+
+    @app.route('/hello/')
+    def hello():
+        return 'This catches /hello'
+
+    @app.route('/<path:dummy>')
+        def fallback(dummy):
+        return 'This one catches everything else'
+
+flask : Catch-All URL
+ http://flask.pocoo.org/snippets/57/
+ ... then do my own /<course>/<path>/ match against 
+ a list (or dict or whatever) of the few hundred strings ?
+ See the "Algorithms using finite set of patterns" 
+ in http://en.wikipedia.org/wiki/String_searching_algorithm
+ And in my case, there is the further constraint that I want
+ the match to be from the beginning.
+ 
+syntax highlighting - pygments @ pygments.org
 
 
