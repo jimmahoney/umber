@@ -1,0 +1,38 @@
+= assignments =
+
+== Create content == due 2006-07-20
+* Log in as the faculty member.
+* Create a new page.
+* Add that page to the course navigation menu.
+
+== Create an assignment == due 2006-08-10
+* Log in as the faculty member.
+* Add another assignment to the list.
+* Visit the grades page.
+
+== Submit student work == due 2006-08-11
+* Log in as a student.
+* Visit the assignments page and click on "submit work".  Do so.
+* Visit the grades page.
+
+== Grade student work  == due 2006-08-12
+* Log in as faculty.
+* Visit the grades page.
+* Click on a student work submission, comment on it, and add a grade.
+
+== Create a directory and upload a text file ==
+* Go to the course home directory.  (Go to the home page, then click on ./ on the left.)
+* Log in as the faculty member; you should now see an "edit" tab at the top.
+* Edit the directory by (1) creating a new folder, and (2) uploading a .txt file.
+
+== Upload a file ==
+* Log is as a student.
+* Go to the [[ /wiki/attachment_test ]] page, and upload a small text file.
+
+== Change the public wiki ==
+* Log in as a guest.
+* Click on the "wiki" link, and edit something.
+
+== Final Grade ==
+
+<!-- Assignments updated 2006-07-28 19:16:47. -->

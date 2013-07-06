@@ -1,0 +1,46 @@
+= math =
+
+== testing the < math > tag ==
+
+Some formulas are displayed with HTML.
+(The top line has extra spaces in the math tag
+to keep it from doing its thing and leave TeX is visible.)
+ < math > y = \alpha + \beta < /math >
+ <math> y = \alpha + \beta </math>
+
+Others will display with a png image.
+In either case, the software should do the
+right thing automatically.
+ < math >x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}< /math >
+ <math>x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}</math>
+
+<math> \frac{1}{1+\frac{1}{1+\alpha}} </math>
+
+
+== other ways ==
+
+There are a few other ways to input other characters, too:
+HTML special symbols (e.g. "& alpha ;" without
+the spaces and utf-8 characters.  How this shows up
+for you will depend on your browser and available fonts.
+
+Here's the lowercase greek alphabet in utf-8 character.<br>
+(I used the Mac "Show Keyboard Palette" under "Keyboard"
+to type the characters.)<p>
+
+α β γ δ ε ζ η θ ι κλ μ ν ξο π ρ σ ς τ υ φ χ ψ ωϑ ϒ ϕ ϖ 
+
+Or using HTML symbols (e.g. "& alpha ;" without the spaces).
+
+α β γ ...
+
+or within individual math tags
+
+<math>\alpha</math> <math>\beta</math> <math>\gamma</math> ...
+
+or all in one tag
+
+<math> \alpha \beta \gamma </math>
+
+
+

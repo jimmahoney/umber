@@ -1,0 +1,173 @@
+<code><pre id="dir-ls"><% $message %><% $heading %><% $up_link %><% 
+ $ls %><% $form_HTML %></code></pre>
+%
+%## -- debug --
+%# <hr />
+%# <code><pre>
+%#  directory = '<% $directory %>'
+%#  uri       = '<% $uri %>'
+%#  parent    = '<% $parent %>'
+%#  upload    = '<% $upload %>'
+%#  action    = '<% $action %>'
+%#  submit_up = '<% $submit_upload %>'
+%#  submit_new_dir = '<% $submit_new_dir %>'
+%#  new_dir_name   = '<% $new_dir_name %>'
+%#  new_directory  = '<% $new_directory %>'
+%# </pre></code>
+%# <hr />
+%#
+%# <pre>
+%#  $files = <% describe($files) %>
+%# </pre>
+%# ===========================================================
+%
+<%args>
+  $directory              # full path to directory to display    (required)
+  $uri                    # base uri of directory                (required)
+  $parent  => 0           # true to show link to parent directory
+  $upload  => ''          # 'attachment' or 'file' to show 'New *' form
+  $action  => ''          # for reloading page showing same "edit" or whatever
+  $submit_upload => undef # at least '' when user clicks upload button
+  $submit_folder => ''    # True when 'new folder' is clicked.
+  $folder_name   => ''    # name of new folder to create
+</%args>
+%
+<%init>
+  my $mark_new;
+
+  # make sure uri for this directory ends in /
+  $uri .= '/' unless $uri =~ m{/$};
+  my ($new_file, $message);
+ 
+  if ($submit_folder){
+    my $folder = $directory . '/' . name2uriname($folder_name); 
+    my $error = $page->make_directory($folder);
+    if ($error){
+      $page->add_error("Oops: problem creating folder '$folder' : $error");
+    }
+    else {
+      $mark_new = $folder;
+    }
+  }
+ 
+  if (defined $submit_upload){
+    $new_file = $page->upload;
+    unless ($new_file){
+      my $post_max = $ENV{WA_POST_MAX}/2**20;
+      $message = qq[<span id="oops-text">Oops</span>
+  <span id="oops-msg">The $upload upload failed.  
+  Did you choose a file?  
+  Is the file size under $post_max Megabytes?</span>\n];
+    }
+    else {
+      $mark_new = $submit_upload;
+      #       $message = qq[
+      # <div>The file upload was successful.</div>
+      # ];
+    }
+  }
+
+  my $icon_dir = '/icons'; # built into apache
+  my ($heading, $up_link, $ls, $form_HTML);
+  my $files  = list_files($directory);
+  my $maxchars = 8;
+  for my $file (@$files){
+    my $length = length($file->{filename});
+    $maxchars = $length if $maxchars < $length;
+  }
+  my $mc = $maxchars + 4;
+  my $src = qq{src="$icon_dir/blank.gif"};
+  my $alt = qq{alt="     "};
+  if ($parent or @$files){
+    $heading = sprintf( "<img $src $alt /> %-${mc}s  %-20s    %-10s\n<hr/>", 
+			'name', 'last modified', '  size');
+  }
+  if ($parent){
+    (my $up_uri = $uri) =~ s{[^/]+/$}{};
+    $up_link = qq{<img src="$icon_dir/back.gif" alt="[DIR]">} 
+             . qq{ <a href="$up_uri">Parent directory</a>\n};
+  }
+  for my $file (@$files){
+    $src = qq{src="$icon_dir/} . $file->{icon} . '"';  #  ' syntax_hilite
+    $alt = 'alt="' . $file->{alt} . '"';
+    $ls .= sprintf("<img $src $alt /> %-${mc}s  %-20s    %-10s\n",
+        $file->{filename}, $file->{modified}, $file->{size});
+    if ($file->{filename} eq $mark_new){
+      $ls =~ s{\n$}{<span class="upload-new">* new *</span>\n};
+    }
+  }
+  for my $file (@$files){
+    my $name = $file->{filename};
+    (my $link = $name) =~ s{\.wiki$}{};  # remove .wiki from links.
+    $ls =~ s{/> $name}{/><b><a href="$uri$link">$name</a></b>};
+  }
+
+  my $reload = $r->uri . ($action ? "?action=$action" : '');
+  my $space = $upload eq 'file' ? '  ' : '';
+  if ($upload){
+    $form_HTML = qq[
+<form name='upload_form' id='upload_form'
+      method='POST' enctype='multipart/form-data' action="$reload" 
+> New $upload $space<input type='file' name='submit_upload' 
+/> <input type='submit' value='Upload' /></form>];
+  }
+
+  if ($upload eq 'file'){
+    $form_HTML .= qq[
+<form name='folder_form' method='POST' action="$reload"
+> New folder <input  type='input' name='folder_name' 
+/> <input  type='submit' name='submit_folder' value='Create'
+/></form>];
+  }
+
+
+ </%init>
+%
+%# --------------------------------------------------------------------
+%#
+<%doc>
+ $Id: ls.mhtml 2627 2006-08-02 19:44:48Z mahoney $
+
+ ls.mhtml displays a directory listing like this (with action=edit)
+
+  -----------------------------------------------------
+  |                                                   |
+  |  Name         Last modified           Size        |
+  |  -----------------------------------------------  |
+  |  one.txt      Oct  3 2005  6:26 pm     15B        |
+  |                                                   |
+  |  New file   ______________ Browse...  Upload      |
+  |  New folder ______________ Create                 |
+  |                                                   |
+  -----------------------------------------------------
+
+ with sizes like 15B, 2.34kB, 123MB; all 6 chars wide.
+
+ I've put the whole thing in a grey-ish shade
+ to set it apart from the rest of the page's text.
+
+ For comparison, apache's directory style looks like this.
+
+    Name         Last modified         Size
+    ---------------------------------------
+    debug.html   02-Sep-2005 18:32     1k
+
+----------- new directory dialog ------------------
+
+  if ($upload eq 'file'){
+    $upload_form .= qq[<script type="text/javascript">
+ function new_dir(){
+   /* It might be nicer to put this as text in the window eventually. */
+   directory_name = window.prompt(' New subdirectory name : ');
+   window.alert('you said : ' + directory_name);
+   window.location.reload();
+ }
+</script>
+<a href="javascript:new_dir()">New directory</a> ... ];
+  }
+
+--------- new directory form -----------------------
+
+
+</%doc>
+

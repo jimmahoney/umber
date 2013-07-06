@@ -1,0 +1,62 @@
+<h2>search</h2>
+<form name="search_user_form" method="POST" action="<%$r->uri%>">
+<div>
+<input type="text" name="search_user_text" 
+ value="<% $search_user_text %>" size="24" maxlength="64"
+/> <input type="submit" name="submit_search_user" value="search.." />
+</div>
+% if ($message){
+<h3><% $message_title %></h3>
+<div><% $message %></div>
+% }
+</form>
+%# ============================
+<%args>
+ $submit_search_user => ''
+ $search_user_text   => ''
+</%args>
+<%init>
+ my ($message, $message_title);
+ my $is_demo = $session->username =~ m/^(tedteacher|johnsmith|janedoe)$/;
+ if ($submit_search_user){
+   unless ($search_user_text){
+     $message_title = "Oops";
+     $message = 
+       qq{<span color="#8B0000">Please enter a name before searching.</span>};
+   }
+   else {
+     # use Time::HiRes;
+     # my $start = Time::HiRes::time();
+     my $users = GenericPerson->find_matches($search_user_text);
+     # my $elapsed = Time::HiRes::time() - $start;
+     # $message .= sprintf "(find_matches elapsed = %.3f sec)<br/>\n",$elapsed;
+     $message_title = "results";
+     for my $user (@$users){
+       my $detail;
+       next unless $user->username;
+       next if ($is_demo and $user->is_in_ldap);
+       if ($user->is_ldap){
+         my $status = $user->marlboro_status;
+         next if $status =~ m{disabled|alumni|guest};
+         $detail= $status eq 'student' ? $user->class_standing : $status;
+       }
+       $message .= '<a href="?username=' . $user->username . '">' 
+	 . $user->name . '</a> (' . $user->username . ") $detail<br/> ";
+       # . '[ ldap_id=' . $user->ldap_id . '] ' . "<br/>";
+     }
+     $message ||= 
+       qq{No names or usernames found matching *$search_user_text* .};
+     if (scalar @$users > 20){
+       $message .= "<p/>Some results may not be shown;<br/>"
+	 . "please narrow your search.<br/>";
+     }
+   }
+ }
+</%init>
+<%doc>
+ $Id: search_user.mhtml 2627 2006-08-02 19:44:48Z mahoney $
+
+ Display a user search form.
+ Results are links back to the same page with ?username=* set.
+
+</%doc>

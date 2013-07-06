@@ -1,0 +1,3 @@
+= random page =
+
+You want a random number?  OK, here it is: 65289.

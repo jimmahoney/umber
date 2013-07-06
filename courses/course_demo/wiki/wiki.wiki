@@ -1,0 +1,20 @@
+= wiki =
+
+The pages in this directory may be edited by students and faculty.
+
+* To edit this page, click the "edit" tab above.
+* To create a new page, either
+** make a link to it like like [[ some new page ]] this on an existing page and then click on that link, or
+** just type the URI of page you want to create in your browser and go there.
+
+
+== Testing ==
+
+* Here's a [[ random page ]].  So there.
+* Here's a [[ attachment test ]] page.
+* Math markup also works; see [[ math ]] for an example.
+* Here a [[ sandbox ]] page for various playing around.
+
+
+== Your Turn ==
+

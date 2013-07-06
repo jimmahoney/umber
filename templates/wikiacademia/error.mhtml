@@ -1,0 +1,46 @@
+% while (@errors){
+%  my $error = shift @errors;
+%  if ($error =~ m{^([^:]+):(.*)$}){
+%    my ($first, $second) = ($1, $2);
+<div id="oops">
+ <span id="oops-title"><% $first %></span>
+ <% $second %>
+</div>
+%  }
+%  else {
+<div id="oops">
+ <span id="oops-title">Oops</span>
+ <% $error %>
+</div>
+%  }
+% }
+%# =================================================
+<%init>
+  return unless $page->error;
+  my $message = $page->error;
+  my @errors = split(/\s*<p\/>\s*/, $message);
+</%init>
+%# =================================================
+<%doc>
+ $Id: error.mhtml 7 2006-01-13 02:21:11Z mahoney $
+
+ Display non-fatal error, warning, alert, messages as set in $page->error.
+ Called from main.mhtml when $app->page->error is set.
+
+ If the error starts with a single word followed by a colon, e.g.
+ "Warning : Danger, Will Robinson." then the title will be set to that first
+ word; otherwise, the title defaults to "Oops".
+
+ If more than one error has been posted, they're all in the
+ the same string, with <p/> between 'em.
+    
+ The .css sets the background to a pale red and sets the title 
+ in the top left of the box, e.g.
+
+   --------------------------------------
+   |Warning				|
+   |         Danger, Will Robinson.	|
+   |					|
+   --------------------------------------
+
+</%doc>

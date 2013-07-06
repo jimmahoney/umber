@@ -1,0 +1,66 @@
+<% $content %>
+%# ------------------------------------------
+<%args>
+ $action   => ''
+</%args>
+%#
+<%init>
+  my $content;
+  my $header = qq{<h2>editing assignments</h2><div>
+    This special page lets you set the gradeable work for this course.<br/> 
+    An example of the expected format is shown below.
+  </div>\n};
+
+  my $footer = qq{<div>
+Here's an example of the wiki text for an assignments page.
+<div><pre>
+= assignments =
+
+== First Paper == due Sep 13
+* Write a 5 page essay on a topic of your choice.
+* Include references to at least 3 sources.
+
+== Test One == due Friday 1pm
+Expect questions on chapters 1 and 2.
+
+== Final Grade ==
+</pre></div>
+<ul>
+<li>To specify a date and/or time, use the keywords "due".</li>
+<li>The title of the assignment ("First Paper" or "Test One" in the example) 
+ sets the page name for the student's 
+ submitted work, for example "students/john/work/test_one".</li>
+<li>See <a href="/site/dics/not_yet">the documentation</a> 
+ for the details.</li>
+</ul>
+</div>};
+
+  # assignments are based on a file course/special/assignments.wiki, 
+  # and so all the default actions (edit, history, revision) are OK.
+  if ($action){  
+    my $comp = $m->fetch_comp( '../actions/' . $action . '.mhtml');
+    if ($comp){ 
+      $content = $m->scomp( $comp, %ARGS );
+      if ($action eq 'edit'){
+	$content =~ s{^\s*<h2>.*?</h2>}{$header}s;
+	$content =~ s{(<h2>help</h2>)}{$1\n$footer}s;
+      }
+    }	
+    else {
+      $content = '';
+      $page->error("Oops: '$action' is not a valid action.");
+    }
+ }
+ else {
+   $page->lastmodified( epoch2datetime( $page->epoch_last_modified ));
+   # $page->lastmodified( last_modified($m->fetch_next ));
+   # assignments2html has the side effect of updating the sql database
+   # with these assignments, if the text has changed.
+
+   # $content = '<pre>' . $page->text . '</pre>' ;
+   $content = assignments2html($page->text);
+
+ }
+</%init>
+%#
+%# $Id: assignments.mhtml 1883 2006-04-05 20:31:08Z mahoney $

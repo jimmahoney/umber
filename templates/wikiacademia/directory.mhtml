@@ -1,0 +1,20 @@
+<h2 class="directory">Index of <% $name %></h2>
+<& ls.mhtml, %ARGS,
+   directory=>$directory, uri=>$uri, parent=>$up, upload=>$upload &>
+%
+%# ======================================================================
+%
+<%args>
+ $action => ''
+</%args>
+<%init>
+  my $name      = $page->dir . $page->name . ($page->name ? '/' : '');
+  $page->action_tabs([qw( edit current )]);
+  $name ||= '/';
+  my $up        = $name eq '/' ? 0 : 1;
+  my $upload    = $action eq 'edit' && $page->can_write ? 'file' : '';
+  my $directory = $page->filename;
+  my $uri       = $page->uri;
+</%init>
+%
+%# $Id: directory.mhtml 7 2006-01-13 02:21:11Z mahoney $

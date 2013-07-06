@@ -251,6 +251,8 @@ class Course(Base):
     #          start_date, end_date, assignments_md5, active, notes
     # relations: persons, assignments
     __init__ = umber_object_init
+    def uri(self):
+        return ' URI '
                                         
 class Registration(Base):
     # columns: registration_id, person_id, course_id, role_id,

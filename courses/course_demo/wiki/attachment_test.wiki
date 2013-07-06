@@ -1,0 +1,8 @@
+= attachment test =
+
+A page to test out attachments.
+
+To add a new one, click the edit tab at the top 
+(after you're logged in), and then look for the
+attachments block near the bottom.
+

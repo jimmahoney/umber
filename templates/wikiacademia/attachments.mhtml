@@ -1,0 +1,17 @@
+% if ( $page->show_attachments 
+%      and ($page->attachments_exist or $action eq 'edit') ){
+%   my $upload    = $page->can_write ? 'attachment' : '';
+%   my $directory = $page->attachments_directory;
+%   my $uri       = $page->attachments_short_dir . '/';
+<div class="component">
+<h2 class="directory">attachments 
+<img src="<% $ENV{WA_SRC} %>/images/paper_clip_tilt.png" alt="[paper clip]"/></h2>
+<& ls.mhtml, %ARGS, directory=>$directory,uri=>$uri, parent=>0, upload=>$upload &>
+<p />
+</div>
+% }
+<%args>
+ $action => ''
+</%args>
+%# ======================================================================
+%# $Id: attachments.mhtml 7 2006-01-13 02:21:11Z mahoney $

@@ -1,0 +1,42 @@
+<span style="white-space:normal">
+<script type="text/javascript">
+  function set_dir(the_dir){
+    document.getElementById('directory_select').selectedIndex = 0;
+    document.getElementById('chosen_directory').value = the_dir;
+  }
+</script>
+<style type="text/css">
+ #directory_select option {
+   font-family: monospace;
+   white-space: pre;
+ }
+</style>
+<input type="text" name="chosen_directory" id="chosen_directory" 
+         value="<% $chosen_directory %>" size="24" maxlength="64" /> 
+<select id="directory_select">
+ <option selected value="">choose...</option>
+ <option value="/" onClick="set_dir('/')">/</option>
+ <option value="/a" onClick="set_dir(' a')"> a/</option>
+</select>
+</span><%args>
+ $chosen_directory => ''
+</%args><%init>
+</%init>
+<%doc>
+
+ !!! I decided that there were other things I needed to do first,
+ !!! and have postponed this for now.
+
+ A text input box that lets the viewer choose a directory from a menu.
+ See course.mhtml, for example, which uses this component.
+
+  <& $ENV{SRC} . '/scripts/choose_directory.mhtml', %ARGS &>
+  <%args>
+    $chosen_directory => ''
+  </%args>
+  <%init>
+    if ($chosen_directory){ ... }
+  </%init>
+
+</%doc>
+%# $Id: choose_directory.mhtml 7 2006-01-13 02:21:11Z mahoney $

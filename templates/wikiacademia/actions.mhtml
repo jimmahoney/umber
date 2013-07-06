@@ -1,0 +1,145 @@
+% if ( $show_actions and @tabs ){
+<div id="wiki-actions">
+<ul>
+%  for my $tab (@tabs){
+%   if ( $link{$tab} ){
+%     if ($uri{$tab}){
+ <li class="<%$class{$tab}%>"><a href="<%$uri{$tab}%>"><%$link{$tab}%></a></li>
+%     }
+%     else {
+ <li class="<%$class{$tab}%>"><%$link{$tab}%></li>
+%     }
+%   }
+%  }
+</ul>
+</div>
+% }
+%
+%# ======================================================================
+%
+<%args>
+  $action    => ''        # e.g. uri ends with ?action=edit
+  $revision  => ''        # e.g. uri ends with ?action=view&revision=127
+</%args>
+%
+<%init>
+  # uri's like page?revision=234 have an implied action=view
+  # which is set in course_template.mhtml
+  # This next line is therefore just for safety.
+  $action = 'view' if ($revision and not $action);
+
+  my $show_actions = 0; # set below to 1 if user can edit the page.
+  my %class;            # css style classes for action tabs     
+  my %uri;              # what each tab does
+  my %link;             # displayed tab text.  Tab is hidden if false.
+  my @tabs;
+  if ($page->action_tabs){   # special pages may define available tabs.
+    @tabs = @{ $page->action_tabs };
+  }
+  else {
+    @tabs = ('edit', 'history', '&lt;', 'revision', '&gt;', 'current', );
+  }
+  my $base_uri = $r->uri;
+  my $rev_arg = '';
+  my $mod_arg = '';
+  my $uri_head;
+  my $uri_tail;
+  # if ($page->can_write && not $page->is_directory){
+  if ($page->can_write){
+    $show_actions = 1;
+    my $base_uri = $r->uri;
+    my $rev_arg  = $revision ? "revision=$revision" : '';
+
+    if ($action =~ m{edit}){
+      $class{edit} = 'front-yellow';
+    }
+    else {
+      $class{edit} = 'behind-yellow';
+      $uri{edit}   = "$base_uri?action=edit" . ($rev_arg ? "&$rev_arg" : '');
+    }
+    $link{edit} = 'edit';
+
+    if ($action =~ m{history}){
+      $class{history} = 'front';
+    }
+    else {
+      $class{history} = 'behind';
+      $uri{history}   = "$base_uri?action=history";    
+    }
+    $link{history}  = 'history';  # false if no svn versions ?
+
+    # are there actions that still leave current tab in front?
+    # if ($action !~ m{edit|history|view}){  
+    if ($action){
+      $class{current} =  'behind-gap';
+      $uri{current}   = $base_uri;
+    }
+    else {
+      $class{current} =  'front-gap';
+    }
+    $link{current}  = 'current';
+
+    if ($revision){
+      #my $mode = $action eq 'edit' ? 'edit' : 'view';
+      my $action_arg = $action eq 'edit' ? 'action=edit' : '';
+      my ($first, $last, $prev, $next)=$page->revision_summary($revision);
+
+      $class{'&lt;'} = 'behind-gap';
+      $link{'&lt;'} = '&lt;';
+      if ($revision == $first){
+	$uri{'&lt;'} = '';
+	$link{'&lt;'} = '&nbsp;';
+      }
+      else {
+	$uri{'&lt;'}  = "$base_uri?$action_arg&revision=$prev";
+      }
+
+      if ($action =~ m{view}){
+	$class{revision} = 'front';
+      }
+      else {
+	$class{revision} = 'behind';
+	$uri{revision}   = "$base_uri?$rev_arg";
+      }
+      $link{revision}  = "revision $revision";
+
+      $class{'&gt;'} = 'behind';
+      $link{'&gt;'} = '&gt;';
+      if ($revision == $last){
+	$uri{'&gt;'} = '';
+	$link{'&gt;'} = '&nbsp;';
+      }
+      else {
+	$uri{'&gt;'}  = "$base_uri?$action_arg&revision=$next";
+      }
+    }
+  }
+</%init>
+% 
+<%doc>
+ This component displays the various possible editing actions
+ as tabs at the top of the content rectangle, i.e.
+
+            --------  -----------       -----------
+            | edit |  | history | etc.  | current |
+      -----------------------------------         ------
+      | page content                                   |
+      |                                                |
+      --------------------------------------------------
+
+ The "front" tab is the one whose background merges with
+ the page content, suggesting how the page is seen.
+
+ The current possibilities are 
+
+     edit           action=edit
+     history        action=history
+     <              action=prev       view or edit previous revision
+     rev N          action=view       view or edit revision N
+     >              action=next       view or edit next revision
+     current        action not set
+
+ See htdocs/styles/wikiacademia.css for the css style classes.
+
+ $Id: actions.mhtml 7 2006-01-13 02:21:11Z mahoney $ 
+</%doc>

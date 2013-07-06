@@ -1,0 +1,7 @@
+Here I am logged in as Jane Doe, submitting an assignment.
+
+But as Jane, I can't create a page in the home directory
+the way a faculty could.  So this is a silly assignment...
+
+<red>Hi Jane.  Ted Teacher here.  I see that you put something
+in, and agree that's all you could do.  Catch you in class.</red>

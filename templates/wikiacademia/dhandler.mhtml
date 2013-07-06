@@ -1,0 +1,48 @@
+%# <h1><% $page->name %></h1>
+%# <h2 style="color:darkred">Oops</h2>
+<div id="oops">
+<span style="font-size: 133%; position:relative; top:-0.5em;left:-0.5em">Oops</span>
+The page 
+ '<span style="font-weight:bold"><%  $page->dir %><% $page->short_filename %><%
+ $page->extension ? '' : '.wiki' %></span>'
+was not found.
+% if ($page->attachments_exist){
+<br />However, it does have a directory for file attachments.
+% }
+</div>
+
+<& attachments.mhtml, %ARGS &>
+
+%
+%# if ($page->can_write){
+%# <div>
+%# <ul>
+%# <li>To create it,
+%# click on the <b><a href="?action=edit">edit</a></b> tab.</li>
+%# <li>To upload a file, visit a directory such as ...</li>
+%# </div>
+%# % }
+%# %
+%#
+%# <& debug.mhtml, %ARGS &>
+
+%
+%# ===========================
+%
+<%args>
+ $action => ''
+</%args>
+%
+<%init>
+  if ($page->can_write){
+    my $uri = $r->uri . "?action=edit";
+    # If clicking on, say, "logout" button, 
+    # which sets args submit_logout=1, we shouldn't lose that
+    # when we reload.  
+    #
+    $uri .= '&' . $r->args if $r->args;
+    $m->redirect($uri)   
+  }
+</%init>
+%
+%# $Id: dhandler.mhtml 7 2006-01-13 02:21:11Z mahoney $

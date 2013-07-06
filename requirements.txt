@@ -20,7 +20,5 @@ markdown >= 2.0
 # syntax highligting
 Pygments >= 1.6
 
-
-
 # Flask-WTF >= 0.8
 

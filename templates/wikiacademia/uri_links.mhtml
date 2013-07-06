@@ -1,0 +1,40 @@
+<% $HTML %>
+%# ===================
+<%init>
+  my ($HTML, $url);
+  # I bet there's a better way to do this.
+  my $protocol = 'http' . ( $ENV{HTTPS} eq 'on' ? 's' : '' );
+  my $port = $r->get_server_port;
+  my $port_string = (($protocol eq 'http' and $port != 80) or
+                     ($protocol eq 'https' and $port != 443)) ? ":$port" : '';
+  my $args = $r->args ? '?' . $r->args  : '';
+
+  my $append = sub {
+    my $dir = shift;
+    $dir  .= '/' if $dir =~ s{^/}{};  # shift / from beginning to end.
+    $url  .= $dir;
+    $HTML .= qq{<a href="$url">$dir</a> };
+  };
+
+  my $name = $page->name;
+  $append->( $protocol . '://' . $r->hostname . $port_string . '/' );
+  $append->( $ENV{WA_URL} ) if $ENV{WA_URL};
+  $append->( $page->course->directory );
+  my @dirs = split(qr{/}, $page->dir);
+  if ($dirs[-1] eq 'special'){
+    pop(@dirs);
+    $name = 'special/' . $name;
+  }
+  for my $dir (@dirs){
+    $append->( $dir . '/' );
+  }
+  $append->($name . $args);
+
+</%init>
+<%doc>
+ The full uri of this page with links to various directories above it.
+</%doc>
+%#  $Id: uri_links.mhtml 7 2006-01-13 02:21:11Z mahoney $ 
+
+
+

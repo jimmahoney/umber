@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <title>{{ page.title }}</title>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/gif" 
+        href="{{'images/favicon.ico' | static_url}}">
+  <link rel="stylesheet" type="text/css" 
+        href="{{'styles/wikiacademia.css' | static_url}}">
+</head>
+<body>
+<div id="header">
+ <a id="cs-logo" href="/"><img 
+    src="{{'images/cs_m_edu.png' | static_url}}" 
+    alt="computer science @ marlboro.edu" /></a>
+ {% include "sub/login.html" %}
+</div>
+{% include "sub/actions.html" %}
+<div id="column-one">
+ <h1><a href="{{ course.uri }}">{{ course.name_as_title }}</a></h1>
+ <div><div id="semester">{{ course.semester }}</div></div>
+ {% include "sub/navigation.html" %}
+ <div>
+  <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
+     src="{{'images/mc-logo.gif' | static_url }}"></a>
+ </div>
+</div>
+<div id="column-two">
+ <div class="component">
+  {% if page.has_error %}
+    {% include "sub/error.html" %}
+  {% endif %}
+  {% include "sub/work.html" %}
+  {% include "sub/content.html" %}
+  <div id="modified">
+   {{ page.uri_links }}<br>
+  {% if page.lastmodified %}
+    last modified {{ page.lastmodified }}
+  {% endif %}
+  </div>
+ </div>
+ {{ include "sub/attachments.html" }}
+ <div class="footer"> 
+   {{ include "sub/footer.html" }} 
+ </div>
+</div>
+{% if debug %}
+  {{ include "sub/debug.html" }}
+{% endif %}
+</body>
+</html>
+
+
+<!-- 
+
+ sub/login.html
+ sub/actions.html
+ sub/navigation.html
+ sub/error.html
+ sub/work.html
+ sub/content.html
+ sub/attachments.html
+ sub/footer.html
+ sub/debug.html
+
+ Jinja2 also has 'macros' (template functions with arguments which
+ generate html) and which can be loaded from another file, with or
+ without the current context.
+
+ I've seen some suggestions that there's a significant performance hit
+ with 'include'; perhaps the sub/* pieces should be inline or be marcros.
+
+ page.title
+ page.has_error
+ page.has_lastmodified
+ page.lastmodified
+
+ course.uri
+ course.name_as_title
+
+-->

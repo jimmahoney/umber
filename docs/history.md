@@ -52,6 +52,8 @@ All this is currently on my MacPro, OS X 10.8.4 .
 
         # Setup project's source git repo :
         $ git init ; git add * ; git commit -m "initial commit"
+        # See hints at http://rogerdudler.github.io/git-guide/
+        $ git config color.ui true ; git config format.pretty oneline
         # (Workflow after changes will be "git add ...; git commit -m ...".)
 
 ## June 27 ##
@@ -159,6 +161,38 @@ see https://code.google.com/p/python-creole/wiki/CreoleMacros
     >>> creole2html(u'one two <<html>><p>paragraph</p><</html>> three', 
     ...             macros={'html':lambda text='':text})
 
+## July 3 ##
+
+Generated a new random background image, pale tan (i.e. umber) color;
+see images/random_umber.* . (Actually run at cs.marlboro.edu/images/* 
+in old wikiacademia environment.)
+
+## July 5 ##
+
+Look at the available Flask extensions at http://flask.pocoo.org/extensions/ :
+    Flask-Testing, 
+    Flask-Uploads (file uploading), 
+    Flask-WeasyPrint (pdf generation), 
+    Flask-SeaSurf (prevent cross-site request forgery), 
+    Flask-Restless (generate REST APIs), 
+    Flask-Principal (identify management),
+    Flask-Login (via session), 
+    Flask-OpenID, 
+    Flask-Gravatar,
+    Flask-Mako (an alternative to the Jinja2 templates with *real* python),
+    Flask-Mail (sending email),
+    flask-lesscss (css scripting),
+    Flask-FlatPages (flat static pages based on text files),     (??)
+    Flask-DebugToolbar (Django style),
+    Flask-Dashed (admin dashboard inteface),
+    Flask-Cache,
+    Flask-Bcrypt (for hashing passwords),
+    Flask-Assets (webassets library for minifying and compiling CSS and JS),
+    Flask-Admin (admin interface)
+
+Also http://flask.pocoo.org/snippets/ , including security, sessions, 
+authentication, and a lot more.
+
 - - - 
 
 # Thinking / TODO #
@@ -216,3 +250,5 @@ flask : Catch-All URL
 syntax highlighting - pygments @ pygments.org
 
 
+ 
+ 

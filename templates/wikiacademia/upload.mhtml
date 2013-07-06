@@ -1,0 +1,98 @@
+% unless ($filename){
+%# ## THIS ERROR IS NOW REPORTED IN ls.mhtml, NOT HERE ####
+<h1 style="color:darkred">Oops</h1>
+<div>
+The file attachment upload failed.<br/>
+<ul>
+ <li>Did you choose a file?</li>
+ <li>Is size of the file under the <% $post_max %> Megabytes?</li>
+</ul>
+ <div class="indent"><div style="font-size:133%;font-weight:bold%">
+   <a href="<% $r->uri %>">continue</a>
+ </div></div>
+</div>
+% }
+% else {
+<h1><% $page->name %></h1>
+<h2 class="upload">new attachment uploaded</h2>
+<div id="upload">
+The file 
+%# <span class="filename" style="color:darkred"><% $filename %></span>
+<span class="filename"><% $filename %></span>
+has been successfully uploaded<br /> 
+as a new attachment to the page
+<span class="filename">
+<%  $page->dir %><% $page->short_filename %>
+</span>
+% unless ($page->file_exists){
+<br/>even though that page doesn't exist yet.
+<p/>Creating <b><% $page->short_filename %></b> would be a good idea.<br />
+% }
+% else {
+.
+% }
+ <div class="indent"><div style="font-size:133%;font-weight:bold%">
+   <a href="<% $r->uri %>">continue</a>
+ </div></div>
+</div>
+%
+% if (0){   ## Set this to 1 for debugging. ##
+<code><pre>
+name     = '<% $name %>'
+filename = '<% $filename %>'
+size     = '<% $size %>'
+POST_MAX = '<% $ENV{POST_MAX} %>'
+$page = <% describe($page) %>
+$attach_page = <% describe($attach_page) %>
+touch command = '<% $touch_command %>'
+      result  = '<% $touch_command %>'
+---------- uploaded file ---------------------------
+<% $data %>
+----------------------------------------------------
+</code></pre>
+% }
+
+<% $attachments %>
+
+% } # end  unless ($filename) { ...} else {
+%# =======================================
+%
+<%init>
+  my $post_max = $ENV{WA_POST_MAX}/2**20;
+  my $attach_page;
+  # Apache::Request says : 
+  #  "Returns a single Apache::Upload object in scalar context,
+  #   or all of them (?) in list context."
+  my $upload = $Wikiacademia::app->apache_req->upload;
+  my ($data, $name, $filename, $size, $human_bytes, 
+      $touch_command, $touch_result);
+  if ($upload){
+    $name = $upload->name;
+    $filename = $upload->filename;
+    if ($filename){
+      $size = $upload->size;
+      my $fh = $upload->fh;
+      $data = do { local $/=undef; <$fh> };
+      $page->mkdir_attachments;
+      my $full_filename = $page->attachments_directory . '/' . $filename;
+      $attach_page = Wikiacademia::Page->new(filename => $full_filename);
+      $attach_page->write_text($data);
+      $attach_page->archive;
+      my $page_filename = $page->filename;
+      # update page modification date if the file exists,
+      # since an attachment upload should be treated as a change.
+      # Note that this doesn't affect subversion's notion of the 
+      # the current archival version, which (I think) uses checksums, 
+      # not the unix modified date.
+      $touch_command = "/usr/bin/touch -m $page_filename";
+      $touch_result  = `$touch_command` if $page->file_exists;
+    }
+  }
+  $ARGS{new_attachment} = $filename;
+  my $attachments .= $m->scomp('attachments.mhtml', %ARGS);
+</%init>
+%
+<%doc>
+ $Id: upload.mhtml 2627 2006-08-02 19:44:48Z mahoney $
+</%doc>
+

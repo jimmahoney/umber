@@ -1,0 +1,74 @@
+<h1>assignment <% $uriname %></h3>
+% if ($assignment){
+<h2><% $name %> <span class="assign-date"><% $due %></span></h2>
+% }
+<% $blurb %>
+% if (not $active){
+<div id="oops">
+<h3>Warning </h3>
+<div>
+This assignment is <b>not</b> currently listed on the 
+<a href="assignments">assignments</a> 
+or <a href="grades">grades</a> page.<br/>
+Probably its from an earlier version 
+and has since been removed or replaced;<br/>
+see the <a href="assignments?action=history">assignments history</a> 
+page for more information.
+</div>
+</div>
+% }
+% if (not $assignment){
+<div>
+ Perhaps you want the 
+</div>
+% }
+%# ------------------------------------------
+<%args>
+ $id => ''
+</%args>
+%#
+<%init>
+  my ($name, $blurb, $date, $due, $uriname, $active);
+  my $assignment = $id ? Assignment->retrieve($id) : '';
+  if ($assignment){
+    $name = $assignment->name;
+    $uriname = $assignment->uriname;
+    $active = $assignment->active;
+    $blurb = wiki2html($assignment->blurb);
+    $date = $assignment->due;
+    if ($date =~ /\d{4}-\d{2}-\d{2}/){   # eg 2005-11-23
+      $due = ' due ' . sqldate2shortdate($date);
+    }
+  }
+  else {
+    if ($id){
+      $blurb = "<div>An assignment with id=$id could not be found.</div>\n";
+    }
+    else {
+      $blurb= "<div>No assignment id specified.</div>\n";
+    }
+  }  
+</%init>
+%#
+<%doc>
+ $Id: assignment.mhtml 7 2006-01-13 02:21:11Z mahoney $
+
+ Display a single assignment from the database with a given id.
+
+ More typically I'd expect the course navigation to 
+ link to special/assignments.mhtml which shows all the active assignments,
+ as listed in course/special/assignments.wiki; that page and
+ the sql database are (hopefully) in sync.
+
+ This page is called from a link in work.mhtml to display
+ the assignment that corresponds to a given submission.
+
+ Note that if an assignment is removed from assignments.wiki
+ (or renamed, which amounts to the same thing), then
+ the corresponding Assignments sql database object is marked as inactive
+ and won't be seen in the list of assignments at special/assignment.mhtml.
+ However, if a student has submitted work for that inactive assignment,
+ that page can still be viewed, and the link on it can still be used
+ to see the original blurb that the student was responding to.
+
+</%doc>
