@@ -8,4 +8,7 @@
 ##############
 nul
 
+# python installation & libraries
+#################################
+env/*
 
