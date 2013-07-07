@@ -4,6 +4,7 @@
 # sqlite3 >= 3.7
 # virtualenv >= 1.9
 # python >= 2.7
+# openldap >= 2.4.11
 
 # You can install the remaining ones with
 #

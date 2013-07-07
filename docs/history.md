@@ -49,6 +49,7 @@ All this is currently on my MacPro, OS X 10.8.4 .
         $ virtualenv -p python2.7 env  # /opt/local/bin/python2.7 is 2.7.5
         # To move into the local development environment, do
         #   $ . env/bin/activate"
+        # (I typically have 'activate' aliased to that.)
 
         # Setup project's source git repo :
         $ git init ; git add * ; git commit -m "initial commit"
@@ -215,10 +216,14 @@ is already part of python (bitwise or). I don't really buy that
 argument, since that would suggest that the whole filter syntax 
 itself is bogus.
 
+Working on login via Flask-Login, passwords (see model.py comments),
+ldap (started) - slow piecemeal progress; heading towards the 
+main template with user login.
 
+    $ sudo port install openldap
+    $ pip install Python-LDAP
 
-
-
+Installed other python libraries as listed in requirement.txt .
 
 - - - 
 
