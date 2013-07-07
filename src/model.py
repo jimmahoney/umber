@@ -218,8 +218,13 @@ class Umber(object):
         """ Default object representation """
         # e.g. <Person name='Philip J. Fry' id=xxxx>
         try:
-            return "<{} name='{}' id={}>".format(self.__class__.__name__,
-                                                 self.name, id(self))
+            name = self.name
+            if name == None:
+                return "<{} name=None id={}>".format(self.__class__.__name__, 
+                                                     id(self))
+            else:
+                return "<{} name='{}' id={}>".format(self.__class__.__name__,
+                                                     name, id(self))
         except:
             return "<{} id={}>".format(self.__class__.__name__, id(self))
             
@@ -250,6 +255,11 @@ def umber_object_init(self, *args, **kwargs):
     # But I'm unconvinced, and want each new object automatically added
     # to db_session. (Note that db_session.flush() or .commit() is 
     # still required after creating an object before the database is modified.)
+    # db_session.expunge(obj) can undo the .add() before a .commit().
+    #
+    # Objects pulled from the database by the inherited
+    # cls.find_by(...) methods do *not* invoke cls's own __init__
+    # methods ... not the behavior I expected.
     #
     Base.__init__(self, *args, **kwargs)
     db_session.add(self)
@@ -263,24 +273,34 @@ class Person(Base):
     # password scheme from http://flask.pocoo.org/snippets/54/
     def __init__(self, *args, **kwargs):
         umber_object_init(self, *args, **kwargs)
-        self.logged_in = False
     def is_authenticated(self):           # for Flask-Login
-        self.logged_in = True
+        try:
+            return self.logged_in
+        except:
+            return False
     def is_active(self):                  # for Flask-Login
-        return self.is_authenticated():     
+        return self.is_authenticated()
     def is_anonymous(self):               # for Flask-Login
-        return self.__class__.__name__ == 'AnonymousPerson'
+        try:
+            return self.anonymous
+        except:
+            return False
     def get_id(self):                     # for Flask-Login; stored in session
-        return unicode(self.username)
+        if self.username == None:
+            return unicode('')
+        else:
+            return unicode(self.username)
     def set_password(self, passwordtext):
         self.password = generate_password_hash(passwordtext)
         db_session.commit()
     def check_password(self, passwordtext):
         return check_password_hash(self.password, passwordtext)
-        
 
-class AnonymousPerson(Person):
-    pass
+def anonymous_person():
+    anon = Person(name=u'', username=u'')
+    db_session.expunge(anon)   # don't write this one to the database
+    anon.anonymous = True
+    return anon
 
 class Role(Base):
     # columns: role_id, name, rank
@@ -292,7 +312,9 @@ class Course(Base):
     # relations: persons, assignments
     __init__ = umber_object_init
     def uri(self):
-        return ' URI '
+        return '- uri -'
+    def semester(self):
+        return '- semester -'
                                         
 class Registration(Base):
     # columns: registration_id, person_id, course_id, role_id,

@@ -10,8 +10,8 @@ from flask import Flask, request, session, g, redirect, url_for, abort, flash
 from flask.ext.mako import MakoTemplates, render_template
 from flask.ext.login import LoginManager, login_user, logout_user
 from src.settings import secret_key, project_path
-from src.model import db_session, populate_db, \
-     Person, AnonymousPerson, Role, Course, Registration, Assignment, Work
+from src.model import db_session, populate_db, anonymous_person, \
+     Person, Role, Course, Registration, Assignment, Work
 from src.page import Page
 from datetime import timedelta
 
@@ -19,15 +19,14 @@ app = Flask('umber')
 MakoTemplates(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.anonymous_user = AnonymousPerson
+login_manager.anonymous_user = anonymous_person
 
 @login_manager.user_loader
-def load_user(username):
-    """ Return Person corresponding to unicode userid, or None if invalid. """
-    # load user from id stored in the session
+def load_user(user_session_id):
+    """ Return Person corresponding to unicode session id, or None. """
     # see flask-login.readthedocs.org/en/latest/#flask.ext.login.LoginManager
     try:
-        user = Person(username=username)
+        user = Person(username = user_session_id)
     except:
         user = None
     return user
@@ -57,14 +56,14 @@ def load_user():
     g.bar = 'BAR'                                    # global variable
 
 @app.route('/testing')
-def testing():
+def testingroute():
     return render_template('misc/testing.html',        # template
                            name = 'index',
                            foo = 'foolish'           # context variables
         )
 
 @app.route('/umber/<path:path>', methods=['GET', 'POST'])
-def main():
+def mainroute(path):
     # The Flask global variables available by default within
     # within template contexts by are 
     #   config (but not in mako?)
@@ -73,24 +72,22 @@ def main():
     # all of which are also within global app.*
     # Also see template_context(), which can set more template globals.
     if request.method == 'POST':
-        do_something()
+        handle_post()
     return render_template('main.html', 
                            name ='main',
-                           page = Page(path=path), 
+                           page = Page(path=path),
                            course = Course(),
+                           debug = app.debug
         )
 
-def do_something():
+def handle_post():
     """ login, modify file, ... """
     pass
 
 def setup():
     app.secret_key = secret_key
-    app.session_cookie_name = __name__ + '_session'
+    app.session_cookie_name = 'umber_session'
     app.permanent_session_lifetime = timedelta(days=1)
-    ## use Flask-Login patterns for this
-    #session.permanent = True  # error : working outside of request context
-    #session['username'] = ''
 
 if __name__ == '__main__':
     setup()

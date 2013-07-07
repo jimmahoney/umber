@@ -60,7 +60,7 @@
 ****/  
 
 body { 
-  background: #f9fcf9 url('../images/random_umber.png') 0px 0px no-repeat;
+  background: #f9fcf9 url('../images/random_umber.png') 0px 0px repeat;
   /* font: x-small serif; */                          /* start too small */
   /* font: x-small sans-serif; */
   margin: 0;

@@ -50,8 +50,16 @@
     <div> g.bar = ${g.bar | h} </div>
     <div> session = ${session | h} </div>
     <div> request = ${request | h} </div>
+    <div> context = ${context | h}<br>
+          dir(context) = ${dir(context) | h}<br>
+          context.keys() = ${context.keys() | h}<br>
+          context.kwargs = ${context.kwargs | h}
+
+    </div>
+
     <div> static_url() : ${static_url('styles/wikiacademia.css')} </div>
     <div> { | static_url} : ${'styles/wikiacademia.css' | static_url} </div>
+
  
     <footer>
       <p>

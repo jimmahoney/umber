@@ -19,6 +19,7 @@ Pygments >= 1.6
 Flask-Mako >= 0.2
 Flask-Login >= 0.2.5
 Python-LDAP >= 2.4.13
+PyYAML >= 3.10
 
 
 # Flask-WTF >= 0.8
