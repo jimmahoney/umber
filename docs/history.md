@@ -228,7 +228,7 @@ Installed other python libraries as listed in requirement.txt .
 See stackoverflow.com/questions/82831/how-do-i-check-if-a-file-exists-using-python
 for thinking about checking .access.yaml files. Also PyYAML.
 
-Have working mainroute at commit 'main.html with mako works'.
+Have working mainroute at commit 'main.html with mako works' at [master 6e79ed0].
 
 - - - 
 
