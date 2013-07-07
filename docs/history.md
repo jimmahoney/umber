@@ -193,6 +193,33 @@ Look at the available Flask extensions at http://flask.pocoo.org/extensions/ :
 Also http://flask.pocoo.org/snippets/ , including security, sessions, 
 authentication, and a lot more.
 
+I think that I'd rather use Mako than Jinja2 for templating,
+and I haven't gone so far that changing should be too much work;
+see http://www.makotemplates.org/. Besides using a language 
+much closer to real python, it also is reminiscent of Mason,
+including the leading % signs for code.
+
+## July 6 ##
+
+The Mako templates work, but the error handling sucks.
+
+The generated flask error page - which worked great 
+for the jinja2 templates - is fairly useless for Mako.
+This is a significant hit against an otherwise nice 
+template engine.
+
+Also, the mako filter syntax is ugly : ${a | filter1, filter2} rather
+than what anyone familiar with filters (i.e. unix pipes) would expect,
+${a | filter1 | filter2} .  One explanation in the comments is that |
+is already part of python (bitwise or). I don't really buy that
+argument, since that would suggest that the whole filter syntax 
+itself is bogus.
+
+
+
+
+
+
 - - - 
 
 # Thinking / TODO #
@@ -249,6 +276,7 @@ flask : Catch-All URL
  
 syntax highlighting - pygments @ pygments.org
 
+LDAP - http://www.python-ldap.org/docs.shtml
 
  
  

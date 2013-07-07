@@ -4,10 +4,21 @@
 
  --- examples / tests ---
  
- (To run the following examples as tests do "python model.py".
- The database must exist already; see create_umber_db.sql for the sqlite
- schemas and init_db for database initialization, both in ../database/.)
- 
+ To initialize the database and run the tests from the command line :
+
+   $ pwd
+   .../umber
+   $ . env/bin/activate
+   (env)$ cd database; ./init_db; cd ..
+   copying previous database to umber.db_old
+   initializing umber.db
+   (env)$ python src/model.py -v
+   ...
+   Test passed.
+
+ The tests and manual database changes can also be run in the console;
+ run ./console from the umber directory.
+   
  >>> populate_db()
  Populating database with default Roles and test data.
  
@@ -95,13 +106,20 @@
           # and so on )
  and then use 'autoload' (see below) to generate the Person.username 
  and similar object interfaces.
-   
- """
+
+ The Person and AnonymousPerson classes are consistent
+ with Flask-Login's expectations.
+
+ python-ldap may also be used for authentication,
+ in addition to the password hashes in the database.
+ 
+"""
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from settings import project_path
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db_path = 'sqlite:///' + project_path + '/database/umber.db'
 db_engine = create_engine(db_path, convert_unicode = True)
@@ -240,8 +258,30 @@ class Person(Base):
     # columns: person_id, ldap_id, username, firstname, lastname, email,
     #          password, crypto, notes
     # relations: courses, works
-    __init__ = umber_object_init
+    # implements Flask-Login's 'User Class' 
+    #   with is_authenticated(), is_active(), is_anonymous(), get_id()
+    # password scheme from http://flask.pocoo.org/snippets/54/
+    def __init__(self, *args, **kwargs):
+        umber_object_init(self, *args, **kwargs)
+        self.logged_in = False
+    def is_authenticated(self):           # for Flask-Login
+        self.logged_in = True
+    def is_active(self):                  # for Flask-Login
+        return self.is_authenticated():     
+    def is_anonymous(self):               # for Flask-Login
+        return self.__class__.__name__ == 'AnonymousPerson'
+    def get_id(self):                     # for Flask-Login; stored in session
+        return unicode(self.username)
+    def set_password(self, passwordtext):
+        self.password = generate_password_hash(passwordtext)
+        db_session.commit()
+    def check_password(self, passwordtext):
+        return check_password_hash(self.password, passwordtext)
         
+
+class AnonymousPerson(Person):
+    pass
+
 class Role(Base):
     # columns: role_id, name, rank
     __init__ = umber_object_init
@@ -318,25 +358,25 @@ def populate_db():
     student = Role.find_by(name = 'student')
     faculty = Role.find_by(name = 'faculty')    
     jane = Person.find_or_create(username = 'janedoe',
-                                 password = 'test',
                                  firstname = 'Jane',
                                  lastname = 'Doe',
                                  name = 'Jane Q. Doe',
                                  email = 'janedoe@fake.address')
+    jane.set_password('test')
     john = Person.find_or_create(username = 'johnsmith',
-                                 password = 'test',
                                  firstname = 'John',
                                  lastname = 'Smith',
                                  name = 'Johnny Smith',
                                  email = 'johnsmith@fake.address')
+    john.set_password('test')
     tedt = Person.find_or_create(username = 'tedteacher',
-                                 password = 'test',
                                  firstname = 'Ted',
                                  lastname = 'Teacher',
                                  name = 'TedTeacher',
                                  email = 'ted@fake.address')
+    tedt.set_password('test')
     democourse = Course.find_or_create(name = 'Demo Course',
-                                       directory = '/course_demo',
+                                       directory = '/demo_course',
                                        start_date = '2006-01-01')
     db_session.commit()
     Registration.find_or_create(person_id = john.person_id,
@@ -383,13 +423,6 @@ if __name__ == "__main__":
 -- initialize database & run tests --
     
 thirty-two:~$ cd academics/umber/
-thirty-two:umber$ pwd
-/Users/mahoney/academics/umber
-thirty-two:umber$ . env/bin/activate
-(env)thirty-two:umber$ cd database; ./init_db; cd ..
-copying previous database to umber.db_old
-initializing umber.db
-(env)thirty-two:umber$ python src/model.py -v
 Trying:
     populate_db()
 Expecting:
@@ -472,7 +505,7 @@ ok
   13 tests in __main__
 13 tests in 21 items.
 13 passed and 0 failed.
-Test passed.
+
 (env)thirty-two:umber$ 
 
 """

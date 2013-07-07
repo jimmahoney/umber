@@ -1,55 +1,54 @@
 <!doctype html>
 <html>
 <head>
-  <title>{{ page.title }}</title>
+  <title>${ page.title }</title>
   <meta charset="utf-8">
   <link rel="icon" type="image/gif" 
-        href="{{'images/favicon.ico' | static_url}}">
+        href="${'images/favicon.ico' | static_url}">
   <link rel="stylesheet" type="text/css" 
-        href="{{'styles/wikiacademia.css' | static_url}}">
+        href="${'styles/wikiacademia.css' | static_url}">
 </head>
 <body>
 <div id="header">
  <a id="cs-logo" href="/"><img 
-    src="{{'images/cs_m_edu.png' | static_url}}" 
+    src="${'images/cs_m_edu.png' | static_url}" 
     alt="computer science @ marlboro.edu" /></a>
- {% include "sub/login.html" %}
+ <%include file="sub/login.html" **context.kwargs />
 </div>
-{% include "sub/actions.html" %}
+<%include file="sub/actions.html" **context.kwargs />
 <div id="column-one">
- <h1><a href="{{ course.uri }}">{{ course.name_as_title }}</a></h1>
- <div><div id="semester">{{ course.semester }}</div></div>
- {% include "sub/navigation.html" %}
+ <h1><a href="${ course.uri }">${ course.name_as_title }</a></h1>
+ <div><div id="semester">${ course.semester }</div></div>
+ <%include file="sub/navigation.html" **context.kwargs />
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
-     src="{{'images/mc-logo.gif' | static_url }}"></a>
+     src="${'images/mc-logo.gif' | static_url }" /></a>
  </div>
 </div>
 <div id="column-two">
  <div class="component">
-  {% if page.has_error %}
-    {% include "sub/error.html" %}
-  {% endif %}
-  {% include "sub/work.html" %}
-  {% include "sub/content.html" %}
+  % if page.has_error:
+    <%include file="sub/error.html" **context.kwargs />
+  % endif
+  <%include file="sub/work.html" **context.kwargs />
+  <%include file="sub/content.html" **context.kwargs />
   <div id="modified">
-   {{ page.uri_links }}<br>
-  {% if page.lastmodified %}
-    last modified {{ page.lastmodified }}
-  {% endif %}
+   ${ page.uri_links }<br />
+  % if page.lastmodified:
+    last modified ${ page.lastmodified }
+  % endif
   </div>
  </div>
- {{ include "sub/attachments.html" }}
+ <%include file="sub/attachments.html" **context.kwargs />
  <div class="footer"> 
-   {{ include "sub/footer.html" }} 
+   <%include file="sub/footer.html" **context.kwargs />
  </div>
 </div>
-{% if debug %}
-  {{ include "sub/debug.html" }}
-{% endif %}
+% if debug:
+  <%include file="sub/debug.html" **context.kwargs />
+% endif
 </body>
 </html>
-
 
 <!-- 
 
@@ -63,12 +62,12 @@
  sub/footer.html
  sub/debug.html
 
- Jinja2 also has 'macros' (template functions with arguments which
- generate html) and which can be loaded from another file, with or
- without the current context.
+ I'm using Mako rather than Jinja2 for a template engine.
+ Some of these 'include' components may want to be in
+ another perhaps functional form, but for now I'll try this.
 
- I've seen some suggestions that there's a significant performance hit
- with 'include'; perhaps the sub/* pieces should be inline or be marcros.
+ Mako seems much more Mason-ish, including argument declarations
+ for template files in a <%page > tag.
 
  page.title
  page.has_error
