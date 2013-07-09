@@ -4,8 +4,9 @@
 *.pyc
 
 
-# mac glitches
+# mac stuff
 ##############
+.DS_Store/*
 nul
 
 # python installation & libraries
