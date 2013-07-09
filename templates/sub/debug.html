@@ -1,1 +1,65 @@
-- debug -
+<div style='background-color:AliceBlue; 
+            border:1px solid black; 
+            float:right; padding: 0.2em 2em'>
+  <h2>debug</h2>
+  context.keys() = ${ context.keys() | h}
+  <hr>
+  ${show('session')}
+  ${show('request')}
+  ${show('current_user')}
+  ${show('page')}
+  ${show('course')}
+  <hr>
+  get_flashed_messages() = ${get_flashed_messages() | h}
+</div>
+
+<%def name="show(variable)">
+  ##${ context.keys() }
+  <h4>${variable}</h4>
+  ${ context[variable] | h}<br>
+  % if 'keys' in dir(context[variable]):
+  %   for key in context[variable].keys():
+        &nbsp; ${variable}[${key}] = ${context[variable][key] | h}<br>
+  %   endfor
+  % endif
+  % if False:
+  %   if '__dict__' in dir(context[variable]):
+  %     for key in context[variable].__dict__:
+        &nbsp; ${variable}.${key} = ${context[variable].__dict__[key] | h} <br>
+  %     endfor
+  %   endif
+  % endif
+  % if True:
+  % if variable == 'request':
+    &nbsp; request.url = ${request.url | h} <br>
+    &nbsp; request.host = ${request.host | h} <br>
+    &nbsp; request.url_root = ${request.url_root | h} <br>
+    &nbsp; request.base_url = ${request.base_url | h} <br>
+    &nbsp; request.path = ${request.path | h} <br>
+    ## &nbsp; request.full_path = ${request.full_path | h} <br>
+    &nbsp; request.endpoint = ${request.endpoint | h} <br>
+    &nbsp; request.is_secure = ${request.is_secure | h} <br>
+    ## &nbsp; request.cookies = ${request.cookies | h} <br>
+  % endif
+  % if variable == 'current_user':
+    &nbsp; current_user.username = ${current_user.username | h} <br>
+    &nbsp; current_user.person_id = ${current_user.person_id | h} <br>
+    &nbsp; current_user.name = ${current_user.name | h} <br>
+    &nbsp; current_user.role = ${current_user.role | h} <br>
+    &nbsp; current_user.password = ${current_user.password | h} <br>
+    &nbsp; current_user.is_authenticated() = ${current_user.is_authenticated() | h} <br>
+    &nbsp; current_user.is_anonymous() = ${current_user.is_anonymous() | h} <br>
+  % endif
+  % if variable == 'page':
+    &nbsp; page.coursepath = ${page.coursepath | h} <br>
+    &nbsp; page.insecure_login = ${page.insecure_login | h} <br>
+    &nbsp; page.secure_url = ${page.secure_url | h} <br>
+    &nbsp; page.has_lastmodified = ${page.has_lastmodified | h} <br>
+    &nbsp; page.lastmodified = ${page.lastmodified | h} <br>
+  % endif
+  % if variable == 'course':
+    &nbsp; course.name = ${course.name | h} <br>
+  % endif
+  % endif
+  ## dir(${variable}) = ${dir(context[variable]) | h}
+</%def>

@@ -6,17 +6,23 @@
   <link rel="icon" type="image/gif" 
         href="${'images/favicon.ico' | static_url}">
   <link rel="stylesheet" type="text/css" 
-        href="${'styles/wikiacademia.css' | static_url}">
+        href="${'styles/umber.css' | static_url}">
 </head>
 <body>
-<div id="header">
+<div id="header">                          <!-- start header -->
  <a id="cs-logo" href="/"><img 
     src="${'images/cs_m_edu.png' | static_url}" 
     alt="computer science @ marlboro.edu" /></a>
- <%include file="sub/login.html" args="**context.kwargs" />
-</div>
+ % if current_user.is_authenticated() :
+  <%include file="sub/after_login.html" args="**context.kwargs" />
+ % elif request.is_secure or page.insecure_login :
+  <%include file="sub/form_login.html" args="**context.kwargs" />
+ % else :
+  <%include file="sub/before_login.html" args="**context.kwargs" />
+ % endif
+</div>                                     <!-- end header -->
 <%include file="sub/actions.html" args="**context.kwargs" />
-<div id="column-one">
+<div id="column-one">                      <!-- start column-one -->
  <h1><a href="${ course.uri() }"> ${ course.name_as_title }</a></h1>
  <div><div id="semester"> ${ course.semester() } </div></div>
  <%include file="sub/navigation.html" args="**context.kwargs" />
@@ -24,9 +30,9 @@
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
      src="${'images/mc-logo.gif' | static_url }" /></a>
  </div>
-</div>
-<div id="column-two">
- <div class="component">
+</div>                                     <!-- end column-one -->
+<div id="column-two">                      <!-- start column-two -->
+ <div class="component">                     <!-- start component -->
   % if page.has_error:
     <%include file="sub/error.html" args="**context.kwargs" />
   % endif
@@ -38,45 +44,14 @@
     last modified ${ page.lastmodified }
   % endif
   </div>
- </div>
+ </div>                                       <!-- end component -->
  <%include file="sub/attachments.html" args="**context.kwargs" />
- <div class="footer"> 
+ <div class="footer">                         <!-- start footer -->
    <%include file="sub/footer.html" args="**context.kwargs" />
- </div>
-</div>
+ </div>                                       <!-- end footer -->
+</div>                                      <!-- end column-two -->
 % if debug:
   <%include file="sub/debug.html" args="**context.kwargs" />
 % endif
 </body>
 </html>
-
-<!-- 
-
- sub/login.html
- sub/actions.html
- sub/navigation.html
- sub/error.html
- sub/work.html
- sub/content.html
- sub/attachments.html
- sub/footer.html
- sub/debug.html
-
- I'm using Mako rather than Jinja2 for a template engine.
- Some of these 'include' components may want to be in
- another perhaps functional form, but for now I'll try this.
-
- Mako seems much more Mason-ish, including argument declarations
- for template files in a page tag.
-
- page.title
- page.uri_links
- page.has_error
- page.has_lastmodified
- page.lastmodified
-
- course.uri
- course.name_as_title
- course.semester
-
--->

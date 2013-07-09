@@ -230,6 +230,49 @@ for thinking about checking .access.yaml files. Also PyYAML.
 
 Have working mainroute at commit 'main.html with mako works' at [master 6e79ed0].
 
+## July 9 ##
+
+Mucking about with login, which is (after a lot of trial and error)
+now working. New role-based icons are in place.
+
+The Mako templating system is, I'm afraid, more of a disappointment
+than I'd expected. While it's close to python, it isn't really 
+python: endif and endfor required to stop blocks; context of 
+variables not obvious (i.e. "x=5" just crashes, since one
+can just introduce a new variable into the context) and caching
+trickiness means that capture() etc may be needed to do things
+which seem straightforward.
+
+The biggest problem is debugging - template errors are not reported in
+a way that is at all helpful - the whole template either succeeds or
+(mysteriously) fails. Flask's built-in templating system handles
+this much, much beter, as I remember.
+
+The notion of arguments sent to templates is an idea that I like - and
+used in Mason - but so far I'm just passing the entire context anyway.
+With Mason, that let me test subcomponents independently. But here,
+I'd need to set up separate routes for that (since I'm using 'include'
+and not inheritance, since my dispatch is 'course' and not just URL
+based), and so the subcomponents can't be tested/run as smaller 
+pieces ... and thus lose much of their value.
+
+The project is moving towards the model of Flask-Login and the more
+typical "code-in-the-model" or "code-in-the-controller", so the
+smaller components are not as independent as in the Mason case,
+where I had the submission handling was bundled with the forms.
+
+For now I'll stick with Mako anyway. But.
+
+Next: courses, files, pages, folder permissions and all that.
+
+I think that this time around I will have a Folder object in the
+database, with all permissions there rather than in the (slow)
+.access.yaml files I used before.
+
+That means, though, that'll I think I'll need a database-side
+infrastructure to automatically add/remove folders and 
+permissions if the file structure has changed.
+
 - - - 
 
 # Thinking / TODO #
@@ -288,5 +331,24 @@ syntax highlighting - pygments @ pygments.org
 
 LDAP - http://www.python-ldap.org/docs.shtml
 
- 
- 
+
+- - - -
+
+icons
+
+iconarchive.com
+
+http://www.iconarchive.com/show/farm-fresh-icons-by-fatcow/user-student-icon.html
+user-student-icon.png : CC Attribution license
+
+http://www.iconarchive.com/show/oxygen-icons-by-oxygen-icons.org/Categories-applications-education-university-icon.html
+
+iconarchive.com/show/pretty-office-10-icons-by-custom-icon-design/Professor-icon.html
+license : free non-commercial ; "Custom Icon Design"
+Professor Teacher-male, Teacher-female, Graduate-female, Graduate-male, Graduate-academic-cap
+
+http://www.shutterstock.com/pic.mhtml?id=113398258
+school people icons
+
+User-icon.png - "mini icons" from "Custom Icon Design" ; free for noncommercial
+http://www.iconarchive.com/show/mini-icons-by-custom-icon-design/User-icon.html

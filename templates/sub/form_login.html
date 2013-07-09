@@ -1,0 +1,11 @@
+<div id="login"> <!-- start login -->
+<form class="login" name="login" method="POST" action="${page.path}" >
+ <ul>
+  <li class="first any">user <input name="username" type="text"     size="16"  /></li>
+  <li class="rest">pass <input name="password" type="password" size="16"  /></li>
+  <li class="rest"><input name="submit_login" type="submit" value="log in"/></li>
+ </ul>
+ <div class="error"> ${ message() }</div>
+</form>
+</div>           <!-- end login -->
+

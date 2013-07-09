@@ -296,9 +296,15 @@ class Person(Base):
     def check_password(self, passwordtext):
         return check_password_hash(self.password, passwordtext)
 
+    def set_status(self, logged_in=True, role=''):
+        """ Set nondatbase data """
+        self.logged_in = logged_in
+        self.role = role
+    
 def anonymous_person():
     anon = Person(name=u'', username=u'')
     db_session.expunge(anon)   # don't write this one to the database
+    anon.set_status(logged_in=False, role='any')
     anon.anonymous = True
     return anon
 
