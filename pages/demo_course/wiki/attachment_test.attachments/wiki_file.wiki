@@ -1,7 +1,0 @@
-= attachment with wiki formatting =
-
-This file has a .wiki extension, and so it's displayed 
-using wiki markup ... which also means that it can 
-be edited online, and even have it's own attachments.
-
-Go figure.

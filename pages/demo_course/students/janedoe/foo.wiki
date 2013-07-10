@@ -1,7 +1,0 @@
-= foo =
-
-This is foo.
-
-== ok? ==
-And this is still foo.
-

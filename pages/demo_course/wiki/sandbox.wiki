@@ -1,8 +1,0 @@
-= sandbox =
-
-<red>This block of text is red.</red>
-
- And this
-  is in a yellow box.
-
-Are we having fun yet?

@@ -2,9 +2,10 @@
 
 This is a demonstration course for the Wikiacademia web application.  
 
-To try out the system, you'll need to log in as either a faculty member, student, or guest using one of the accounts listed below.  Check out the [[ special/assignments ]] page 
-for suggestions of things to try, 
-and the [[ //help ]] for assistance.
+To explore you'll need to log in as either a faculty
+member, student, or guest using one of the accounts listed below.
+Check out the [[ special/assignments ]] page for suggestions of things
+to try, and the [[ //help ]] for assistance.
 
 Regards,
 
@@ -17,5 +18,5 @@ Regards,
  tedteacher | teach    | role=faculty in courses/course_demo
  janedoe    | test     | role=student in courses/course_demo
  johnsmith  | test     | role=student in courses/course_demo
- guest      | guest    | role=guest
+
 
