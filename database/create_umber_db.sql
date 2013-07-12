@@ -77,7 +77,7 @@ CREATE TABLE Course (
   course_id INTEGER PRIMARY KEY NOT NULL ,
   name TEXT NOT NULL DEFAULT '_anonymous_',
   name_as_title TEXT NOT NULL DEFAULT '',
-  directory TEXT UNIQUE NOT NULL DEFAULT '_unknown_',
+  path TEXT NOT NULL DEFAULT '',
   start_date TEXT NOT NULL DEFAULT '1900-01-01',
   end_date TEXT NOT NULL DEFAULT '1901-01-01',
   assignments_md5 TEXT NOT NULL DEFAULT '',
@@ -135,7 +135,7 @@ CREATE TABLE Assignment (
 -- Work is a what a student submits (or uploads) for an Assignment,
 -- or where faculty comment on what the student has done.
 -- Each corresponds to a wiki page that only one student and the faculty
--- can see, namely course_name/students/username/work/assignment_uriname.wiki
+-- can see, namely course_name/students/username/assignment_uriname.wiki
 -- The 'submitted' field holds the 
 -- DATETIME (in mysql is e.g. "2001-11-02 13:22:01") 
 -- that the work was submitted; 
@@ -159,3 +159,31 @@ CREATE TABLE Work (
   notes TEXT NOT NULL DEFAULT ''
 );
 
+---
+--- Directory corresponds a disk folder, 
+--- and keeps track of which course its in and its permissions.
+---
+CREATE TABLE Directory (
+  directory_id INTEGER PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL DEFAULT '',
+  course_id INTEGER NOT NULL DEFAULT 0
+   CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
+  parent_id INTEGER DEFAULT NULL
+   CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
+);
+
+---
+--- Permission enables read and/or write access to Directories.
+---
+---
+CREATE TABLE Permission (
+ permission_id INTEGER PRIMARY KEY NOT NULL,
+ read INTEGER NOT NULL DEFAULT 0,
+ write INTEGER NOT NULL DEFAULT 0,
+ directory_id INTEGER NOT NULL DEFAULT 0
+   CONSTRAINT fk_directory_directory_id REFERENCES Directory(directory_id),
+ role_id INTEGER DEFAULT NULL
+   CONSTRAINT fk_role_role_id REFERENCES Role(role_id),
+ person_id INTEGER DEFAULT NULL
+   CONSTRAINT fk_person_person_id REFERENCES Person(person_id)
+);

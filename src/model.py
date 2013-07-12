@@ -118,10 +118,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from settings import project_path
+from settings import project_os_path, pages_os_root, pages_url_root
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
-db_path = 'sqlite:///' + project_path + '/database/umber.db'
+db_path = 'sqlite:///' + project_os_path + '/database/umber.db'
 db_engine = create_engine(db_path, convert_unicode = True)
 db_session = scoped_session(sessionmaker(autocommit = False, 
                                          autoflush = False, 
@@ -267,7 +268,7 @@ def umber_object_init(self, *args, **kwargs):
 class Person(Base):
     # columns: person_id, ldap_id, username, firstname, lastname, email,
     #          password, crypto, notes
-    # relations: courses, works
+    # relations: courses, works, registrations
     # implements Flask-Login's 'User Class' 
     #   with is_authenticated(), is_active(), is_anonymous(), get_id()
     # password scheme from http://flask.pocoo.org/snippets/54/
@@ -302,32 +303,53 @@ class Person(Base):
         self.role = role
     
 def anonymous_person():
-    anon = Person(name=u'', username=u'')
+    anony = Person(name=u'', username=u'')
     db_session.expunge(anon)   # don't write this one to the database
-    anon.set_status(logged_in=False, role='any')
-    anon.anonymous = True
-    return anon
+    anony.set_status(logged_in=False, role='any')
+    anony.anonymous = True
+    return anony
 
 class Role(Base):
     # columns: role_id, name, rank
     __init__ = umber_object_init
-                            
+    def get_slate(self):
+        return (Role.get_by(name='admin'),
+                Role.get_by(name='faculty'),
+                Role.get_by(name='student'),
+                Role.get_by(name='guest'),                
+                Role.get_by(name='all'))
+
 class Course(Base):
-    # columns: course_id, name, name_as_title, directory, credits,
+    # columns: course_id, name, name_as_title, path, credits,
     #          start_date, end_date, assignments_md5, active, notes
-    # relations: persons, assignments
-    __init__ = umber_object_init
+    # relations: persons, assignments, directories, root
+    def __init__(self, *args, **kwargs):
+        umber_object_init(self, *args, **kwargs)
+        
     def uri(self):
         return '- uri -'
     def semester(self):
         return '- semester -'
-                                        
+    def init_directories(self):
+        """ create this course's default directories and permissions. """
+        root_os_path = os.path.join(project_os_path, pages_os_root, self.path)
+        (admin, faculty, student, guest, anon) = Role.get_slate()
+        print "-- init_directories( course.name='{}')".format(self.name)
+        print "  project_os_path = ", project_os_path
+        print "  pages_os_root   = ", pages_os_root
+        for dir_os_path, dirnames, filenames in os.walk(root_os_path):
+            print "  ", dir_os_path
+        top_directory = Directory(name='', path='', course=self, parent=None)
+        Permission(read=1, write=1, directory=top_directory, role=admin)
+        Permission(read=1, write=1, directory=top_directory, role=faculty)
+        Permission(read=1, write=0, directory=top_directory, role=anon)
+
 class Registration(Base):
     # columns: registration_id, person_id, course_id, role_id,
     #          date, midterm, grade, credits, status
     # relations: person, course, role
     __init__ = umber_object_init
-      
+
 class Assignment(Base):
     # columns: assignment_id, course_id, name, uriname, due, nth,
     #          blurb, active, notes
@@ -342,13 +364,25 @@ class Work(Base):
     # relations: person, assignment, course
     __init__ = umber_object_init
 
+class Directory(Base):
+    # columns: directory_id, name, course_id, path, parent_id
+    # relations: course, parent, permissions
+    __init__ = umber_object_init
+
+class Permission(Base):
+    # columns: permission_id, read, write, directory_id, role_id, person_id
+    # relations: directory, role, person
+    __init__ = umber_object_init
+    
+Person.registrations = relationship(Registration)
+Person.works = relationship(Work)
 Person.courses = relationship(Course, viewonly = True,
                               secondary = Registration.__table__)
-Person.works = relationship(Work)
 
+Course.assignments = relationship(Assignment)
+Course.directories = relationship(Directory)
 Course.persons = relationship(Person, viewonly = True,
                               secondary = Registration.__table__)
-Course.assignments = relationship(Assignment)
 
 Registration.person = relationship(Person)
 Registration.course = relationship(Course)
@@ -358,6 +392,31 @@ Assignment.course = relationship(Course)
 
 Work.person = relationship(Person)
 Work.assignment = relationship(Assignment)
+
+Directory.course = relationship(Course)
+Directory.parent = relationship(Directory)
+Directory.permissions = relationship(Permission)
+
+Permission.role = relationship(Role)
+Permission.person = relationship(Person)
+
+class Page(object):
+    """ a url-accessable file in a Course """
+    # not in the database
+
+    def __init__(self, coursepath=None, request=None, user=None, insecure_login=False):
+        self.insecure_login = insecure_login  # set to False if https available
+        self.request = request
+        self.secure_url = 'https://' + request.host + request.path
+        self.coursepath = coursepath
+        self.course = Course()
+        self.uri_links = '- uri_links -'
+        self.path = request.path if request != None else ''
+        self.full_path = request.full_path if request != None else ''
+        self.title = '- title -'
+        self.has_error = False
+        self.has_lastmodified = True
+        self.lastmodified = ' - MODIFIED DATE -'
 
 def populate_db():
     """ Create and commit the initial database objects """
@@ -404,7 +463,7 @@ def populate_db():
                                  email = 'ted@fake.address')
     tedt.set_password('test')
     democourse = Course.find_or_create(name = 'Demo Course',
-                                       directory = '/demo_course',
+                                       path = 'demo_course',
                                        start_date = '2006-01-01')
     db_session.commit()
     Registration.find_or_create(person_id = john.person_id,
@@ -443,97 +502,8 @@ def populate_db():
     db_session.commit()    
 
 
+    
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
 
-"""
--- initialize database & run tests --
-    
-thirty-two:~$ cd academics/umber/
-Trying:
-    populate_db()
-Expecting:
-    Populating database with default Roles and test data.
-ok
-Trying:
-    john = Person.find_by(username = 'johnsmith')      # get table row
-Expecting nothing
-ok
-Trying:
-    print john.name                                    # display column
-Expecting:
-    Johnny Smith
-ok
-Trying:
-    john.name = 'John Z. Smith'                        # modify column
-Expecting nothing
-ok
-Trying:
-    db_session.flush()                                 # save changes
-Expecting nothing
-ok
-Trying:
-    demo = Course.find_by(name = 'Demo Course')
-Expecting nothing
-ok
-Trying:
-    demo.name = 'Demo Course - new name'
-Expecting nothing
-ok
-Trying:
-    db_session.flush()
-Expecting nothing
-ok
-Trying:
-    Course.find_all_by(name = 'Demo Course')           # Now can't find it.
-Expecting:
-    []
-ok
-Trying:
-    print john.courses[0].name
-Expecting:
-    Demo Course - new name
-ok
-Trying:
-    print Registration.find_by(person = john, course = demo).role.name
-Expecting:
-    student
-ok
-Trying:
-    db_session.rollback()     # Undo these uncommited database modifications,
-Expecting nothing
-ok
-Trying:
-    db_session.remove()       # and close the session nicely.
-Expecting nothing
-ok
-20 items had no tests:
-    __main__.Assignment
-    __main__.Course
-    __main__.Person
-    __main__.Registration
-    __main__.Role
-    __main__.Umber
-    __main__.Umber.__repr__
-    __main__.Umber.all
-    __main__.Umber.col
-    __main__.Umber.filter
-    __main__.Umber.filter_by
-    __main__.Umber.filter_like
-    __main__.Umber.find_all_by
-    __main__.Umber.find_all_like
-    __main__.Umber.find_by
-    __main__.Umber.find_like
-    __main__.Umber.find_or_create
-    __main__.Work
-    __main__.populate_db
-    __main__.umber_object_init
-1 items passed all tests:
-  13 tests in __main__
-13 tests in 21 items.
-13 passed and 0 failed.
-
-(env)thirty-two:umber$ 
-
-"""

@@ -11,12 +11,12 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-from settings import project_path
+from settings import project_os_path
 
 # umber.py is in in the project_path folder;
 # this makes sure that it's in the import path.
 import sys
-sys.path.insert(0, project_path)
+sys.path.insert(0, project_os_path)
 
 from umber import *
 
