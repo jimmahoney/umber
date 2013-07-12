@@ -5,6 +5,8 @@
  See ./README.txt
  Jim Mahoney | mahoney@marlboro.edu | June 2013 | MIT License
 """
+import sys 
+sys.dont_write_bytecode = True   # development
 
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      flash, get_flashed_messages

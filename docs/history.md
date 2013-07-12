@@ -273,6 +273,13 @@ That means, though, that'll I think I'll need a database-side
 infrastructure to automatically add/remove folders and 
 permissions if the file structure has changed.
 
+## July 12 ##
+
+Continuing to work on folders and permissions.
+
+
+
+
 - - - 
 
 # Thinking / TODO #

@@ -1,0 +1,4 @@
+# initalize database; create tables; populate
+cd database; ./init_db; cd ..
+echo "populate_db()" | ./console
+

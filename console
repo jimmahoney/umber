@@ -1,1 +1,1 @@
-python -i src/console.py
+python -i -B src/console.py
