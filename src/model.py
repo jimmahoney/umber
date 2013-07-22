@@ -9,9 +9,16 @@
    $ pwd
    .../umber
    $ . env/bin/activate
-   (env)$ cd database; ./init_db; cd ..
-   copying previous database to umber.db_old
-   initializing umber.db
+   (env)$ reset_db
+   ...
+
+   Then either
+   
+   (env)$ ./console
+   >> test()
+
+   or
+   
    (env)$ python src/model.py -v
    ...
    Test passed.
@@ -20,7 +27,10 @@
  run ./console from the umber directory.
    
  >>> populate_db()
- Populating database with default Roles and test data.
+ <BLANKLINE>
+  Populating database with default Roles and test data.
+ >>> Course.init_demo()
+  Initilizing directories and permissions for demo course.
  
  >>> john = Person.find_by(username = 'johnsmith')      # get table row
  >>> print john.name                                    # display column
@@ -116,7 +126,7 @@
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker, relationship
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from settings import project_os_path, pages_os_root, pages_url_root
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -309,15 +319,31 @@ def anonymous_person():
     anony.anonymous = True
     return anony
 
+Role_name_rank = {'admin':5, 'faculty':4, 'student':3, 'guest':2, 'all':1}
 class Role(Base):
     # columns: role_id, name, rank
+    # Role.named('faculty') # memoized roles
     __init__ = umber_object_init
-    def get_slate(self):
-        return (Role.get_by(name='admin'),
-                Role.get_by(name='faculty'),
-                Role.get_by(name='student'),
-                Role.get_by(name='guest'),                
-                Role.get_by(name='all'))
+    name_rank = Role_name_rank
+    names = set(Role_name_rank.keys())
+    _roles_ = {}
+    @classmethod
+    def init_database(cls):
+        for (name, rank) in Role_name_rank.items():
+            Role.find_or_create(name=name, rank=rank)
+        db_session.commit()
+    @classmethod
+    def named(cls, name):
+        """ e.g. Role.named('faculty') # memoized """
+        try:
+            return Role._roles_[name]
+        except:
+            try:
+                result =  Role.find_by(name=name)
+                Role._roles_[name] = result
+                return result
+            except:
+                return None
 
 class Course(Base):
     # columns: course_id, name, name_as_title, path, credits,
@@ -325,25 +351,43 @@ class Course(Base):
     # relations: persons, assignments, directories, root
     def __init__(self, *args, **kwargs):
         umber_object_init(self, *args, **kwargs)
-        
     def uri(self):
         return '- uri -'
     def semester(self):
         return '- semester -'
+    def os_path(self):
+        return os.path.join(project_os_path, pages_os_root, self.path)
     def init_directories(self):
         """ create this course's default directories and permissions. """
-        root_os_path = os.path.join(project_os_path, pages_os_root, self.path)
-        (admin, faculty, student, guest, anon) = Role.get_slate()
-        print "-- init_directories( course.name='{}')".format(self.name)
-        print "  project_os_path = ", project_os_path
-        print "  pages_os_root   = ", pages_os_root
-        for dir_os_path, dirnames, filenames in os.walk(root_os_path):
-            print "  ", dir_os_path
-        top_directory = Directory(name='', path='', course=self, parent=None)
-        Permission(read=1, write=1, directory=top_directory, role=admin)
-        Permission(read=1, write=1, directory=top_directory, role=faculty)
-        Permission(read=1, write=0, directory=top_directory, role=anon)
+        # print "-- init_directories( course.name='{}')".format(self.name)
+        # print "  project_os_path = ", project_os_path
+        # print "  pages_os_root   = ", pages_os_root
+        # print "  course_os_path  = ", self.os_path()
+        # for dir_os_path, dirnames, filenames in os.walk(self.os_path()):
+        #     print "  ", dir_os_path
+        root_dir = Directory(name='', path='', course=self)
+        root_dir.set_permissions(course_defaults = True)
+        db_session.commit()
+    def userdict(self):
+        try:
+            self._userdict_
+        except:
+            self._userdict_ = {p.username: p for p in self.persons}
+        return self._userdict_
+    #def by_role(self, role):
+    #    if isinstance(role, str):
+    #        role = Role.named(role)
+    #    return Person.filter_by(course=self).filter_by(role=role).all()
+    #def students(self):
+    #    return self.by_role('student')
 
+    ####
+    @classmethod
+    def init_demo(cls):
+        demo = Course.find_by(name='Demo Course')
+        print " Initilizing directories and permissions for demo course."
+        demo.init_directories()
+    
 class Registration(Base):
     # columns: registration_id, person_id, course_id, role_id,
     #          date, midterm, grade, credits, status
@@ -366,12 +410,128 @@ class Work(Base):
 
 class Directory(Base):
     # columns: directory_id, name, course_id, path, parent_id
-    # relations: course, parent, permissions
+    # relations: course, parent, children, permissions
     __init__ = umber_object_init
+    no_access = 0
+    read_access = 1
+    write_access = 3
+    # The following are in addition to the built-in
+    # admin-write-everywhere, faculty-write-course.
+    rights_defaults = {'':         { 'read': ('all', ),  'write' : ()},
+                       'private':  { 'read': (),         'write' : ()},
+                       'protected':{ 'read': ('guest', ),'write' : ()},
+                       'students': { 'read': (),         'write' : ()},
+                       'class':    { 'read': ('all', ),  'write' : ('guest',)},
+                      }
+    def os_path(self):
+        return os.path.join(self.course.os_path(), self.path)
+    def set_1_permission(self, who, rights):
+        if who in Role.names:
+            r = Role.named(who)
+            Permission(rights=rights, directory=self, person=None, role=r)
+        else:
+            try:
+                if isinstance(who, str):
+                    p = Person.find_by(username=who)
+                else:
+                    p = who
+                x = Permission(rights=rights, directory=self, person=p, role=None)
+            except:
+                pass # quietly fail if given username isn't in the database
+                     # TODO - think about edge case here more ...
+                     # student/joe folder before joe is in database ??
 
+    def set_permissions(self, course_defaults=False, recur=True,
+                        readers=(), writers=()):
+        """ Setup Permission database entries for this directory.
+            defaults = True  =>  set readers() and writers() based
+                                 on standard course folder names
+                                 instead of readers() and writers()
+                                 (e.g. protected, students, johnsmith, ...)
+            recur = True     =>  recursively setup child directories
+            readers, writers =>  list of username and role names
+        """
+        if course_defaults:
+            users = self.course.userdict()
+            if self.name in Directory.rights_defaults:
+                readers = Directory.rights_defaults[self.name]['read']
+                writers = Directory.rights_defaults[self.name]['write']
+            elif self.name in users:
+                readers = ()
+                writers = (users[self.name], )
+            else:
+                pass   # if no name match, use given readers and writers
+        db_session.execute('delete from Permission where directory_id=:id;',
+                           {'id': self.directory_id})
+        for who in writers:
+            self.set_1_permission(who, rights = Directory.write_access)
+        for who in (set(readers) - set(writers)):
+            self.set_1_permission(who, rights = Directory.read_access)
+        db_session.commit()
+        for subname in os.walk(self.os_path()).next()[1]:
+            sub = Directory.find_or_create(course=self.course, 
+                    name=subname, path=os.path.join(self.path, subname))
+            sub.set_permissions(course_defaults, recur, readers, writers)
+
+    # TO DO : TEST THESE
+    def can_read(self, user, role=None):
+        return self.rights(user, role) >= Directory.read_access
+    def can_write(self, user, role=None):
+        return self.rights(user, role) >= Directory.write_access
+    def rights(self, user, role=None):
+        if role == None:
+            role = Role.named('all')
+        elif isinstance(role, str):
+            role = Role.named(role)
+        try:
+            return self._result_[(user.person_id, role.role_id)]
+        except:
+            # I tried several variations on this sql syntax, expecting
+            # to use the "select max() ..." to pull the largest value.
+            # But various "join" efforts failed, i.e. when the first select
+            # had no entries but the 2nd did, the join would be empty.
+            # This is only one database query ... so good enough.
+            rights_sql = """
+              select rights from Permission 
+                where directory_id = :directory_id and person_id = :person_id
+              union
+              select rights from Permission natural join Role 
+                where directory_id = :directory_id and :rank >= rank;"""
+            if role.name in ('admin', 'faculty'):
+                # assuming faculty => faculty for this course
+                result = Directory.write_access
+            else:
+                sql_result = db_session.execute(
+                    rights_sql, {'directory_id' : self.directory_id, 
+                                 'person_id' : user.person_id,
+                                 'rank' : role.rank}).fetchall()
+                if len(sql_result) == 0:
+                    result = 0
+                else:
+                    result = max(sql_result[0])  # e.g. [(3,)]
+            try:
+                self._result_
+            except:
+                self._result_ = {}
+            self._result_[(user.person_id, role.role_id)] = result
+            return result
+        
 class Permission(Base):
-    # columns: permission_id, read, write, directory_id, role_id, person_id
+    # columns: permission_id, rights, directory_id, role_id, person_id
     # relations: directory, role, person
+    ##
+    ##   These default permissions are *not* in the database :
+    ##      'admin'  can always read & write everything. 
+    ##      'faculty'can alway read & write their course
+    ##   All other read/write directory permissions are configuable,
+    ##   and therefore have corresponding Permission database entries.
+    ##
+    ##   The rights column is either 3 (write & read) or 1 (read),
+    ##   and in the code here a 0 means no rights.
+    ##     
+    ##   a Permission has either a role (e.g. 'all') or person (e.g. 'smith')
+    ##
+    ##
     __init__ = umber_object_init
     
 Person.registrations = relationship(Registration)
@@ -394,18 +554,34 @@ Work.person = relationship(Person)
 Work.assignment = relationship(Assignment)
 
 Directory.course = relationship(Course)
-Directory.parent = relationship(Directory)
+# Setting up the following .parent, .child relationships was nasty -
+# lots of trial and error. For a time, I was exlplicitly setting
+#   primaryjoin = Directory.parent_id == Directory.directory_id
+# which parses correctly, but apparently is deduced from the sqlite3
+# CONSTRAINT syntax correctly and wasn't the source of my problems.
+# Without the uselist=False, the system sets up parent as a list, not
+# a singe one-child-to-one-parent, and Directory(parent=x) would
+# crash. The remote_side= argument seems to be correctly setting which
+# end is which, but finding it in the sqlalchemy docs was not trivial.
+Directory.parent = relationship(Directory, 
+                   remote_side=Directory.directory_id, uselist=False)
+Directory.children = relationship(Directory, remote_side=Directory.parent_id)
 Directory.permissions = relationship(Permission)
 
 Permission.role = relationship(Role)
 Permission.person = relationship(Person)
+Permission.directory = relationship(Directory)
 
 class Page(object):
     """ a url-accessable file in a Course """
-    # not in the database
-
-    def __init__(self, coursepath=None, request=None, user=None, insecure_login=False):
-        self.insecure_login = insecure_login  # set to False if https available
+    # pages (i.e. files other than directories) are *not* in the database
+    # ... though student Work objects do have a corresponding file.
+    # Instead, they're used during the lifetime of a URL request
+    # to manage access to the corresponding wiki or markdown or whatever
+    # file resource.
+    def __init__(self, coursepath=None, request=None, 
+                 user=None, insecure_login=False):
+        self.insecure_login = insecure_login  # False if via https
         self.request = request
         self.secure_url = 'https://' + request.host + request.path
         self.coursepath = coursepath
@@ -430,18 +606,8 @@ def populate_db():
     # objects may be used, e.g. "work1.person = john". And that even
     # can work with objects in the arguments - see my >>> tests above.
     #
-    print "Populating database with default Roles and test data."
-    for (what, digit) in (('admin', 5), 
-                          ('administrator', 5),
-                          ('faculty', 4),
-                          ('students', 3), 
-                          ('student', 3),
-                          ('guests', 2), 
-                          ('guest', 2),
-                          ('anonymous', 1), 
-                          ('all', 1)):
-        Role.find_or_create(name = what, rank = digit)
-    db_session.commit()
+    print "\n Populating database with default Roles and test data."
+    Role.init_database()
     student = Role.find_by(name = 'student')
     faculty = Role.find_by(name = 'faculty')    
     jane = Person.find_or_create(username = 'janedoe',
@@ -502,8 +668,45 @@ def populate_db():
     db_session.commit()    
 
 
+def test():
+    #--- print subfolders and permissions
+    demo = Course.find_by(name = 'Demo Course')
+    for d in demo.directories:
+        print " directory, path = ", d, d.path
+        for p in d.permissions:
+            if p.role :
+                print "  role=", p.role.name, " rights=", p.rights
+            if p.person :
+                print "  person=", p.person.name, " rights=", p.rights
+    # --- print test permissions
+    john = Person.find_by(username='johnsmith')
+    ted = Person.find_by(username='tedteacher')
+    jane = Person.find_by(username='janedoe')
+    student = Role.named('student')
+    faculty = Role.named('faculty')
+    johndir = Directory.find_by(name='johnsmith', course=demo)
+    rootdir = Directory.find_by(name='', course=demo)
+    protecteddir = Directory.find_by(name='protected', course=demo)
+    print " johnsmith rights on his folder = ", johndir.rights(john)
+    print " john can_read his folder: ", johndir.can_read(john, student)
+    print " jane can_read his folder: ", johndir.can_read(jane, student)
+    print " john can_read root = ", rootdir.can_read(john, student)
+    print " john can_write root = ", rootdir.can_write(john, student)
+    print " teacher can_write root = ", rootdir.can_write(ted, faculty)
+
     
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
 
+"""
+
+john = 2
+root = 1
+student rank = 3
+
+select max(ifnull(r1,0), ifnull(r2,0)) from (select rights as r1 from Permission where directory_id = 1 and person_id = 2) left join (select rights as r2 from Permission natural join Role where directory_id = 1 and 3 >= rank);
+
+
+
+"""

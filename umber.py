@@ -15,7 +15,8 @@ from flask.ext.login import LoginManager, login_user, logout_user, current_user
 from src.settings import secret_key, project_os_path, \
      pages_url_root, pages_os_root
 from src.model import db_session, populate_db, anonymous_person, \
-     Person, Role, Course, Registration, Assignment, Work, Page
+     Person, Role, Course, Registration, Assignment, Work, \
+     Directory, Permission, Page, test
 from datetime import timedelta
 from re import match
 

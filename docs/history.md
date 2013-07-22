@@ -277,8 +277,15 @@ permissions if the file structure has changed.
 
 Continuing to work on folders and permissions.
 
+## July 20 ##
 
+Work continued this week (sporadically) on folders and permissions
+in the database - taking too long.
 
+## July 22 ##
+
+Permisions and directories mostly working,
+and can setup themselves to defaults for folders in Demo Course.
 
 - - - 
 
@@ -359,3 +366,71 @@ school people icons
 
 User-icon.png - "mini icons" from "Custom Icon Design" ; free for noncommercial
 http://www.iconarchive.com/show/mini-icons-by-custom-icon-design/User-icon.html
+
+
+- - - - 
+
+markdown 
+ 
+ markdown *does* allow raw HTML by default.
+ Thus one way to put in extensions is to make new html-ish tags, eh?
+
+ https://pypi.python.org/pypi/Markdown
+ includes support for user defined extensions,
+ as well as some of its own extensions 
+ (hilited codeblocks with ~~~~ , footnotes)
+
+ another extension module, trac-like (?) syntax
+ which I think is double brackets, [[special stuff]]
+ https://pypi.python.org/pypi/markdown-macros via codehilite & pygments
+
+ github extensions :
+ https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
+ * they treat newlines as real line breaks (ugh ... though they claim evidence)
+ * ignore interior underscore (yes)
+ * autolink URLs
+ * fenced code blocks with 
+   ```optional_language
+   code
+   ```
+   in additional to traditional 4-space indent
+   (tab or 4 spaces required)
+   preceding black line required before all code blocks
+ * task lists (eh)
+ * @person notification
+ * :emoji
+ * #issue
+ * a bunch of project/user/hashtag auto-links
+ * DOES allow inline HTML
+
+ see http://en.wikipedia.org/wiki/Markdown_extensions
+
+pandoc is a full feature document conversion library in Haskell.
+includes markdown, pdf, html, etc
+extensions :
+ * backslash newline is a hard line break
+ * requires blank line before header
+ * header attributes      # header {attribute}
+ * email-like > leading for block quotes
+ * fenced code blocks with ~~~ or backticks ``` , optional language
+ * three or more * or - or _ (optionally with spaces) gives <HR>
+ * LaTeX-ish title/author blocks at start of files; leading %
+ * backslash escapes
+ * strikeout ~~this~~
+ * subscript H~2~O and supersciprt 2^10^ (odd but consistent)
+ * math in $text stuff$ blocks ($x....x$ where x is a non-space character)
+
+Several of these are aimed at 
+some consitency with PHP Markdown Extras :
+http://michelf.ca/projects/php-markdown/extra/
+
+ * footnotes in addition to reference style links, with [^1]
+ * abbreviation definition lists
+
+call for standardization :
+ http://www.codinghorror.com/blog/2012/10/the-future-of-markdown.html
+negative response :
+ http://www.rumproarious.com/2012/10/29/markdown-the-spec/
+
+
+

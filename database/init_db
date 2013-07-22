@@ -1,8 +1,8 @@
 # initialize database and its tables
 #
-echo "copying previous database to umber.db_old"
+echo " Saving previous database to umber.db_old"
 cp umber.db umber.db_old
-echo "initializing umber.db"
+echo " Initializing umber.db from umber_db.sql"
 rm umber.db
-sqlite3 umber.db < create_umber_db.sql
+sqlite3 umber.db < umber_db.sql
 

@@ -1,5 +1,5 @@
 ----------------------------------------
--- create_umber_db.sql
+-- umber_db.sql
 --
 --   umber database definitions for sqlite3 database
 --
@@ -168,17 +168,19 @@ CREATE TABLE Directory (
   name TEXT NOT NULL DEFAULT '',
   course_id INTEGER NOT NULL DEFAULT 0
    CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
+  path TEXT NOT NULL DEFAULT '',
   parent_id INTEGER DEFAULT NULL
    CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
 );
 
 ---
 --- Permission enables read and/or write access to Directories.
----
+---   rights : 3 => write & read access ; 1 => read access
+---   no Permission in database => neither read nor write access
 ---
 CREATE TABLE Permission (
  permission_id INTEGER PRIMARY KEY NOT NULL,
- read INTEGER NOT NULL DEFAULT 0,
+ rights INTEGER NOT NULL DEFAULT 0,
  write INTEGER NOT NULL DEFAULT 0,
  directory_id INTEGER NOT NULL DEFAULT 0
    CONSTRAINT fk_directory_directory_id REFERENCES Directory(directory_id),
