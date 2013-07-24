@@ -8,7 +8,7 @@
   ${show('request')}
   ${show('current_user')}
   ${show('page')}
-  ${show('course')}
+  ${show('page.course')}
   <hr>
   get_flashed_messages() = ${get_flashed_messages() | h}
 </div>
@@ -57,8 +57,8 @@
     &nbsp; page.has_lastmodified = ${page.has_lastmodified | h} <br>
     &nbsp; page.lastmodified = ${page.lastmodified | h} <br>
   % endif
-  % if variable == 'course':
-    &nbsp; course.name = ${course.name | h} <br>
+  % if variable == 'page.course':
+    &nbsp; course.name = ${page.course.name | h} <br>
   % endif
   % endif
   ## dir(${variable}) = ${dir(context[variable]) | h}

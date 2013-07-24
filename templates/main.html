@@ -23,7 +23,7 @@
 </div>                                     <!-- end header -->
 <%include file="sub/actions.html" args="**context.kwargs" />
 <div id="column-one">                      <!-- start column-one -->
- <h1><a href="${ course.uri() }"> ${ course.name_as_title }</a></h1>
+ <h1><a href="${ page.course.uri() }"> ${ page.course.name_as_title }</a></h1>
  <div><div id="semester"> ${ course.semester() } </div></div>
  <%include file="sub/navigation.html" args="**context.kwargs" />
  <div>

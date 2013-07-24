@@ -1,0 +1,10 @@
+= wiki =
+
+The pages in this directory may be edited by students and faculty.
+
+* To edit this page, click the "edit" tab above.
+* To create a new page, either
+** make a link to it (i.e. [[ some new page ]]) on existing page, then click it, or 
+** just type the URI of page you want to create in your browser and visit it.
+
+

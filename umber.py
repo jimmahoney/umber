@@ -16,7 +16,7 @@ from src.settings import secret_key, project_os_path, \
      pages_url_root, pages_os_root
 from src.model import db_session, populate_db, anonymous_person, \
      Person, Role, Course, Registration, Assignment, Work, \
-     Directory, Permission, Page, test
+     Directory, Permission, Page
 from datetime import timedelta
 from re import match
 
@@ -78,7 +78,7 @@ def testingroute():
         )
 
 @app.route('/' + pages_url_root + '/<path:pagepath>', methods=['GET', 'POST'])
-def mainroute(coursepath):
+def mainroute(pagepath):
     # The Flask global variables available by default within
     # within template contexts by are 
     #   config (but not in mako?)
@@ -86,18 +86,18 @@ def mainroute(coursepath):
     #   url_for(), get_flashed_messages()
     # all of which are also within global app.*
     # Also see template_context(), which can set more template globals.
-    if request.method == 'POST':
-        handle_post()
-    page = Page(path = pagepath,
+
+    page = Page(pagepath = pagepath,
                 request = request, 
                 user = current_user,
                 insecure_login = not app.has_ssl
         )
-    course = page.course
+
+    if request.method == 'POST':
+        handle_post()
     return render_template('main.html', 
                            name ='main',
                            page = page,
-                           course = course,
                            debug = app.debug
         )
 

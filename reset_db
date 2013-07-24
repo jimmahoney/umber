@@ -1,4 +1,4 @@
-# initalize database; create tables; populate
+# Initalize database by creating tables and populating with Demo Course.
 cd database; ./init_db; cd ..
 echo "populate_db(); Course.init_demo()" | ./console
 

@@ -287,7 +287,30 @@ in the database - taking too long.
 Permisions and directories mostly working,
 and can setup themselves to defaults for folders in Demo Course.
 
-- - - 
+## July 24 ##
+
+Added unique coursepath to Directory, allowing a fallback Umber
+course, as I did with Wikiacademia. (I thought about other 
+mechanisms that would avoid embedding a typical course within
+another "course", but decided that I still like this model.)
+
+I tried to get the permissions to cascade delete from within sqlite3,
+but that didn't seem to work as I expected ... so I'm just doing
+that explicitly with Directory.delete() before creating new Directory
+objects. This whole permission/directory thing is likely going to 
+be slow, but since it doesn't happen often I don't think that
+will matter much.
+
+Next: 
+ * setting up a Page object for a given request
+ * error pages & code for (missing page, missing directory, missing course)
+ * directory view
+ * 'generic' file view (with correct permission handling)
+ * .md markdown view
+ * .wiki mediawiki view (?)
+
+-------------------------------------
+
 
 # Thinking / TODO #
 

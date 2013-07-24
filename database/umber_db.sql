@@ -169,6 +169,7 @@ CREATE TABLE Directory (
   course_id INTEGER NOT NULL DEFAULT 0
    CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
   path TEXT NOT NULL DEFAULT '',
+  coursepath TEXT UNIQUE NOT NULL,
   parent_id INTEGER DEFAULT NULL
    CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
 );
@@ -183,7 +184,8 @@ CREATE TABLE Permission (
  rights INTEGER NOT NULL DEFAULT 0,
  write INTEGER NOT NULL DEFAULT 0,
  directory_id INTEGER NOT NULL DEFAULT 0
-   CONSTRAINT fk_directory_directory_id REFERENCES Directory(directory_id),
+   CONSTRAINT fk_directory_directory_id REFERENCES Directory(directory_id)
+   ON DELETE CASCADE,
  role_id INTEGER DEFAULT NULL
    CONSTRAINT fk_role_role_id REFERENCES Role(role_id),
  person_id INTEGER DEFAULT NULL
