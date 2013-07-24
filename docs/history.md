@@ -312,7 +312,7 @@ Next:
 -------------------------------------
 
 
-# Thinking / TODO #
+# Thinking / TODO #git
 
 * Git within the project : 
  http://stackoverflow.com/questions/1456269/python-git-module-experiences
