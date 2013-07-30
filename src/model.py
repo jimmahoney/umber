@@ -65,6 +65,48 @@
  TedTeacher can read, can write 'johnsmith.'
  TedTeacher can read, can write 'protected.'
 
+ >>> john = Person.find_by(username='johnsmith')
+ >>> for path in ('demo_course/students/johnsmith/foo', 
+ ...              'demo_course/syllabus', 
+ ...              'demo_course/protected',  
+ ...              'one/two/three'):
+ ...   p = Page(pagepath=path, user=john)
+ ...   print "--- pagepath = {}".format(p.pagepath)
+ ...   print "    name = '{}'".format(p.name)
+ ...   print "    is_directory = {}".format(p.is_directory)
+ ...   print "    os_path = '{}'".format(p.os_path()) 
+ ...   print "    can_read, can_write = {}, {}".format(p.can_read, p.can_write)
+ ...   print "    course '{}' path='{}'".format(p.course.name, p.course.path)
+ ...   print "    directory path='{}'".format(p.directory.path)
+ --- pagepath = demo_course/students/johnsmith/foo
+     name = 'foo'
+     is_directory = False
+     os_path = '/Volumes/optibay/academics/umber/pages/demo_course/students/johnsmith/foo'
+     can_read, can_write = True, True
+     course 'Demo Course' path='demo_course'
+     directory path='students/johnsmith'
+ --- pagepath = demo_course/syllabus
+     name = 'syllabus'
+     is_directory = False
+     os_path = '/Volumes/optibay/academics/umber/pages/demo_course/syllabus'
+     can_read, can_write = True, False
+     course 'Demo Course' path='demo_course'
+     directory path=''
+ --- pagepath = demo_course/protected
+     name = 'protected'
+     is_directory = True
+     os_path = '/Volumes/optibay/academics/umber/pages/demo_course/protected'
+     can_read, can_write = True, False
+     course 'Demo Course' path='demo_course'
+     directory path='protected'
+ --- pagepath = one/two/three
+     name = 'three'
+     is_directory = False
+     os_path = '/Volumes/optibay/academics/umber/pages/one/two/three'
+     can_read, can_write = True, False
+     course 'Umber' path=''
+     directory path=''
+ 
  >>> (dirs['johnsmith'].name == 'johnsmith', 
  ...  dirs['johnsmith'].path == 'students/johnsmith',
  ...  dirs['johnsmith'].coursepath == 'demo_course/students/johnsmith')
@@ -399,7 +441,11 @@ class Course(Base):
     def semester(self):
         return '- semester -'
     def os_path(self):
-        return os.path.join(project_os_path, pages_os_root, self.path)
+        if self.path == '':
+            # skip self.path; else end up with trailing /
+            return os.path.join(project_os_path, pages_os_root)
+        else:
+            return os.path.join(project_os_path, pages_os_root, self.path)
     def init_directories(self, course_defaults = True):
         """ Remove any old database directory objects and their permissions.
             Then create database directories and deafult permissions
@@ -527,7 +573,10 @@ class Directory(Base):
         db_session.delete(directory)
         db_session.commit()
     def os_path(self):
-        return os.path.join(self.course.os_path(), self.path)
+        if self.path == '':
+            return self.course.os_path()
+        else:
+            return os.path.join(self.course.os_path(), self.path)
     def set_1_permission(self, who, rights):
         if who in Role.names:
             r = Role.named(who)
@@ -688,39 +737,74 @@ class Page(object):
     # Instead, they're used during the lifetime of a URL request
     # to manage access to the corresponding wiki or markdown or whatever
     # file resource.
+    def os_path(self):
+        if self.pagepath == '':
+            # skip self.path; else end up with trailing /
+            return os.path.join(project_os_path, pages_os_root)
+        else:
+            return os.path.join(project_os_path, pages_os_root, self.pagepath)
+    def find_directory(self, pagepath):
+        """ Find the directory in the database for this pagepath """
+        # pagepath is e.g. one/two/three  (no leading or trailing slash)
+        # This recursive procedure will try to find successively
+        #    'one/two/three', 'one/two', 'one', ''
+        # as a Directory's (unique) coursepath. 
+        # Since the 'Umber' course has coursepath '', 
+        # this should always terminate there if not before.
+        #    os.path.split('/one/two/three')  => ('/one/two', 'three')
+        #    os.path.join(a, b)                   dirname     basename
+        #    os.path.isdir(path)
+        #    os.path.isfile(path)
+        #    os.path.abspath(path)          normalized absolute path
+        #    os.path.relpath(path, [start]) default is relative to os.curdir  
+        #    os.chdir(path)        Note that on unix, os.curdir = '.'
+        #    os.getcwd()
+        #    os.curdir, os.pardir    ('.', '..') on unix
+        # TODO : put missing directories into the database?
+        try:
+            return Directory.find_by(coursepath = pagepath)
+        except:
+            return self.find_directory(os.path.dirname(pagepath))
     def __init__(self, 
-                 pagepath=None, # string from URL host/pages_url_root/pagepath
+                 pagepath=None, # string from URL host/page_url_root/pagepath
                  request=None,  # Flask request object
                  user=None,     # Person
                  insecure_login=False
                  ):
-
-        self.insecure_login = insecure_login  # False if via https
-        self.request = request
-        self.secure_url = 'https://' + request.host + request.path
-        self.pagepath = pagepath
+        if not user:
+            user = anonymous_person()
         self.user = user
-        self.path = request.path if request != None else ''
-
-        # Find directory corresponding to this page from pagepath
-        # by walking upwards. The fallback if nothing else is found
-        # is the top 'Umber' course,
-        # with pagepath=''.
+        self.pagepath = pagepath
+        self.directory = self.find_directory(self.pagepath)
+        self.name = os.path.basename(self.pagepath)
+        self.is_directory = self.os_path() == self.directory.os_path()
+        self.course = self.directory.course
+        self.title = self.course.name_as_title
         try:
-            self.is_directory = True
-            self.directory = Directory.find_by(path = pagepath)
+            self.role = Registration.find_by(course=self.course, 
+                                             person=self.user).role
         except:
-            self.is_directory = False
-            directorypath, self.name,  = os.path.split(pagepath)
-            self.directory = Directory.find_by(path = directorypath)
-
-        self.course = Course()
+            self.role = Role.named('all')
+        self.can_write = self.directory.can_write(self.user, self.role)
+        self.can_read = self.directory.can_read(self.user, self.role)
+        if request:
+            self.request = request
+            self.secure_url = 'https://' + request.host + request.path
+            self.url = 'http://' + request.host + request.path            
+            # self.path = request.path
+            # self.full_path = request.full_path
+        else: # debugging only
+            self.request = None
+            self.secure_url = ''
+            self.url = ''
+            # self.path = pagepath
+            # self.full_path = pagepath
+        self.insecure_login = insecure_login  # False if via https
+        #
         self.uri_links = '- uri_links -'
-        self.full_path = request.full_path if request != None else ''
-        self.title = '- title -'
         self.has_error = False
         self.has_lastmodified = True
-        self.lastmodified = ' - MODIFIED DATE -'
+        self.lastmodified = ' - MODIFIED DATE -'  # TODO : what should this be?
 
 def populate_db():
     """ Create and commit the initial database objects """

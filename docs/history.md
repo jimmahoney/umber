@@ -303,14 +303,19 @@ will matter much.
 
 Next: 
  * setting up a Page object for a given request
- * error pages & code for (missing page, missing directory, missing course)
- * directory view
  * 'generic' file view (with correct permission handling)
  * .md markdown view
  * .wiki mediawiki view (?)
+ * directory view
+ * error pages & code for (missing page, missing directory, missing course)
+
+## July 30 ##
+
+Have page with os_path, can_read, can_write working in model.py tests.
+
+Doubt I'll have something working well enough by the start of the term, though.
 
 -------------------------------------
-
 
 # Thinking / TODO #git
 
