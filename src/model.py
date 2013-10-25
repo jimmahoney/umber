@@ -396,7 +396,7 @@ class Person(Base):
     
 def anonymous_person():
     anony = Person(name=u'', username=u'')
-    db_session.expunge(anon)   # don't write this one to the database
+    db_session.expunge(anony)   # don't write this one to the database
     anony.set_status(logged_in=False, role='any')
     anony.anonymous = True
     return anony
@@ -437,9 +437,14 @@ class Course(Base):
         # the 'Demo Course' and default 'Umber' courses.
         umber_object_init(self, *args, **kwargs)
     def uri(self):
-        return '- uri -'
+        return '/' + pages_url_root + '/' + self.path + '/home'
     def semester(self):
-        return '- semester -'
+        month = self.start_date[5:7]
+        year = self.start_date[0:4]
+        semester_name = {'01':'Spring', '02':'Spring', 
+                         '09':'Fall',
+                         '05':'Summer', '06':'Summer'}.get(month, '')
+        return semester_name + ' ' + year
     def os_path(self):
         if self.path == '':
             # skip self.path; else end up with trailing /
@@ -737,6 +742,8 @@ class Page(object):
     # Instead, they're used during the lifetime of a URL request
     # to manage access to the corresponding wiki or markdown or whatever
     # file resource.
+    def __str__(self):
+        return "<Page pagepath='{}' id={}>".format(self.pagepath, id(self))
     def os_path(self):
         if self.pagepath == '':
             # skip self.path; else end up with trailing /
@@ -769,7 +776,7 @@ class Page(object):
                  pagepath=None, # string from URL host/page_url_root/pagepath
                  request=None,  # Flask request object
                  user=None,     # Person
-                 insecure_login=False
+                 allow_insecure_login = False
                  ):
         if not user:
             user = anonymous_person()
@@ -779,7 +786,7 @@ class Page(object):
         self.name = os.path.basename(self.pagepath)
         self.is_directory = self.os_path() == self.directory.os_path()
         self.course = self.directory.course
-        self.title = self.course.name_as_title
+        self.title = self.course.name + " - " + self.name
         try:
             self.role = Registration.find_by(course=self.course, 
                                              person=self.user).role
@@ -799,7 +806,9 @@ class Page(object):
             self.url = ''
             # self.path = pagepath
             # self.full_path = pagepath
-        self.insecure_login = insecure_login  # False if via https
+        self.allow_insecure_login = allow_insecure_login # require https login?
+        if allow_insecure_login:
+            self.secure_url = self.url   # e.g. debugging without https
         #
         self.uri_links = '- uri_links -'
         self.has_error = False
@@ -848,6 +857,7 @@ def populate_db():
                                  email = 'ted@fake.address')
     tedt.set_password('test')
     democourse = Course.find_or_create(name = 'Demo Course',
+                                       name_as_title = 'Demo<br>Course',
                                        path = 'demo_course',
                                        start_date = '2013-01-01')
     db_session.commit()

@@ -86,20 +86,18 @@ def mainroute(pagepath):
     #   url_for(), get_flashed_messages()
     # all of which are also within global app.*
     # Also see template_context(), which can set more template globals.
-
-    page = Page(pagepath = pagepath,
-                request = request, 
-                user = current_user,
-                insecure_login = not app.has_ssl
-        )
+    page = Page(pagepath = pagepath, request = request, 
+                user = current_user, 
+                allow_insecure_login = app.allow_insecure_login)
+    #print " mainroute: current_user = " + str(current_user)
+    #print " mainroute: page = " + str(page)
+    #print " mainroute: course = " + str(page.course)
 
     if request.method == 'POST':
         handle_post()
-    return render_template('main.html', 
-                           name ='main',
-                           page = page,
-                           debug = app.debug
-        )
+
+    return render_template('main.html', name = 'main', page = page,
+                           user = current_user, debug = app.debug)
 
 def submit_logout():
     logout_user()
@@ -139,7 +137,7 @@ def setup():
     app.secret_key = secret_key
     app.session_cookie_name = 'umber_session'
     app.permanent_session_lifetime = timedelta(days=1)
-    app.has_ssl = False
+    app.allow_insecure_login = True
 
 if __name__ == '__main__':
     setup()

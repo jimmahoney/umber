@@ -312,8 +312,12 @@ Next:
 ## July 30 ##
 
 Have page with os_path, can_read, can_write working in model.py tests.
-
 Doubt I'll have something working well enough by the start of the term, though.
+
+## Aug 20
+
+Working on getting main.html functional after all the recent changes.
+Debugging the mako templates *really* sucks.
 
 -------------------------------------
 
@@ -460,5 +464,8 @@ call for standardization :
 negative response :
  http://www.rumproarious.com/2012/10/29/markdown-the-spec/
 
+codemirror.net is a javascript library for in browser code editing.
+Includes emacs compatability. Used many places - very cool.
 
+ipython connectivity might also be something to consider.
 

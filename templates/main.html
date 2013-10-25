@@ -9,28 +9,39 @@
         href="${'styles/umber.css' | static_url}">
 </head>
 <body>
+
+% if True:
 <div id="header">                          <!-- start header -->
  <a id="cs-logo" href="/"><img 
     src="${'images/cs_m_edu.png' | static_url}" 
     alt="computer science @ marlboro.edu" /></a>
- % if current_user.is_authenticated() :
+ % if user.is_authenticated() :
   <%include file="sub/after_login.html" args="**context.kwargs" />
- % elif request.is_secure or page.insecure_login :
+ % elif request.is_secure or page.allow_insecure_login :
   <%include file="sub/form_login.html" args="**context.kwargs" />
  % else :
   <%include file="sub/before_login.html" args="**context.kwargs" />
  % endif
 </div>                                     <!-- end header -->
+% endif
+
+% if True:
 <%include file="sub/actions.html" args="**context.kwargs" />
+% endif
+
+% if True:
 <div id="column-one">                      <!-- start column-one -->
  <h1><a href="${ page.course.uri() }"> ${ page.course.name_as_title }</a></h1>
- <div><div id="semester"> ${ course.semester() } </div></div>
+ <div><div id="semester"> ${ page.course.semester() } </div></div>
  <%include file="sub/navigation.html" args="**context.kwargs" />
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
      src="${'images/mc-logo.gif' | static_url }" /></a>
  </div>
 </div>                                     <!-- end column-one -->
+% endif
+
+% if False:
 <div id="column-two">                      <!-- start column-two -->
  <div class="component">                     <!-- start component -->
   % if page.has_error:
@@ -50,8 +61,11 @@
    <%include file="sub/footer.html" args="**context.kwargs" />
  </div>                                       <!-- end footer -->
 </div>                                      <!-- end column-two -->
+% endif
+
 % if debug:
   <%include file="sub/debug.html" args="**context.kwargs" />
 % endif
+
 </body>
 </html>
