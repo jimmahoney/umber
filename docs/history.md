@@ -13,6 +13,8 @@ First I updated the min versions (after looking online
 for what seemed current) in requirements.txt, and 
 then followed the recipe there, e.g.
 
+### Reinstalling dependencies 
+
  $ pwd
  /Users/mahoney/academics/umber
  $ mv env old_env               # set aside old devel environment
@@ -20,21 +22,22 @@ then followed the recipe there, e.g.
  $ . env/bin/activate           # local python, pip, ... (alias 'activate')
  (env)$ pip install -r requirements.txt
 
-Testing with
+### Testing
 
  $ ./reset_db
  $ python src/model.py   # run its tests - passed but for new paths
  $ ./console
 
-Cleaning up
+### Cleaning up and committing
 
  $ rm -rf env_old/
- $ 
+ $ git add *
+ $ git commit -m "starting work again, summer 2014"
 
-
-
-
-
+I think that I should look at the question of mako vs jinja2
+for the templating engine - I'm not happy with the "debugging sucks"
+place I ended up last summer. Maybe mako is now better integrated
+with flask ... or maybe I just shouldn't bother with it.
 
 
 ## Aug 20 2013
