@@ -1,0 +1,15 @@
+#
+# src/erd/make_erd
+#
+# Create an entity relatioship diagram (ERD) for the database, 
+# umber_db.png in the database folder.
+#
+# Requires that perl's SQL::Translator and GraphViz modules 
+# are installed (which in turn requires graphviz, of course).
+#
+# See 
+#   http://mancoosi.org/~abate/tags/sqlfairy
+#   http://search.cpan.org/~frew/SQL-Translator/
+#
+./sqlt-graph --from=SQLite ../../database/umber_db.sql > ../../database/umber_db.png
+echo "OK, database/umber_db.png has been created."

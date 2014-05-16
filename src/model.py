@@ -74,35 +74,32 @@
  ...   print "--- pagepath = {}".format(p.pagepath)
  ...   print "    name = '{}'".format(p.name)
  ...   print "    is_directory = {}".format(p.is_directory)
- ...   print "    os_path = '{}'".format(p.os_path()) 
+ ...   ## (os_path isn't absolute, so not a good test.)
+ ...   # print "    os_path = '{}'".format(p.os_path()) 
  ...   print "    can_read, can_write = {}, {}".format(p.can_read, p.can_write)
  ...   print "    course '{}' path='{}'".format(p.course.name, p.course.path)
  ...   print "    directory path='{}'".format(p.directory.path)
  --- pagepath = demo_course/students/johnsmith/foo
      name = 'foo'
      is_directory = False
-     os_path = '/Volumes/optibay/academics/umber/pages/demo_course/students/johnsmith/foo'
      can_read, can_write = True, True
      course 'Demo Course' path='demo_course'
      directory path='students/johnsmith'
  --- pagepath = demo_course/syllabus
      name = 'syllabus'
      is_directory = False
-     os_path = '/Volumes/optibay/academics/umber/pages/demo_course/syllabus'
      can_read, can_write = True, False
      course 'Demo Course' path='demo_course'
      directory path=''
  --- pagepath = demo_course/protected
      name = 'protected'
      is_directory = True
-     os_path = '/Volumes/optibay/academics/umber/pages/demo_course/protected'
      can_read, can_write = True, False
      course 'Demo Course' path='demo_course'
      directory path='protected'
  --- pagepath = one/two/three
      name = 'three'
      is_directory = False
-     os_path = '/Volumes/optibay/academics/umber/pages/one/two/three'
      can_read, can_write = True, False
      course 'Umber' path=''
      directory path=''
@@ -340,8 +337,8 @@ def umber_object_init(self, *args, **kwargs):
     # This is a workaround.
     #
     # Also the sqlalchemy philosophy apparently wants to separate db_session
-    # from the model, which is why, I think, they want expect an 
-    # explicit db_session.add() after earch object instantiation. 
+    # from the model, which is why, I think, they expect an 
+    # explicit db_session.add() after each object instantiation. 
     # But I'm unconvinced, and want each new object automatically added
     # to db_session. (Note that db_session.flush() or .commit() is 
     # still required after creating an object before the database is modified.)
@@ -432,8 +429,8 @@ class Course(Base):
     #          start_date, end_date, assignments_md5, active, notes
     # relations: persons, assignments, directories, root
     def __init__(self, *args, **kwargs):
-        # Enforce coursepath=unique constraint, to avoid
-        # e.g. 'demo_course/foo' to be in both
+        # TODO: Enforce coursepath=unique constraint, to avoid
+        # e.g. 'demo_course/foo' being in both
         # the 'Demo Course' and default 'Umber' courses.
         umber_object_init(self, *args, **kwargs)
     def uri(self):
@@ -738,6 +735,7 @@ Permission.directory = relationship(Directory)
 class Page(object):
     """ a url-accessable file in a Course """
     # pages (i.e. files other than directories) are *not* in the database
+    # (and therefore inherit from object, not Base)
     # ... though student Work objects do have a corresponding file.
     # Instead, they're used during the lifetime of a URL request
     # to manage access to the corresponding wiki or markdown or whatever

@@ -6,12 +6,15 @@
 --       Person
 --       Role	
 --       Course
---       Registration        FK Person, FK Course, FK Rold
+--       Registration        FK Person, FK Course, FK Role
 --       Assignment          FK Course
 --       Work 		     FK Person, FK Assignment 
+--       Directory           FK Course, FK Parent
+--       Permission          FK Directory, FK Role, FK Person
 --
 --   To create the database :
 --   $ sqlite3 umber.db < create_umber_db.sql
+--
 
 --
 -- Authentication of users can be from an LDAP database, 
@@ -159,10 +162,10 @@ CREATE TABLE Work (
   notes TEXT NOT NULL DEFAULT ''
 );
 
----
---- Directory corresponds a disk folder, 
---- and keeps track of which course its in and its permissions.
----
+--
+-- Directory corresponds a disk folder, 
+-- and keeps track of which course its in and its permissions.
+--
 CREATE TABLE Directory (
   directory_id INTEGER PRIMARY KEY NOT NULL,
   name TEXT NOT NULL DEFAULT '',
@@ -174,11 +177,11 @@ CREATE TABLE Directory (
    CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
 );
 
----
---- Permission enables read and/or write access to Directories.
----   rights : 3 => write & read access ; 1 => read access
----   no Permission in database => neither read nor write access
----
+--
+-- Permission enables read and/or write access to Directories.
+--   rights : 3 => write & read access ; 1 => read access
+--   no Permission in database => neither read nor write access
+--
 CREATE TABLE Permission (
  permission_id INTEGER PRIMARY KEY NOT NULL,
  rights INTEGER NOT NULL DEFAULT 0,

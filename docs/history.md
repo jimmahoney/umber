@@ -39,6 +39,19 @@ for the templating engine - I'm not happy with the "debugging sucks"
 place I ended up last summer. Maybe mako is now better integrated
 with flask ... or maybe I just shouldn't bother with it.
 
+Looking into generating an ERD (entity relationship diagram)
+from the sqlite3 database - I'm finding this one (which I've used before)
+ http://search.cpan.org/dist/SQL-Translator/lib/SQL/Translator/Manual.pod
+ http://mancoosi.org/~abate/tags/sqlfairy
+and a bunch of commercial tools.
+
+This worked :
+ * already had graphviz (i.e. "dot" etc)
+ * from perl's cpan, installed SQL::Translator & GraphViz modules
+ * downloaded cpan's SQL-Translator***.tar.gz to get scripts/ 
+   including sqlt-graph, which I copied to ./src/sqlt-graph
+
+ $ ./src/sqlt-graph --from=SQLite database/umber_db.sql > database/umber_db.png
 
 ## Aug 20 2013
 
