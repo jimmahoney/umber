@@ -20,8 +20,13 @@ from src.model import db_session, populate_db, anonymous_person, \
 from datetime import timedelta
 from re import match
 
-app = Flask('umber')
-MakoTemplates(app)
+mako_templates = True
+if mako_templates:
+    app = Flask('umber', template_folder='templates_mako')
+    MakoTemplates(app)
+else:
+    app = Flask('umber', template_folder='templates_jinja2')
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.anonymous_user = anonymous_person
