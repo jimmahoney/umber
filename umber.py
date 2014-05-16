@@ -6,8 +6,6 @@
  Jim Mahoney | mahoney@marlboro.edu | June 2013 | MIT License
 """
 import sys 
-sys.dont_write_bytecode = True   # development
-
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      flash, get_flashed_messages
 from flask.ext.mako import MakoTemplates, render_template
@@ -20,7 +18,9 @@ from src.model import db_session, populate_db, anonymous_person, \
 from datetime import timedelta
 from re import match
 
+sys.dont_write_bytecode = True   # development
 mako_templates = True
+
 if mako_templates:
     app = Flask('umber', template_folder='templates_mako')
     MakoTemplates(app)
