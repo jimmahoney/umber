@@ -1,6 +1,308 @@
 # umber development history #
 
+## May 16 2014
+
+Second take - summer of 2014. Started looking at this 
+again after a 9 month break.
+
+The ./env/ virtualenv cache wasn't working; looks like
+there were some absolute paths from back when I had
+two hard disks and some of the mount points & folders
+where symlinks. I reinstalled all the depenedencies.
+First I updated the min versions (after looking online
+for what seemed current) in requirements.txt, and 
+then followed the recipe there, e.g.
+
+ $ pwd
+ /Users/mahoney/academics/umber
+ $ mv env old_env               # set aside old devel environment
+ $ virtualenv env -p python2.7  # create ./env (new devel environment)
+ $ . env/bin/activate           # local python, pip, ... (alias 'activate')
+ (env)$ pip install -r requirements.txt
+
+Testing with
+
+ $ ./reset_db
+ $ python src/model.py   # run its tests - passed but for new paths
+ $ ./console
+
+Cleaning up
+
+ $ rm -rf env_old/
+ $ 
+
+
+
+
+
+
+
+## Aug 20 2013
+
+Working on getting main.html functional after all the recent changes.
+Debugging the mako templates *really* sucks.
+
+## July 30 ##
+
+Have page with os_path, can_read, can_write working in model.py tests.
+Doubt I'll have something working well enough by the start of the term, though.
+
+## July 24 ##
+
+Added unique coursepath to Directory, allowing a fallback Umber
+course, as I did with Wikiacademia. (I thought about other 
+mechanisms that would avoid embedding a typical course within
+another "course", but decided that I still like this model.)
+
+I tried to get the permissions to cascade delete from within sqlite3,
+but that didn't seem to work as I expected ... so I'm just doing
+that explicitly with Directory.delete() before creating new Directory
+objects. This whole permission/directory thing is likely going to 
+be slow, but since it doesn't happen often I don't think that
+will matter much.
+
+Next: 
+ * setting up a Page object for a given request
+ * 'generic' file view (with correct permission handling)
+ * .md markdown view
+ * .wiki mediawiki view (?)
+ * directory view
+ * error pages & code for (missing page, missing directory, missing course)
+
+## July 22 ##
+
+Permisions and directories mostly working,
+and can setup themselves to defaults for folders in Demo Course.
+
+## July 20 ##
+
+Work continued this week (sporadically) on folders and permissions
+in the database - taking too long.
+
+## July 12 ##
+
+Continuing to work on folders and permissions.
+
+## July 9 ##
+
+Mucking about with login, which is (after a lot of trial and error)
+now working. New role-based icons are in place.
+
+The Mako templating system is, I'm afraid, more of a disappointment
+than I'd expected. While it's close to python, it isn't really 
+python: endif and endfor required to stop blocks; context of 
+variables not obvious (i.e. "x=5" just crashes, since one
+can just introduce a new variable into the context) and caching
+trickiness means that capture() etc may be needed to do things
+which seem straightforward.
+
+The biggest problem is debugging - template errors are not reported in
+a way that is at all helpful - the whole template either succeeds or
+(mysteriously) fails. Flask's built-in templating system handles
+this much, much beter, as I remember.
+
+The notion of arguments sent to templates is an idea that I like - and
+used in Mason - but so far I'm just passing the entire context anyway.
+With Mason, that let me test subcomponents independently. But here,
+I'd need to set up separate routes for that (since I'm using 'include'
+and not inheritance, since my dispatch is 'course' and not just URL
+based), and so the subcomponents can't be tested/run as smaller 
+pieces ... and thus lose much of their value.
+
+The project is moving towards the model of Flask-Login and the more
+typical "code-in-the-model" or "code-in-the-controller", so the
+smaller components are not as independent as in the Mason case,
+where I had the submission handling was bundled with the forms.
+
+For now I'll stick with Mako anyway. But.
+
+Next: courses, files, pages, folder permissions and all that.
+
+I think that this time around I will have a Folder object in the
+database, with all permissions there rather than in the (slow)
+.access.yaml files I used before.
+
+That means, though, that'll I think I'll need a database-side
+infrastructure to automatically add/remove folders and 
+permissions if the file structure has changed.
+
+## July 6 ##
+
+The Mako templates work, but the error handling sucks.
+
+The generated flask error page - which worked great 
+for the jinja2 templates - is fairly useless for Mako.
+This is a significant hit against an otherwise nice 
+template engine.
+
+Also, the mako filter syntax is ugly : ${a | filter1, filter2} rather
+than what anyone familiar with filters (i.e. unix pipes) would expect,
+${a | filter1 | filter2} .  One explanation in the comments is that |
+is already part of python (bitwise or). I don't really buy that
+argument, since that would suggest that the whole filter syntax 
+itself is bogus.
+
+Working on login via Flask-Login, passwords (see model.py comments),
+ldap (started) - slow piecemeal progress; heading towards the 
+main template with user login.
+
+    $ sudo port install openldap
+    $ pip install Python-LDAP
+
+Installed other python libraries as listed in requirement.txt .
+
+See stackoverflow.com/questions/82831/how-do-i-check-if-a-file-exists-using-python
+for thinking about checking .access.yaml files. Also PyYAML.
+
+Have working mainroute at commit 'main.html with mako works' at [master 6e79ed0].
+
+## July 5 ##
+
+Look at the available Flask extensions at http://flask.pocoo.org/extensions/ :
+    Flask-Testing, 
+    Flask-Uploads (file uploading), 
+    Flask-WeasyPrint (pdf generation), 
+    Flask-SeaSurf (prevent cross-site request forgery), 
+    Flask-Restless (generate REST APIs), 
+    Flask-Principal (identify management),
+    Flask-Login (via session), 
+    Flask-OpenID, 
+    Flask-Gravatar,
+    Flask-Mako (an alternative to the Jinja2 templates with *real* python),
+    Flask-Mail (sending email),
+    flask-lesscss (css scripting),
+    Flask-FlatPages (flat static pages based on text files),     (??)
+    Flask-DebugToolbar (Django style),
+    Flask-Dashed (admin dashboard inteface),
+    Flask-Cache,
+    Flask-Bcrypt (for hashing passwords),
+    Flask-Assets (webassets library for minifying and compiling CSS and JS),
+    Flask-Admin (admin interface)
+
+Also http://flask.pocoo.org/snippets/ , including security, sessions, 
+authentication, and a lot more.
+
+I think that I'd rather use Mako than Jinja2 for templating,
+and I haven't gone so far that changing should be too much work;
+see http://www.makotemplates.org/. Besides using a language 
+much closer to real python, it also is reminiscent of Mason,
+including the leading % signs for code.
+
+## July 3 ##
+
+Generated a new random background image, pale tan (i.e. umber) color;
+see images/random_umber.* . (Actually run at cs.marlboro.edu/images/* 
+in old wikiacademia environment.)
+
+
+## July 1 ##
+
+Looking at wiki parsers.
+
+mwlib is a python MediaWiki available via pip install, 
+but it took a bit of googling and futzing to get it working.
+stackoverflow.com/questions/7630388/how-can-i-install-the-python-library-gevent-on-mac-os-x-lion
+    $ sudo port install libevent
+    $ CFLAGS="-I /opt/local/include -L /opt/local/lib" pip install gevent
+
+See http://djangosnippets.org/snippets/1277/ for an example of using this
+
+Looks like overkill - huge, awkward, database-of-articles, ... eh.
+
+There are several simpler ones based on wiki creole, which is close
+to what I use. Main difference is they use {{{  }}} for code & preformatted.
+Not sure what they do with existing HTML, but could be worked around.
+Also HR is exactly four dashes : ---- . Links are [[url|name]] ...
+though I think I sometimes reverse that on my site.
+
+It would take some adapting and/or pre-processing, but I think 
+one of these may work.
+
+    $ pip info creole
+    python-creole  https://pypi.python.org/pypi/python-creole/ 
+                   pure python ; macros as <<...>> 
+    Flask-Creole   based on python-creole
+    Creoleparser   bigger; has some support for dialect customization ; requires Genshi
+    creole         somewhat smaller https://bitbucket.org/thesheep/wikicreole/wiki/Home
+
+Here's a "pass thru macro" for marking pieces of text to go through unchanged.
+Note that the input and output must be unicode; 
+see https://code.google.com/p/python-creole/wiki/CreoleMacros
+    >>> creole2html(u'one two <<html>><p>paragraph</p><</html>> three', 
+    ...             macros={'html':lambda text='':text})
+
+## June 30 ##
+
+Looking at multiple-word search across text.
+The Aho-Corasick implementation at
+https://pypi.python.oerg/pypi/ahocorasick/0.9 looks interesting,
+but it crashed when I tried it.
+    $ (env) umber$ pip install ahocorasick
+    $ python
+    >>> import ahocorasick
+    >>> tree = ahocorasick.KeywordTree()
+    >>> tree.add("alpha")
+    Bus error: 10
+    $
+    $ pip uninstall ahocorisck
+
+This pure python implementation from http://0x80.pl/proj/pyahocorasick/ 
+looks fine for my purposes.
+    $ cd src; wget pyahocorasick.py
+    $ python
+    >>> from pyahocorasick import Trie
+    >>> t = Trie()
+    >>> for w in ('fall2012/algorithms', 'fall2012/python'):
+    ...   t.add_word(w, w)    # (word, value) ; same for my purposes
+    >>> t.make_automaton()    # finalize word collection as search engine
+    >>> 
+    >>> list(t.iter('This is a string that has no match'))  
+    []
+    >>> s = '/courses/fall2012/python/has/match'
+    >>> list(t.iter(s))
+    [(23, ['fall2012/python'])]    # (index of last char, [list_of_matches])
+    >>> s[23 - len('fall2012/python') + 1 : (23 + 1)]
+Can provide start or end for search string, e.g. iter('....', start) 
+or iter('',start,end). For my purposes, there is a prefix (e.g. '/courses'),
+a course directory stored in the database (e.g. '/
+
+## June 28 & 29 ##
+
+* Have basic database working, including Demo Course 
+  and tests in model.py 
+
+## June 27 ##
+
+* Copyied and adapted basic Flask resources from planet_express,
+  including requirements.txt, __init__.py, templates/index.html,
+  src/utilities.py, src/console.py, console, 
+  and planet_express.py renamed umber.py
+
+* Installing Flask, SQLAlchemy (and anything else listed in requirements.txt).
+
+        $ . env/bin/activate
+        $ (env)$ pip install -r requirements.txt
+        ...
+        Successfully installed Flask SQLAlchemy Werkzeug Jinja2 
+        itsdangerous markupsafe
+
+* Fetched various wikiacademia resource files :
+
+        $ mkdir static/images; mkdir static/styles
+        $ scp cs.marlboro.edu:/var/www/cs/htdocs/courses/source/images/* \
+           static/images/
+        $ scp cs.marlboro.edu:/var/www/cs/htdocs/courses/source/styles/* \
+           static/styles/
+
+* Started work on sqlite database based on wikiacademia's 
+  but using planet_express conventions. 
+
+        # Create database
+        $ cd database; sqlite3 umber.db < create_umber_db.sql
+
 ## June 26 2013 ##
+
+Started umber project, summer 2013
 
 The wikiacademia software I've been using for course management at the
 college is feeling pretty crufty. Most of the systems it relies on are
@@ -56,268 +358,6 @@ All this is currently on my MacPro, OS X 10.8.4 .
         # See hints at http://rogerdudler.github.io/git-guide/
         $ git config color.ui true ; git config format.pretty oneline
         # (Workflow after changes will be "git add ...; git commit -m ...".)
-
-## June 27 ##
-
-* Copyied and adapted basic Flask resources from planet_express,
-  including requirements.txt, __init__.py, templates/index.html,
-  src/utilities.py, src/console.py, console, 
-  and planet_express.py renamed umber.py
-
-* Installing Flask, SQLAlchemy (and anything else listed in requirements.txt).
-
-        $ . env/bin/activate
-        $ (env)$ pip install -r requirements.txt
-        ...
-        Successfully installed Flask SQLAlchemy Werkzeug Jinja2 
-        itsdangerous markupsafe
-
-* Fetched various wikiacademia resource files :
-
-        $ mkdir static/images; mkdir static/styles
-        $ scp cs.marlboro.edu:/var/www/cs/htdocs/courses/source/images/* \
-           static/images/
-        $ scp cs.marlboro.edu:/var/www/cs/htdocs/courses/source/styles/* \
-           static/styles/
-
-* Started work on sqlite database based on wikiacademia's 
-  but using planet_express conventions. 
-
-        # Create database
-        $ cd database; sqlite3 umber.db < create_umber_db.sql
-
-## June 28 & 29 ##
-
-* Have basic database working, including Demo Course 
-  and tests in model.py 
-
-## June 30 ##
-
-Looking at multiple-word search across text.
-The Aho-Corasick implementation at
-https://pypi.python.oerg/pypi/ahocorasick/0.9 looks interesting,
-but it crashed when I tried it.
-    $ (env) umber$ pip install ahocorasick
-    $ python
-    >>> import ahocorasick
-    >>> tree = ahocorasick.KeywordTree()
-    >>> tree.add("alpha")
-    Bus error: 10
-    $
-    $ pip uninstall ahocorisck
-
-This pure python implementation from http://0x80.pl/proj/pyahocorasick/ 
-looks fine for my purposes.
-    $ cd src; wget pyahocorasick.py
-    $ python
-    >>> from pyahocorasick import Trie
-    >>> t = Trie()
-    >>> for w in ('fall2012/algorithms', 'fall2012/python'):
-    ...   t.add_word(w, w)    # (word, value) ; same for my purposes
-    >>> t.make_automaton()    # finalize word collection as search engine
-    >>> 
-    >>> list(t.iter('This is a string that has no match'))  
-    []
-    >>> s = '/courses/fall2012/python/has/match'
-    >>> list(t.iter(s))
-    [(23, ['fall2012/python'])]    # (index of last char, [list_of_matches])
-    >>> s[23 - len('fall2012/python') + 1 : (23 + 1)]
-Can provide start or end for search string, e.g. iter('....', start) 
-or iter('',start,end). For my purposes, there is a prefix (e.g. '/courses'),
-a course directory stored in the database (e.g. '/
-
-## July 1 ##
-
-Looking at wiki parsers.
-
-mwlib is a python MediaWiki available via pip install, 
-but it took a bit of googling and futzing to get it working.
-stackoverflow.com/questions/7630388/how-can-i-install-the-python-library-gevent-on-mac-os-x-lion
-    $ sudo port install libevent
-    $ CFLAGS="-I /opt/local/include -L /opt/local/lib" pip install gevent
-
-See http://djangosnippets.org/snippets/1277/ for an example of using this
-
-Looks like overkill - huge, awkward, database-of-articles, ... eh.
-
-There are several simpler ones based on wiki creole, which is close
-to what I use. Main difference is they use {{{  }}} for code & preformatted.
-Not sure what they do with existing HTML, but could be worked around.
-Also HR is exactly four dashes : ---- . Links are [[url|name]] ...
-though I think I sometimes reverse that on my site.
-
-It would take some adapting and/or pre-processing, but I think 
-one of these may work.
-
-    $ pip info creole
-    python-creole  https://pypi.python.org/pypi/python-creole/ 
-                   pure python ; macros as <<...>> 
-    Flask-Creole   based on python-creole
-    Creoleparser   bigger; has some support for dialect customization ; requires Genshi
-    creole         somewhat smaller https://bitbucket.org/thesheep/wikicreole/wiki/Home
-
-Here's a "pass thru macro" for marking pieces of text to go through unchanged.
-Note that the input and output must be unicode; 
-see https://code.google.com/p/python-creole/wiki/CreoleMacros
-    >>> creole2html(u'one two <<html>><p>paragraph</p><</html>> three', 
-    ...             macros={'html':lambda text='':text})
-
-## July 3 ##
-
-Generated a new random background image, pale tan (i.e. umber) color;
-see images/random_umber.* . (Actually run at cs.marlboro.edu/images/* 
-in old wikiacademia environment.)
-
-## July 5 ##
-
-Look at the available Flask extensions at http://flask.pocoo.org/extensions/ :
-    Flask-Testing, 
-    Flask-Uploads (file uploading), 
-    Flask-WeasyPrint (pdf generation), 
-    Flask-SeaSurf (prevent cross-site request forgery), 
-    Flask-Restless (generate REST APIs), 
-    Flask-Principal (identify management),
-    Flask-Login (via session), 
-    Flask-OpenID, 
-    Flask-Gravatar,
-    Flask-Mako (an alternative to the Jinja2 templates with *real* python),
-    Flask-Mail (sending email),
-    flask-lesscss (css scripting),
-    Flask-FlatPages (flat static pages based on text files),     (??)
-    Flask-DebugToolbar (Django style),
-    Flask-Dashed (admin dashboard inteface),
-    Flask-Cache,
-    Flask-Bcrypt (for hashing passwords),
-    Flask-Assets (webassets library for minifying and compiling CSS and JS),
-    Flask-Admin (admin interface)
-
-Also http://flask.pocoo.org/snippets/ , including security, sessions, 
-authentication, and a lot more.
-
-I think that I'd rather use Mako than Jinja2 for templating,
-and I haven't gone so far that changing should be too much work;
-see http://www.makotemplates.org/. Besides using a language 
-much closer to real python, it also is reminiscent of Mason,
-including the leading % signs for code.
-
-## July 6 ##
-
-The Mako templates work, but the error handling sucks.
-
-The generated flask error page - which worked great 
-for the jinja2 templates - is fairly useless for Mako.
-This is a significant hit against an otherwise nice 
-template engine.
-
-Also, the mako filter syntax is ugly : ${a | filter1, filter2} rather
-than what anyone familiar with filters (i.e. unix pipes) would expect,
-${a | filter1 | filter2} .  One explanation in the comments is that |
-is already part of python (bitwise or). I don't really buy that
-argument, since that would suggest that the whole filter syntax 
-itself is bogus.
-
-Working on login via Flask-Login, passwords (see model.py comments),
-ldap (started) - slow piecemeal progress; heading towards the 
-main template with user login.
-
-    $ sudo port install openldap
-    $ pip install Python-LDAP
-
-Installed other python libraries as listed in requirement.txt .
-
-See stackoverflow.com/questions/82831/how-do-i-check-if-a-file-exists-using-python
-for thinking about checking .access.yaml files. Also PyYAML.
-
-Have working mainroute at commit 'main.html with mako works' at [master 6e79ed0].
-
-## July 9 ##
-
-Mucking about with login, which is (after a lot of trial and error)
-now working. New role-based icons are in place.
-
-The Mako templating system is, I'm afraid, more of a disappointment
-than I'd expected. While it's close to python, it isn't really 
-python: endif and endfor required to stop blocks; context of 
-variables not obvious (i.e. "x=5" just crashes, since one
-can just introduce a new variable into the context) and caching
-trickiness means that capture() etc may be needed to do things
-which seem straightforward.
-
-The biggest problem is debugging - template errors are not reported in
-a way that is at all helpful - the whole template either succeeds or
-(mysteriously) fails. Flask's built-in templating system handles
-this much, much beter, as I remember.
-
-The notion of arguments sent to templates is an idea that I like - and
-used in Mason - but so far I'm just passing the entire context anyway.
-With Mason, that let me test subcomponents independently. But here,
-I'd need to set up separate routes for that (since I'm using 'include'
-and not inheritance, since my dispatch is 'course' and not just URL
-based), and so the subcomponents can't be tested/run as smaller 
-pieces ... and thus lose much of their value.
-
-The project is moving towards the model of Flask-Login and the more
-typical "code-in-the-model" or "code-in-the-controller", so the
-smaller components are not as independent as in the Mason case,
-where I had the submission handling was bundled with the forms.
-
-For now I'll stick with Mako anyway. But.
-
-Next: courses, files, pages, folder permissions and all that.
-
-I think that this time around I will have a Folder object in the
-database, with all permissions there rather than in the (slow)
-.access.yaml files I used before.
-
-That means, though, that'll I think I'll need a database-side
-infrastructure to automatically add/remove folders and 
-permissions if the file structure has changed.
-
-## July 12 ##
-
-Continuing to work on folders and permissions.
-
-## July 20 ##
-
-Work continued this week (sporadically) on folders and permissions
-in the database - taking too long.
-
-## July 22 ##
-
-Permisions and directories mostly working,
-and can setup themselves to defaults for folders in Demo Course.
-
-## July 24 ##
-
-Added unique coursepath to Directory, allowing a fallback Umber
-course, as I did with Wikiacademia. (I thought about other 
-mechanisms that would avoid embedding a typical course within
-another "course", but decided that I still like this model.)
-
-I tried to get the permissions to cascade delete from within sqlite3,
-but that didn't seem to work as I expected ... so I'm just doing
-that explicitly with Directory.delete() before creating new Directory
-objects. This whole permission/directory thing is likely going to 
-be slow, but since it doesn't happen often I don't think that
-will matter much.
-
-Next: 
- * setting up a Page object for a given request
- * 'generic' file view (with correct permission handling)
- * .md markdown view
- * .wiki mediawiki view (?)
- * directory view
- * error pages & code for (missing page, missing directory, missing course)
-
-## July 30 ##
-
-Have page with os_path, can_read, can_write working in model.py tests.
-Doubt I'll have something working well enough by the start of the term, though.
-
-## Aug 20
-
-Working on getting main.html functional after all the recent changes.
-Debugging the mako templates *really* sucks.
 
 -------------------------------------
 
@@ -377,8 +417,8 @@ syntax highlighting - pygments @ pygments.org
 
 LDAP - http://www.python-ldap.org/docs.shtml
 
+-------------------------------------------
 
-- - - -
 
 icons
 
@@ -399,8 +439,7 @@ school people icons
 User-icon.png - "mini icons" from "Custom Icon Design" ; free for noncommercial
 http://www.iconarchive.com/show/mini-icons-by-custom-icon-design/User-icon.html
 
-
-- - - - 
+----------------------------------------
 
 markdown 
  

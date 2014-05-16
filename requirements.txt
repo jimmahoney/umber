@@ -1,22 +1,23 @@
 # -- requirements.txt --
 #
 # git >= 1.7
-# sqlite3 >= 3.7
+# sqlite3 >= 3.8
 # virtualenv >= 1.9
 # python >= 2.7
 # openldap >= 2.4.11
 
-# You can install the remaining ones with
+# Then you can install the remaining ones with
 #
+#  $ virtualenv env -p python2.7     # create env/ folder with python2.7 
 #  $ . env/bin/activate
 #  (env)$ pip install -r requirements.txt
 
-Flask >= 0.9
-SQLAlchemy >= 0.8
+Flask >= 0.10.1
+SQLAlchemy >= 0.9.4
 python-creole >= 1.0
-markdown >= 2.0
+markdown >= 2.4
 Pygments >= 1.6
-Flask-Mako >= 0.2
+Flask-Mako >= 0.3
 Flask-Login >= 0.2.5
 Python-LDAP >= 2.4.13
 PyYAML >= 3.10
