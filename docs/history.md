@@ -1,5 +1,8 @@
 # umber development history #
 
+## May 17
+
+
 ## May 16 2014
 
 Second take - summer of 2014. Started looking at this 
@@ -51,7 +54,7 @@ This worked :
  * downloaded cpan's SQL-Translator***.tar.gz to get scripts/ 
    including sqlt-graph, which I copied to ./src/sqlt-graph
 
- $ ./src/sqlt-graph --from=SQLite database/umber_db.sql > database/umber_db.png
+The scripts and generated diagram are now in database/erd/
 
 ## Aug 20 2013
 

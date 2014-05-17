@@ -1,0 +1,31 @@
+#
+# database/erd/make_png
+#
+# Create umber_db.png, an entity relatioship diagram (ERD) for the database
+#
+# Requires SqlFairy, i.e.
+#   $ cpan install SQL::Translater; cpan install GraphViz
+# See 
+#   http://mancoosi.org/~abate/tags/sqlfairy
+#   http://search.cpan.org/~frew/SQL-Translator/
+#
+# In the ERD diagram an arrow connecting two tables, e.g.
+#
+#     [Course] ---> [Registration]
+#
+# means that there is a one-to-many relationship between them, 
+# for example that a course has many registrations, 
+# i.e. the Registration table has a course_id foreign key.
+#
+# A solid black arrow indicates a required (non-null) foreign key,
+# while an arrow outline represents an optional (may be null) relation.
+#
+
+# This assumes ". env/activate" has been run from umber folder
+# to configure the environment variables, and allows
+# the script to be run from other folders.
+cd $VIRTUAL_ENV/../database/erd
+
+# Then run it from this folder.
+./sqlt-graph --from=SQLite ../umber_db.sql > umber_db.png
+echo "OK, database/erd/umber_db.png has been created."

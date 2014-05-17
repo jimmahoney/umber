@@ -12,10 +12,9 @@
 --       Directory           FK Course, FK Parent
 --       Permission          FK Directory, FK Role, FK Person
 --
---   To create the database :
---   $ sqlite3 umber.db < create_umber_db.sql
---
-
+--   To create the database :          ./init_db
+--   To create & populate it:          ./reset_db
+--   To create an ERD diagram of it:   ./erd/make_png
 --
 -- Authentication of users can be from an LDAP database, 
 -- which is the default on the Marlboro College campus.
@@ -69,8 +68,8 @@ CREATE TABLE Role (
 
 --
 --
--- At the moment I'm using start_date to get/set the courses semester,
--- and ignoring end_date and active.
+-- At the moment I'm using start_date to get/set the course's semester,
+-- and ignoring the 'end_date' and 'active' fields.
 -- The assignments_md5 keeps track of whether or not the corresponding
 -- assignments.wiki file has been modified.
 -- The name_as_title field is for a display variation of the course name.
@@ -88,7 +87,6 @@ CREATE TABLE Course (
   credits INTEGER NOT NULL DEFAULT 0,
   notes TEXT NOT NULL DEFAULT ''
 );
-
 
 --
 -- A Registration ties together a person, a course, and a role, 
@@ -163,8 +161,8 @@ CREATE TABLE Work (
 );
 
 --
--- Directory corresponds a disk folder, 
--- and keeps track of which course its in and its permissions.
+-- Directory represents a disk folder,
+-- including which course its in and its permissions.
 --
 CREATE TABLE Directory (
   directory_id INTEGER PRIMARY KEY NOT NULL,
