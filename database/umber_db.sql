@@ -177,8 +177,11 @@ CREATE TABLE Directory (
 
 --
 -- Permission enables read and/or write access to Directories.
---   rights : 3 => write & read access ; 1 => read access
---   no Permission in database => neither read nor write access
+--   rights : 3 => write & read access ; 1 => read access 
+--   for either a person or a role. 
+--   (admin & faculty have read/write always, if without a Permission)
+--   non-admin, non-faculty folks need an explicit read or write permission,
+--   otherwise they should be denied access.
 --
 CREATE TABLE Permission (
  permission_id INTEGER PRIMARY KEY NOT NULL,

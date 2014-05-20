@@ -4,27 +4,18 @@
 
  --- examples / tests ---
  
- To initialize the database and run the tests from the command line :
+ To initialize the database and run the tests from the command line,
+ from the 'umber' directory.
 
-   $ pwd
-   .../umber
-   $ . env/bin/activate
-   (env)$ reset_db
-   ...
-
-   Then either
-   
-   (env)$ ./console
-   >> test()
-
-   or
-   
-   (env)$ python src/model.py -v
+   $ . env/bin/activate           # turn on virtualenv paths for this project
+   (env)$ reset_db                # initialize and populate the database
+   (env)$ python src/model.py -v  # run the model tests
    ...
    Test passed.
 
- The tests and manual database changes can also be run in the console;
- run ./console from the umber directory.
+ These tests (and any other adhoc database changes)
+ can of course also be run directly from the console
+ via "./console" from the umber directory.
    
  >>> populate_db()
  <BLANKLINE>
@@ -32,7 +23,7 @@
  >>> Course.init_demo()
   Initilizing directories and permissions for demo course.
 
- >>> demo = Course.find_by(name = 'Demo Course')
+ >>> demo = Course.find_by(name='Demo Course')
  >>> print demo.name
  Demo Course
 
@@ -65,7 +56,9 @@
  TedTeacher can read, can write 'johnsmith.'
  TedTeacher can read, can write 'protected.'
 
+ Fetch a row from the Person database table. (Several tests below use this.)
  >>> john = Person.find_by(username='johnsmith')
+
  >>> for path in ('demo_course/students/johnsmith/foo', 
  ...              'demo_course/syllabus', 
  ...              'demo_course/protected',  
@@ -74,7 +67,7 @@
  ...   print "--- pagepath = {}".format(p.pagepath)
  ...   print "    name = '{}'".format(p.name)
  ...   print "    is_directory = {}".format(p.is_directory)
- ...   ## (os_path isn't absolute, so not a good test.)
+ ...   ## (os_path is an absolute path and therefore not a good test.)
  ...   # print "    os_path = '{}'".format(p.os_path()) 
  ...   print "    can_read, can_write = {}, {}".format(p.can_read, p.can_write)
  ...   print "    course '{}' path='{}'".format(p.course.name, p.course.path)
@@ -103,21 +96,25 @@
      can_read, can_write = True, False
      course 'Umber' path=''
      directory path=''
+
+ Check to see that work.course (derived from work.assignment.course) is OK,
+ and that finding instances from other instances behaves as expected.
+ >>> Work.find_by(person=john).course.name
+ u'Demo Course'
  
  >>> (dirs['johnsmith'].name == 'johnsmith', 
  ...  dirs['johnsmith'].path == 'students/johnsmith',
  ...  dirs['johnsmith'].coursepath == 'demo_course/students/johnsmith')
  (True, True, True)
  
- >>> john = Person.find_by(username = 'johnsmith')      # get table row
- >>> print john.name                                    # display column
+ >>> print john.name                           # value of column from instance
  Johnny Smith
- >>> john.name = 'John Z. Smith'                        # modify column
- >>> db_session.flush()                                 # save changes
+ >>> john.name = 'John Z. Smith'               # modify column
+ >>> db_session.flush()                        # save changes to database
  
  >>> demo.name = 'Demo Course - new name'
  >>> db_session.flush()
- >>> Course.find_all_by(name = 'Demo Course')           # Now can't find it.
+ >>> Course.find_all_by(name = 'Demo Course')  # ... and now it isn't there.
  []
 
  Show the name of the first course John is in. 
@@ -140,7 +137,7 @@
  
  Here are a few of the concepts behind all this.
 
- For more details, see e.g.
+db For more details, see e.g.
  http://flask.pocoo.org/docs/patterns/sqlalchemy/ ,
  http://docs.sqlalchemy.org/en/rel_0_7/orm/query.html ,
  and the other reams of stuff at docs.sqlalchemy.org
@@ -160,13 +157,16 @@
  * I've set things up (see below) so that all new object instances are 
    added to db_session automatically. (This isn't the sqlalchemy default.)
     
- * Modifications to the objects can be sent to the database 
-   in two ways: via 'flush' (which continues the current transaction)
-   or 'commit' (which finishes this transaction). 'rollback' undoes
-   everything to the previous commit. (These three are all db_session
-   methods.) The flush or commit operations can be set to take
-   place automatically, whenever an instance is modified.
-   I've turned that off; see the creation of db_session below.
+ * Modifications to the objects can be sent to the database
+   using one of several db_session methods :
+    * flush      which continues the current transaction
+    * commit     which finishes this transaction.
+   Related db_session methods include
+    * begin      start a transaction (implied by changes, so not needed explicitly)
+    * rollback   undo everything back to the last commit
+   The flush or commit operations can be set to happen automatically
+   whenever an instance is modified. I've turned that off.
+   (See the creation of db_session below.)
 
  For this project, the database tables themselves and their schema
  are defined with SQL, in database/create_umber_db.sql. Then the
@@ -201,7 +201,7 @@
  
 """
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, orm
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from settings import project_os_path, pages_os_root, pages_url_root
@@ -217,6 +217,11 @@ db_session = scoped_session(sessionmaker(autocommit = False,
 class Umber(object):
     """ All of this project's database objects inherit from this class. """
 
+    ## SqlAlchemy does *not* call this __init__ for its inherited objects.
+    ## So it doesn't work to put object initialization here.
+    # def __init__(self):
+    #    print "in Umber.init id={}".format(id(self))
+    
     @declared_attr
     def __tablename__(cls):
         """ Set name of database table from class name """
@@ -317,26 +322,35 @@ class Umber(object):
             
 Base = declarative_base(cls = Umber)
 Base.query = db_session.query_property()
-            
-# Define bare object class for each database table.
-# Object methods for the table columns are created automatically.
-# Relation methods (many-to-one etc) for objects corresponding
-# to foreign keys are setup below; see 
-# docs.sqlalchemy.org/en/rel_0_7/orm/extensions/declarative.html .
-#
-# The many-to-many relations defined through an intermediate table don't
-# seem to be appropriate for editing; see 'viewonly' in declarative.html:
-#   "not a good idea to use [..] “secondary” arg [..] mapped
-#    to a class unless the relationship is declared with viewonly=True
-#    Otherwise [..] may attempt duplicate INSERT and DELETE"
-#
 
 def umber_object_init(self, *args, **kwargs):
-    # Seems that it isn't possible to put a default __init__ method in
-    # the Umber class; sqlalchemy's Base apparent set up its own.
-    # This is a workaround.
     #
-    # Also the sqlalchemy philosophy apparently wants to separate db_session
+    # This workaround defines a method which can be be used as (or in)
+    # the __init__ method for all the database classes. It will be
+    # called when a new instance is created (i.e. jim=Person(username='jim'))
+    # and will automatically add that instance to db_seesion. 
+    #
+    # Putting a default __init__ method in the Umber class or
+    # in the Base class is not supported by sqlalchemy, which bypasses both.
+    #
+    # Moreover, a class's __init__ methods aren't called at all when
+    # instances are "reconstructed" (sqlalchemy's term) by reading
+    # them in from the database with e.g. Course.all() or
+    # Person.find_by_name(username='johnsmith').  Instead sqlalchemy
+    # supplies an 'orm.reconstructor' decorator to mark methods to be
+    # called when the object is read in.
+    # (These 'reconstructed' instances are automatically in db_session.
+    # See db_session.new and db_session.dirty for lists of instances
+    # that have been created but not yet inserted into the database,
+    # and instances which have been modified but not yet updated in the db.)
+    #
+    # The discussions at 
+    # http://stackoverflow.com/questions/16156650/sqlalchemy-init-not-runnning
+    # and  http://docs.sqlalchemy.org/en/rel_0_8/orm/
+    #      mapper_config.html#constructors-and-object-initialization
+    # have some related information.
+    # 
+    # The sqlalchemy philosophy apparently wants to separate db_session
     # from the model, which is why, I think, they expect an 
     # explicit db_session.add() after each object instantiation. 
     # But I'm unconvinced, and want each new object automatically added
@@ -344,12 +358,40 @@ def umber_object_init(self, *args, **kwargs):
     # still required after creating an object before the database is modified.)
     # db_session.expunge(obj) can undo the .add() before a .commit().
     #
-    # Objects pulled from the database by the inherited
-    # cls.find_by(...) methods do *not* invoke cls's own __init__
-    # methods ... not the behavior I expected.
-    #
     Base.__init__(self, *args, **kwargs)
     db_session.add(self)
+    ## debugging :
+    # print "in umber_object_init id={}".format(id(self))
+
+# OK, now we're ready to define object class for each database table.
+#
+#  * instance interfaces for the table columns are created automatically,
+#    for example
+#       Person.find_by(username='johnsmith').name
+#    is 'John Smith'.
+#    The database columns may be modified by changing these values
+#    and then flushing or committing the changes to the database, i.e.
+#      Person.find_by(username='johnsmith').name = 'Fred Smith'
+#      db_session.flush()
+#
+#  * Relation interfaces for objects corresponding to foreign keys (e.g.
+#    many-to-one relations) are defined below, after the class definitions ;
+#    See docs.sqlalchemy.org/en/rel_0_7/orm/extensions/declarative.html .
+#    Thus for example
+#      Person.find_by(username='johnsmith').courses
+#    is a collection (effectively a list) of all Course instances that have
+#    a person_id field that matches 'johnsmith' database entry.
+#
+#  * The many-to-many relations defined through an intermediate table are
+#    not to be used for editing; see 'viewonly' in declarative.html:
+#      "not a good idea to use [..] “secondary” arg [..] mapped
+#      to a class unless the relationship is declared with viewonly=True
+#      Otherwise [..] may attempt duplicate INSERT and DELETE"
+#    An example would be
+#      Person.find_by(username='johnsmith').courses
+#    which gives a list of all courses that johnsmith is in.
+#    This can be used to find those courses; however, modifying which
+#    courses he's in by changing this list is not supported.
 
 class Person(Base):
     # columns: person_id, ldap_id, username, firstname, lastname, email,
@@ -358,11 +400,7 @@ class Person(Base):
     # implements Flask-Login's 'User Class' 
     #   with is_authenticated(), is_active(), is_anonymous(), get_id()
     # password scheme from http://flask.pocoo.org/snippets/54/
-
     __init__ = umber_object_init
-    #def __init__(self, *args, **kwargs):
-    #    umber_object_init(self, *args, **kwargs)
-
     def is_authenticated(self):           # for Flask-Login
         try:
             return self.logged_in
@@ -401,7 +439,7 @@ def anonymous_person():
 Role_name_rank = {'admin':5, 'faculty':4, 'student':3, 'guest':2, 'all':1}
 class Role(Base):
     # columns: role_id, name, rank
-    # Role.named('faculty') # memoized roles
+    # Role.named('faculty')         # memoized roles
     __init__ = umber_object_init
     name_rank = Role_name_rank
     names = set(Role_name_rank.keys())
@@ -428,21 +466,31 @@ class Course(Base):
     # columns: course_id, name, name_as_title, path, credits,
     #          start_date, end_date, assignments_md5, active, notes
     # relations: persons, assignments, directories, root
+    # derived: uri, semester, os_path
     def __init__(self, *args, **kwargs):
         # TODO: Enforce coursepath=unique constraint, to avoid
         # e.g. 'demo_course/foo' being in both
         # the 'Demo Course' and default 'Umber' courses.
         umber_object_init(self, *args, **kwargs)
-    def uri(self):
-        return '/' + pages_url_root + '/' + self.path + '/home'
-    def semester(self):
+        self.init_derived()
+    @orm.reconstructor
+    def init_derived(self):
+        self.uri = self._uri()
+        self.semester = self._semester()
+        self.os_path = self._os_path()
+        self.userdict = self._userdict()
+        self.roledict = self._roledict()
+    def _uri(self):
+        url_path = '/' + self.path if self.path != '' else ''
+        return '/' + pages_url_root + url_path + '/home'
+    def _semester(self):
         month = self.start_date[5:7]
         year = self.start_date[0:4]
         semester_name = {'01':'Spring', '02':'Spring', 
                          '09':'Fall',
                          '05':'Summer', '06':'Summer'}.get(month, '')
         return semester_name + ' ' + year
-    def os_path(self):
+    def _os_path(self):
         if self.path == '':
             # skip self.path; else end up with trailing /
             return os.path.join(project_os_path, pages_os_root)
@@ -477,35 +525,27 @@ class Course(Base):
         root_dir = Directory(name='', path='', coursepath=self.path, course=self)
         root_dir.set_permissions()
         db_session.commit()
-    def userdict(self):
-        """ Course.find_by(name=...).userdict()[username] => user """
-        try:
-            self._userdict_
-        except:
-            self._userdict_ = {p.username: p for p in self.persons}
-        return self._userdict_
-    def roledict(self):
-        """ Course.find_by(name=...).roledict()[username] => role """
-        try: 
-            self._roledict_
-        except:
-            self._roledict_ = {}
-            for p in self.persons:
-                try:
-                    self._roledict_[p.username] = \
-                      Registration.find_by(course=self, person=p).role
-                except:
-                    pass
-        return self._roledict_
-
+    def _userdict(self):
+        """ Course.find_by(name=...).userdict[username] => user """
+        return {p.username: p for p in self.persons}
+    def _roledict(self):
+        """ Course.find_by(name=...).roledict[username] => role """
+        result = {}
+        for p in self.persons:
+            try:
+                result[p.username] = \
+                    Registration.find_by(course=self, person=p).role
+            except:
+                pass
+        return result
+    #
     #def by_role(self, role):
     #    if isinstance(role, str):
     #        role = Role.named(role)
     #    return Person.filter_by(course=self).filter_by(role=role).all()
     #def students(self):
     #    return self.by_role('student')
-
-    ####
+    #
     @classmethod
     def init_demo(cls):
         demo = Course.find_by(name='Demo Course')
@@ -516,12 +556,14 @@ class Registration(Base):
     # columns: registration_id, person_id, course_id, role_id,
     #          date, midterm, grade, credits, status
     # relations: person, course, role
+    #
     __init__ = umber_object_init
 
 class Assignment(Base):
     # columns: assignment_id, course_id, name, uriname, due, nth,
     #          blurb, active, notes
     # relations: course
+    #
     __init__ = umber_object_init
     
 class Work(Base):
@@ -529,14 +571,24 @@ class Work(Base):
     #          studentLastSeen, studentLastModified,
     #          facultyLastSeen, facultyLastModified,
     #          grade, notes
-    # relations: person, assignment, course
-    __init__ = umber_object_init
+    # relations: person, assignment
+    # derived: course
+    #
+    def __init__(self):
+        umber_object_init(self, *args, **kwargs)
+        self.init_derived()
+    @orm.reconstructor
+    def init_derived(self):
+        self.course = self.assignment.course
 
 class Directory(Base):
     # columns: directory_id, name, course_id, coursepath, path, parent_id
     # relations: course, parent, children, permissions
+    #
     __init__ = umber_object_init
     #def __init__(self, *args, **kwargs):
+    #    ## why did I want to do this? If when pulling from db,
+    #    ## then use @orm.reconstructor
     #    #try:
     #    #    old_dir = Directory.find_by(coursepath=kwargs['coursepath'])
     #    #    db_session.delete(old_dir)
@@ -726,7 +778,10 @@ Directory.course = relationship(Course)
 Directory.parent = relationship(Directory, 
                    remote_side=Directory.directory_id, uselist=False)
 Directory.children = relationship(Directory, remote_side=Directory.parent_id)
-Directory.permissions = relationship(Permission)
+# http://docs.sqlalchemy.org/en/rel_0_9/orm/collections.html#passive-deletes ;
+# umber_db.sql has matching Permission( ... directory_id ON DELETE CASCADE) .
+Directory.permissions = relationship(Permission, cascade="all, delete-orphan",
+                                     passive_deletes=True )
 
 Permission.role = relationship(Role)
 Permission.person = relationship(Person)
