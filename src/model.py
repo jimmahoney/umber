@@ -8,8 +8,8 @@
  from the 'umber' directory.
 
    $ . env/bin/activate           # turn on virtualenv paths for this project
-   (env)$ reset_db                # initialize and populate the database
-   (env)$ python src/model.py -v  # run the model tests
+   (env)$ reset_db                # create database & populate with defaults
+   (env)$ python src/model.py -v  # run these model tests
    ...
    Test passed.
 
@@ -18,10 +18,7 @@
  via "./console" from the umber directory.
    
  >>> populate_db()
- <BLANKLINE>
   Populating database with defaults and test data.
- >>> Course.init_demo()
-  Initilizing directories and permissions for demo course.
 
  >>> demo = Course.find_by(name='Demo Course')
  >>> print demo.name
@@ -59,9 +56,9 @@
  Fetch a row from the Person database table. (Several tests below use this.)
  >>> john = Person.find_by(username='johnsmith')
 
- >>> for path in ('demo_course/students/johnsmith/foo', 
- ...              'demo_course/syllabus', 
- ...              'demo_course/protected',  
+ >>> for path in ('demo/students/johnsmith/foo', 
+ ...              'demo/syllabus', 
+ ...              'demo/protected',  
  ...              'one/two/three'):
  ...   p = Page(pagepath=path, user=john)
  ...   print "--- pagepath = {}".format(p.pagepath)
@@ -72,23 +69,23 @@
  ...   print "    can_read, can_write = {}, {}".format(p.can_read, p.can_write)
  ...   print "    course '{}' path='{}'".format(p.course.name, p.course.path)
  ...   print "    directory path='{}'".format(p.directory.path)
- --- pagepath = demo_course/students/johnsmith/foo
+ --- pagepath = demo/students/johnsmith/foo
      name = 'foo'
      is_directory = False
      can_read, can_write = True, True
-     course 'Demo Course' path='demo_course'
+     course 'Demo Course' path='demo'
      directory path='students/johnsmith'
- --- pagepath = demo_course/syllabus
+ --- pagepath = demo/syllabus
      name = 'syllabus'
      is_directory = False
      can_read, can_write = True, False
-     course 'Demo Course' path='demo_course'
+     course 'Demo Course' path='demo'
      directory path=''
- --- pagepath = demo_course/protected
+ --- pagepath = demo/protected
      name = 'protected'
      is_directory = True
      can_read, can_write = True, False
-     course 'Demo Course' path='demo_course'
+     course 'Demo Course' path='demo'
      directory path='protected'
  --- pagepath = one/two/three
      name = 'three'
@@ -104,7 +101,7 @@
  
  >>> (dirs['johnsmith'].name == 'johnsmith', 
  ...  dirs['johnsmith'].path == 'students/johnsmith',
- ...  dirs['johnsmith'].coursepath == 'demo_course/students/johnsmith')
+ ...  dirs['johnsmith'].pathincourse == 'demo/students/johnsmith')
  (True, True, True)
  
  >>> print john.name                           # value of column from instance
@@ -198,7 +195,13 @@ db For more details, see e.g.
 
  python-ldap may also be used for authentication,
  in addition to the password hashes in the database.
- 
+
+ IN PROGRESS    
+
+ Check that directories are unique and are in their correct courses :
+ >> pprint(sorted([(d.path, d.name, d.course.name) for d in Directory.all()]))
+
+  
 """
 
 from sqlalchemy import create_engine, orm
@@ -206,6 +209,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from settings import project_os_path, pages_os_root, pages_url_root
 from werkzeug.security import generate_password_hash, check_password_hash
+from random import randint
 import os
 
 db_path = 'sqlite:///' + project_os_path + '/database/umber.db'
@@ -213,6 +217,26 @@ db_engine = create_engine(db_path, convert_unicode = True)
 db_session = scoped_session(sessionmaker(autocommit = False, 
                                          autoflush = False, 
                                          bind = db_engine))
+
+default_date = '2001-01-01'
+
+def month_to_semester(month):
+    """ Convert two digit string month '01' to '12' to semester """
+    if month in ('01', '02', '03', '04'):
+        return 'Spring'
+    elif month in ('05', '06', '07', '08'):
+        return 'Summer'
+    else:
+        return 'Fall'
+
+def randstring(base='', digits=3):
+    """ Return a string with some random digits at the end
+        >>> x = randstring('foo')           # e.g. 'foo326'
+        >>> len(x) == 6 and x[0:3] == 'foo'
+        True
+    """
+    (low, high) = (10**digits, 10**(digits+1) - 1)
+    return base + str(randint(low, high))
 
 class Umber(object):
     """ All of this project's database objects inherit from this class. """
@@ -400,7 +424,12 @@ class Person(Base):
     # implements Flask-Login's 'User Class' 
     #   with is_authenticated(), is_active(), is_anonymous(), get_id()
     # password scheme from http://flask.pocoo.org/snippets/54/
-    __init__ = umber_object_init
+    def __init__(self, *args, **kwargs):
+        if kwargs.get('name') and not kwargs.get('username'):
+            kwargs['username'] = kwargs['name'].lower().replace(' ', '_')
+        kwargs['username'] = kwargs.get('username') or randstring('randperson')
+        kwargs['name'] = kwargs.get('name') or kwargs['username']
+        umber_object_init(self, *args, **kwargs)
     def is_authenticated(self):           # for Flask-Login
         try:
             return self.logged_in
@@ -468,11 +497,14 @@ class Course(Base):
     # relations: persons, assignments, directories, root
     # derived: uri, semester, os_path
     def __init__(self, *args, **kwargs):
-        # TODO: Enforce coursepath=unique constraint, to avoid
-        # e.g. 'demo_course/foo' being in both
-        # the 'Demo Course' and default 'Umber' courses.
+        kwargs['name'] = kwargs.get('name') or randstring('randcourse')
+        kwargs['name_as_title'] = kwargs.get('name_as_title') or kwargs['name']
+        if 'path' not in kwargs:  # path='' for 'Umber' course
+            kwargs['path'] = kwargs['name'].replace(' ', '_')
+        kwargs['start_date'] = kwargs.get('start_date') or default_date
         umber_object_init(self, *args, **kwargs)
         self.init_derived()
+        self.init_directories()
     @orm.reconstructor
     def init_derived(self):
         self.uri = self._uri()
@@ -480,51 +512,55 @@ class Course(Base):
         self.os_path = self._os_path()
         self.userdict = self._userdict()
         self.roledict = self._roledict()
-    def _uri(self):
-        url_path = '/' + self.path if self.path != '' else ''
-        return '/' + pages_url_root + url_path + '/home'
     def _semester(self):
         month = self.start_date[5:7]
         year = self.start_date[0:4]
-        semester_name = {'01':'Spring', '02':'Spring', 
-                         '09':'Fall',
-                         '05':'Summer', '06':'Summer'}.get(month, '')
-        return semester_name + ' ' + year
+        return month_to_semester(month) + ' ' + year
+    def _uri(self):
+        if self.path == '':
+            return '/'.join([pages_url_root, 'home'])
+        else:
+            return '/'.join([pages_url_root, self.path, 'home'])
+        #url_path = '/' + self.path if self.path != '' else ''
+        #return '/' + pages_url_root + url_path + '/home'
     def _os_path(self):
         if self.path == '':
             # skip self.path; else end up with trailing /
             return os.path.join(project_os_path, pages_os_root)
         else:
             return os.path.join(project_os_path, pages_os_root, self.path)
-    def init_directories(self, course_defaults = True):
-        """ Remove any old database directory objects and their permissions.
-            Then create database directories and deafult permissions
-            all folders in this course's file tree."""
-        # print "-- init_directories( course.name='{}')".format(self.name)
-        # print "  project_os_path = ", project_os_path
-        # print "  pages_os_root   = ", pages_os_root
-        # print "  course_os_path  = ", self.os_path()
-        # for dir_os_path, dirnames, filenames in os.walk(self.os_path()):
-        #     print "  ", dir_os_path
-
-        ### GETTING ERRORS - I think I'm trying to delete 
-        ### a directory without deleting its permission first.
-        ### Perhaps set up a cascade delete ??
-        for dir in self.directories:
-            Directory.delete(dir)
-            #db_session.execute('delete from Permission where directory_id=:id;',
-            #                   {'id': dir.directory_id})
-            #db_session.delete(dir)
-        # There should always be a root os folder at self.os_path()
-        #try:
-        #    db_session.delete(Directory.find_by(coursepath=self.path))
-        #    db_session.commit()
-        #except:
-        #    pass
-        Directory.delete_coursepath(self.path)
-        root_dir = Directory(name='', path='', coursepath=self.path, course=self)
-        root_dir.set_permissions()
-        db_session.commit()
+    def init_directories(self):
+        """ initialize default database Directory objects """
+        # root = Directory(name='', path='', pathincourse=self.path, course=self)
+        pass
+    #    """ Remove any old database directory objects and their permissions.
+    #        Then create database directories and deafult permissions
+    #        all folders in this course's file tree."""
+    #    # print "-- init_directories( course.name='{}')".format(self.name)
+    #    # print "  project_os_path = ", project_os_path
+    #    # print "  pages_os_root   = ", pages_os_root
+    #    # print "  course_os_path  = ", self.os_path()
+    #    # for dir_os_path, dirnames, filenames in os.walk(self.os_path()):
+    #    #     print "  ", dir_os_path
+    #
+    #    ### GETTING ERRORS - I think I'm trying to delete 
+    #    ### a directory without deleting its permission first.
+    #    ### Perhaps set up a cascade delete ??
+    #    for dir in self.directories:
+    #        Directory.delete(dir)
+    #        #db_session.execute('delete from Permission where directory_id=:id;',
+    #        #                   {'id': dir.directory_id})
+    #        #db_session.delete(dir)
+    #    # There should always be a root os folder at self.os_path()
+    #    #try:
+    #    #    db_session.delete(Directory.find_by(pathincourse=self.path))
+    #    #    db_session.commit()
+    #    #except:
+    #    #    pass
+    #    Directory.delete_pathincourse(self.path)
+    #    root_dir = Directory(name='', path='', pathincourse=self.path, course=self)
+    #    root_dir.set_permissions()
+    #    db_session.commit()
     def _userdict(self):
         """ Course.find_by(name=...).userdict[username] => user """
         return {p.username: p for p in self.persons}
@@ -546,11 +582,11 @@ class Course(Base):
     #def students(self):
     #    return self.by_role('student')
     #
-    @classmethod
-    def init_demo(cls):
-        demo = Course.find_by(name='Demo Course')
-        print " Initilizing directories and permissions for demo course."
-        demo.init_directories()
+    #@classmethod
+    #def init_demo(cls):
+    #    demo = Course.find_by(name='Demo Course')
+    #    print " Initializing directories and permissions for demo course."
+    #    #demo.init_directories()
     
 class Registration(Base):
     # columns: registration_id, person_id, course_id, role_id,
@@ -574,7 +610,7 @@ class Work(Base):
     # relations: person, assignment
     # derived: course
     #
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         umber_object_init(self, *args, **kwargs)
         self.init_derived()
     @orm.reconstructor
@@ -582,15 +618,33 @@ class Work(Base):
         self.course = self.assignment.course
 
 class Directory(Base):
-    # columns: directory_id, name, course_id, coursepath, path, parent_id
+    # columns: directory_id, name, course_id, path, parent_id
     # relations: course, parent, children, permissions
+    # derived: name (path within course root folder), os_path (absolute)
     #
-    __init__ = umber_object_init
+    # The folder's location within the pages_os_root folder is its 'path'.
+    # (Each course has the same notion of 'path', under pages_os_root.)
+    # This implies that
+    #    * the top-level default course has path=='', e.g. /.../umber/pages
+    #    * the absolute location of other directories is 
+    #      os.path.join(project_os_path, pages_os_root, path)
+    #      e.g. /.../umber/pages/a/b when path=='a/b'
+    #    * the folder's 'name' (its relative path within the course)
+    #      is os.path.relpath(course.path, path)
+    #    * the root folder for a course has directory.path==course.path
+
+    def __init__(self, *args, **kwargs):
+        umber_object_init(self, *args, **kwargs)
+        self.init_derived()
+    @orm.reconstructor
+    def init_derived(self):
+        self.name = self._name()
+        self.os_path = self._os_path()
     #def __init__(self, *args, **kwargs):
     #    ## why did I want to do this? If when pulling from db,
     #    ## then use @orm.reconstructor
     #    #try:
-    #    #    old_dir = Directory.find_by(coursepath=kwargs['coursepath'])
+    #    #    old_dir = Directory.find_by(pathincourse=kwargs['pathincourse'])
     #    #    db_session.delete(old_dir)
     #    #    db_session.commit()
     #   #except:
@@ -610,9 +664,9 @@ class Directory(Base):
                        'wiki':     { 'read': ('all', ),  'write' : ('guest',)},
                       }
     @classmethod
-    def delete_coursepath(cls, coursepath):
+    def delete_pathincourse(cls, pathincourse):
         try:
-            dir = Directory.find_by(coursepath=coursepath)
+            dir = Directory.find_by(pathincourse=pathincourse)
             Directory.delete(dir)
         except:
             pass
@@ -626,11 +680,13 @@ class Directory(Base):
                                {'id': directory.directory_id})
         db_session.delete(directory)
         db_session.commit()
-    def os_path(self):
+    def _name(self):
+        return os.path.relpath(self.course.path, self.path)
+    def _os_path(self):
         if self.path == '':
-            return self.course.os_path()
+            return os.path.join(project_os_path, pages_os_root)
         else:
-            return os.path.join(self.course.os_path(), self.path)
+            return os.path.join(project_os_path, pages_os_root, self.path)
     def set_1_permission(self, who, rights):
         if who in Role.names:
             r = Role.named(who)
@@ -676,15 +732,15 @@ class Directory(Base):
         db_session.commit()
         for subname in os.walk(self.os_path()).next()[1]:
             subpath = os.path.join(self.path, subname)
-            subcoursepath = os.path.join(self.course.path, subpath)
+            subpathincourse = os.path.join(self.course.path, subpath)
             #try:
-            #    db_session.delete(Directory.find_by(coursepath=subcoursepath))
+            #    db_session.delete(Directory.find_by(pathincourse=subpathincourse))
             #    db_session.commit()
             #except:
             #    pass
-            Directory.delete_coursepath(subcoursepath)
+            Directory.delete_pathincourse(subpathincourse)
             sub = Directory(course=self.course, 
-                    name=subname, path=subpath, coursepath=subcoursepath)
+                    name=subname, path=subpath, pathincourse=subpathincourse)
             sub.set_permissions(course_defaults, recur, readers, writers)
     def can_read(self, user, role=None):
         return self.rights(user, role) >= Directory.read_access
@@ -779,6 +835,7 @@ Directory.parent = relationship(Directory,
                    remote_side=Directory.directory_id, uselist=False)
 Directory.children = relationship(Directory, remote_side=Directory.parent_id)
 # http://docs.sqlalchemy.org/en/rel_0_9/orm/collections.html#passive-deletes ;
+# http://www.sqlite.org/foreignkeys.html#fk_actions
 # umber_db.sql has matching Permission( ... directory_id ON DELETE CASCADE) .
 Directory.permissions = relationship(Permission, cascade="all, delete-orphan",
                                      passive_deletes=True )
@@ -808,8 +865,8 @@ class Page(object):
         # pagepath is e.g. one/two/three  (no leading or trailing slash)
         # This recursive procedure will try to find successively
         #    'one/two/three', 'one/two', 'one', ''
-        # as a Directory's (unique) coursepath. 
-        # Since the 'Umber' course has coursepath '', 
+        # as a Directory's (unique) pathincourse. 
+        # Since the 'Umber' course has pathincourse '', 
         # this should always terminate there if not before.
         #    os.path.split('/one/two/three')  => ('/one/two', 'three')
         #    os.path.join(a, b)                   dirname     basename
@@ -822,7 +879,7 @@ class Page(object):
         #    os.curdir, os.pardir    ('.', '..') on unix
         # TODO : put missing directories into the database?
         try:
-            return Directory.find_by(coursepath = pagepath)
+            return Directory.find_by(pathincourse = pagepath)
         except:
             return self.find_directory(os.path.dirname(pagepath))
     def __init__(self, 
@@ -869,109 +926,83 @@ class Page(object):
         self.lastmodified = ' - MODIFIED DATE -'  # TODO : what should this be?
 
 def populate_db():
-    """ Create and commit the initial database objects """
-    # The database should have already been created; see database/init_db.  
+    """ Create and commit the default database objects """
+    # i.e. Roles, the 'umber' course and its root Directory,
+    # and the 'demo' course along with its sample Persons,
+    # Registrations, Assignments, and Works.
+    #
+    # The sqlite database must already exist before this is run.
+    # To create it, run database/init_db. This may be run multiple
+    # times without ill effect.
     #
     # The various .find*(...) methods look for things in the database,
-    # not just in the current session, so they must already be
-    # committed before they can be used. And the *_id fields don't
-    # have values until after the object is in the database.  However, 
-    # when accessing (or setting) related objects directly, other
-    # objects may be used, e.g. "work1.person = john". And that even
-    # can work with objects in the arguments - see my >>> tests above.
+    # *not* in the current session, so they must be committed before
+    # they can be accessed via .find*(...).
     #
-    print "\n Populating database with defaults and test data."
+    # Although objects don't *_id fields until after they've been committed
+    # to the database, and it's those *_id fields that are used in
+    # the relations between objects, SqlAlchemy will fill in the relations
+    # properly if they're all committed at the end.
+    #
+    print " Populating database with default data."
     Role.init_database()
 
     umbercourse = Course.find_or_create(name = 'Umber',
                                         path = '',
-                                        start_date = '2013-01-01')
-    # This must be before any other courses are created.
-    umbercourse.init_directories()
-    
+                                        start_date = default_date)
     student = Role.find_by(name = 'student')
     faculty = Role.find_by(name = 'faculty')    
     jane = Person.find_or_create(username = 'janedoe',
-                                 firstname = 'Jane',
-                                 lastname = 'Doe',
                                  name = 'Jane Q. Doe',
                                  email = 'janedoe@fake.address')
     jane.set_password('test')
     john = Person.find_or_create(username = 'johnsmith',
-                                 firstname = 'John',
-                                 lastname = 'Smith',
                                  name = 'Johnny Smith',
                                  email = 'johnsmith@fake.address')
     john.set_password('test')
     tedt = Person.find_or_create(username = 'tedteacher',
-                                 firstname = 'Ted',
-                                 lastname = 'Teacher',
-                                 name = 'TedTeacher',
+                                 name = 'Ted Teacher',
                                  email = 'ted@fake.address')
     tedt.set_password('test')
     democourse = Course.find_or_create(name = 'Demo Course',
                                        name_as_title = 'Demo<br>Course',
-                                       path = 'demo_course',
+                                       path = 'demo',
                                        start_date = '2013-01-01')
-    db_session.commit()
-    Registration.find_or_create(person_id = john.person_id,
-                                course_id = democourse.course_id,
-                                role_id = student.role_id,
+    Registration.find_or_create(person = john,
+                                course = democourse,
+                                role = student,
                                 date = '2013-01-02')
-    Registration.find_or_create(person_id = jane.person_id,
-                                course_id = democourse.course_id,
-                                role_id = student.role_id,
+    Registration.find_or_create(person = jane,
+                                course = democourse,
+                                role = student,
                                 date = '2013-01-03')
-    Registration.find_or_create(person_id = tedt.person_id,
-                                course_id = democourse.course_id,
-                                role_id = faculty.role_id,
+    Registration.find_or_create(person = tedt,
+                                course = democourse,
+                                role = faculty,
                                 date = '2013-01-04')
-    a1 = Assignment.find_or_create(course_id = democourse.course_id,
+    a1 = Assignment.find_or_create(course = democourse,
                                    nth = 1,
                                    name = 'week 1',
                                    uriname = 'week_1',
                                    due = '2013-01-20',
                                    blurb = 'Do chap 1 exercises 1 to 10.')
-    a2 = Assignment.find_or_create(course_id = democourse.course_id,
+    a2 = Assignment.find_or_create(course = democourse,
                                    nth = 1,
                                    name = 'week 2',
                                    uriname = 'week_2',
                                    due = '2013-01-27',
                                    blurb = 'Write a four part fugue.')
-    db_session.commit()
-    Work.find_or_create(person_id = john.person_id,
-                        assignment_id = a1.assignment_id,
+    Work.find_or_create(person = john,
+                        assignment = a1,
                         submitted = '2013-01-20 18:19:20',
                         grade = 'B')
-    Work.find_or_create(person_id = jane.person_id,
-                        assignment_id = a1.assignment_id,
+    Work.find_or_create(person = jane,
+                        assignment = a1,
                         submitted = '2013-01-21 16:01:01',
                         grade = 'B-')
-    db_session.commit()    
-
+    db_session.commit()
     
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
 
-"""
- other testing from the console
-
- Check that directory courspaths are indeed unique and 
- are in their correct courses :
- >> pprint(sorted([(d.coursepath, d.course.name) for d in Directory.all()]))
- [(u'', u'Umber'),
-  (u'admin', u'Umber'),
-  (u'demo_course', u'Demo Course'),
-  (u'demo_course/faculty', u'Demo Course'),
-  (u'demo_course/media', u'Demo Course'),
-  (u'demo_course/notes', u'Demo Course'),
-  (u'demo_course/protected', u'Demo Course'),
-  (u'demo_course/special', u'Demo Course'),
-  (u'demo_course/students', u'Demo Course'),
-  (u'demo_course/students/janedoe', u'Demo Course'),
-  (u'demo_course/students/johnsmith', u'Demo Course'),
-  (u'demo_course/wiki', u'Demo Course'),
-  (u'testing', u'Umber')]
-
-"""

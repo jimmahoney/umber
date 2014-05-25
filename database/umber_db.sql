@@ -50,8 +50,6 @@ CREATE TABLE Person (
   password TEXT NOT NULL DEFAULT '',
   crypto TEXT NOT NULL DEFAULT '',
   name TEXT NOT NULL DEFAULT '',
-  firstname TEXT NOT NULL DEFAULT '',
-  lastname TEXT NOT NULL DEFAULT '',
   email TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT ''
 );
@@ -67,19 +65,22 @@ CREATE TABLE Role (
 );
 
 --
---
--- At the moment I'm using start_date to get/set the course's semester,
--- and ignoring the 'end_date' and 'active' fields.
--- The assignments_md5 keeps track of whether or not the corresponding
--- assignments.wiki file has been modified.
--- The name_as_title field is for a display variation of the course name.
--- The 'notes' field is essentially a catch-all for future use.
+-- A Course corresponds to a set of editable pages, assignments, and work, 
+-- with faculty and students assigned to it through Registration entries.
+--   * Its 'path' column gives the location of its 
+--     root folder within the pages_os_root folder
+--   * start_date sets which semester it's in.
+--     (ignoring the 'end_date' and 'active' fields)
+--   * The assignments_md5 keeps track of whether or not the corresponding
+--     assignments.wiki file has been modified.
+--   * The name_as_title column is for a display variation of the course name.
+--   * The 'notes' column is for future use.
 --
 CREATE TABLE Course (
   course_id INTEGER PRIMARY KEY NOT NULL ,
-  name TEXT NOT NULL DEFAULT '_anonymous_',
+  name TEXT NOT NULL,
   name_as_title TEXT NOT NULL DEFAULT '',
-  path TEXT NOT NULL DEFAULT '',
+  path TEXT UNIQUE NOT NULL,
   start_date TEXT NOT NULL DEFAULT '1900-01-01',
   end_date TEXT NOT NULL DEFAULT '1901-01-01',
   assignments_md5 TEXT NOT NULL DEFAULT '',
@@ -162,15 +163,15 @@ CREATE TABLE Work (
 
 --
 -- Directory represents a disk folder,
--- including which course its in and its permissions.
+-- including which course it's in and its permissions.
+-- Its 'path' column gives its location with the pages_os_root folder,
+-- which matches the notion of 'path' within the Course table.
 --
 CREATE TABLE Directory (
   directory_id INTEGER PRIMARY KEY NOT NULL,
-  name TEXT NOT NULL DEFAULT '',
   course_id INTEGER NOT NULL DEFAULT 0
    CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
-  path TEXT NOT NULL DEFAULT '',
-  coursepath TEXT UNIQUE NOT NULL,
+  path TEXT UNIQUE NOT NULL,
   parent_id INTEGER DEFAULT NULL
    CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
 );

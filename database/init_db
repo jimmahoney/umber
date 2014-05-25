@@ -1,8 +1,10 @@
 # initialize database and its tables
 #
-echo " Saving previous database to umber.db_old"
-cp umber.db umber.db_old
-echo " Initializing umber.db from umber_db.sql"
-rm umber.db
+# WARNING: this deletes previous database data
+#          ... though it is backed up in umber.db_old
+#
+cd $VIRTUAL_ENV/../database
+echo " Saving database to umber.db_old"
+cp umber.db umber.db_old; rm umber.db
+echo " Initializing empty database umber.db from umber_db.sql"
 sqlite3 umber.db < umber_db.sql
-

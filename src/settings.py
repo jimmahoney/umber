@@ -27,7 +27,3 @@ def _get_project_os_path():
     return parent_folder
 
 project_os_path = _get_project_os_path()  
-
-
-
-
