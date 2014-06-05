@@ -10,8 +10,8 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
      flash, get_flashed_messages
 from flask.ext.mako import MakoTemplates, render_template
 from flask.ext.login import LoginManager, login_user, logout_user, current_user
-from src.settings import secret_key, project_os_path, \
-     pages_url_root, pages_os_root
+from src.settings import secret_key, os_root, \
+     courses_url_base, courses_os_base
 from src.model import db_session, populate_db, anonymous_person, \
      Person, Role, Course, Registration, Assignment, Work, \
      Directory, Permission, Page
@@ -82,7 +82,7 @@ def testingroute():
                            foo = 'foolish'           # context variables
         )
 
-@app.route('/' + pages_url_root + '/<path:pagepath>', methods=['GET', 'POST'])
+@app.route('/' + courses_url_base + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
     # The Flask global variables available by default within
     # within template contexts by are 

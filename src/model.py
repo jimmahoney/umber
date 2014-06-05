@@ -18,24 +18,53 @@
  via "./console" from the umber directory.
    
  >>> populate_db()
-  Populating database with defaults and test data.
+  Populating database with default data.
 
  >>> demo = Course.find_by(name='Demo Course')
  >>> print demo.name
  Demo Course
 
- >>> usernames = sorted(demo.userdict().keys())
- >>> users = demo.userdict()
- >>> roles = demo.roledict()
+ >>> usernames = sorted(demo.userdict.keys())
+ >>> users = demo.userdict
+ >>> roles = demo.roledict
  >>> for x in usernames:
  ...   print "{} is a {}.".format(users[x].name, roles[x].name)
  Jane Q. Doe is a student.
  Johnny Smith is a student.
- TedTeacher is a faculty.
+ Ted Teacher is a faculty.
 
- >>> dirs = {x : Directory.find_by(name=x, course=demo) 
+ Fetch a row from the Person database table. (Several tests below use this.)
+ >>> john = Person.find_by(username='johnsmith')
+
+ >>> print john.name                           # value of column from instance
+ Johnny Smith
+ >>> john.name = 'John Z. Smith'               # modify column
+ >>> db_session.flush()                        # save changes to database
+ 
+ >>> demo.name = 'Demo Course - new name'
+ >>> db_session.flush()
+ >>> Course.find_all_by(name = 'Demo Course')  # ... and now it isn't there.
+ []
+
+ Show the name of the first course John is in. 
+ (There's a lot going on behind the scenes here - the relationship()
+ method has setup a Person.courses field to follow the many-to-many connection
+ from Person through Registration to Course.
+ >>> print john.courses[0].name
+ Demo Course - new name
+
+ Find John's status in the demo course.
+ (This is also doing some tricky stuff, since we're using objects - 
+ not ids - to identify which registration to find.)
+ >>> print Registration.find_by(person=john, course=demo).role.name
+ student
+ 
+ >>> db_session.rollback()     # Undo these uncommited database modifications,
+
+  
+ >> dirs = {x : Directory.find_by(name=x, course=demo) 
  ...             for x in ('', 'protected', 'johnsmith')}
- >>> for who in usernames:
+ >> for who in usernames:
  ...     for where in dirs.values():
  ...       role = roles[who]
  ...       print "{} {} read, {} write '{}.'".format( 
@@ -53,10 +82,7 @@
  TedTeacher can read, can write 'johnsmith.'
  TedTeacher can read, can write 'protected.'
 
- Fetch a row from the Person database table. (Several tests below use this.)
- >>> john = Person.find_by(username='johnsmith')
-
- >>> for path in ('demo/students/johnsmith/foo', 
+ >> for path in ('demo/students/johnsmith/foo', 
  ...              'demo/syllabus', 
  ...              'demo/protected',  
  ...              'one/two/three'):
@@ -64,8 +90,8 @@
  ...   print "--- pagepath = {}".format(p.pagepath)
  ...   print "    name = '{}'".format(p.name)
  ...   print "    is_directory = {}".format(p.is_directory)
- ...   ## (os_path is an absolute path and therefore not a good test.)
- ...   # print "    os_path = '{}'".format(p.os_path()) 
+ ...   ## (os_fullpath is installation folder dependendet; not a good test.)
+ ...   # print "    os_fullpath = '{}'".format(p.os_fullpath()) 
  ...   print "    can_read, can_write = {}, {}".format(p.can_read, p.can_write)
  ...   print "    course '{}' path='{}'".format(p.course.name, p.course.path)
  ...   print "    directory path='{}'".format(p.directory.path)
@@ -99,71 +125,89 @@
  >>> Work.find_by(person=john).course.name
  u'Demo Course'
  
- >>> (dirs['johnsmith'].name == 'johnsmith', 
+ >> (dirs['johnsmith'].name == 'johnsmith', 
  ...  dirs['johnsmith'].path == 'students/johnsmith',
  ...  dirs['johnsmith'].pathincourse == 'demo/students/johnsmith')
  (True, True, True)
  
- >>> print john.name                           # value of column from instance
- Johnny Smith
- >>> john.name = 'John Z. Smith'               # modify column
- >>> db_session.flush()                        # save changes to database
+
+ >>> db_session.remove()       # close the session nicely.
  
- >>> demo.name = 'Demo Course - new name'
- >>> db_session.flush()
- >>> Course.find_all_by(name = 'Demo Course')  # ... and now it isn't there.
- []
-
- Show the name of the first course John is in. 
- (There's a lot going on behind the scenes here - the relationship()
- method has setup a Person.courses field to follow the many-to-many connection
- from Person through Registration to Course.
- >>> print john.courses[0].name
- Demo Course - new name
-
- Find John's status in the demo course.
- (This is also doing some tricky stuff, since we're using objects - 
- not ids - to identify which registration to find.)
- >>> print Registration.find_by(person = john, course = demo).role.name
- student
- 
- >>> db_session.rollback()     # Undo these uncommited database modifications,
- >>> db_session.remove()       # and close the session nicely.
-
  --- discussion ---
  
  Here are a few of the concepts behind all this.
 
-db For more details, see e.g.
- http://flask.pocoo.org/docs/patterns/sqlalchemy/ ,
- http://docs.sqlalchemy.org/en/rel_0_7/orm/query.html ,
- and the other reams of stuff at docs.sqlalchemy.org
+ For more details, see e.g.
+   http://flask.pocoo.org/docs/patterns/sqlalchemy/ ,
+   http://docs.sqlalchemy.org/en/rel_0_7/orm/query.html ,
+   and the other reams of stuff at docs.sqlalchemy.org
  
-  * In sqlalchemy's view of the world, db_session holds the local
-    memory state of this thread's interaction with the database.
-    Objects (e.g. a Person or Course, an instance of which corresponds
-    to a row in a sql table) exist in both the session and the
-    database. 
+ In sqlalchemy's view of the world, db_session holds the local
+ memory state of this thread's interaction with the database.
+ Objects (e.g. a Person or Course, an instance of which corresponds
+ to a row in a sql table) exist in both the session and the
+ database. 
 
-    The picture looks something like this.
+ The picture looks something like this.
 
       sqlite -- engine --   db_session -- Umber objects
       data      software    memory        memory instances of rows
       file      connection  state         e.g. Person, Course, ...
+
+ SqlAlchemy is more explicit than some ORM systems in distinguishing
+ between the data memory (in db_session) vs what's in the sql disk file.
+ Check out db_session.new and db_session.dirty to see some of this.
+
+ The expected workflow in SqlAlchemy to create a new row and
+ put it into the sql database looks like this.
+
+      # SqlAlchemy default
+      jane = Person(name='Jane')      # create a python object
+      db_session.add(jane)            # stick it in the current session
+      db_session.commit()             # output it to the sql database
+ 
+ However, I've set things up (see below) so that the second step
+ happens automatically when an object is created.
+
+      # my default 
+      jane = Person(name='Jane')      # create python object & add to db_session
+      db_session.commit()             # output it to the sql database
+
+ This still leaves open possible confusion between what's in
+ db_session vs what's in the sql database. I've found this to
+ be particularly true for SqlAlchemy's .find*() methods,
+ which look only in the database, not in db_session.
+ For example, this code fails
+
+      jane = Person(name='Jane')
+      ...
+      who = Person.find_by(name='Jane')   # Fails!
+ 
+ because jane is not yet in the sql database when the .find_by is called.
+ This, on the other hand, works fine.
+
+      jane = Person(name='Jane')
+      db_session.commit()
+      ...
+      who = Person.find_by(name='Jane')   # Succeeds!
+
+ I considered overriding SqlAlchemy's find_by (at least) method to
+ look in db_session and avoid this issue but decided that was overkill.
+      
+ I've also been confused by SqlAlchemy's notion of "reconstruction":
+ objects which are pulled from the database don't have their __init__
+ methods invoked. See the orm.reconstructor notes and workarounds below.
     
- * I've set things up (see below) so that all new object instances are 
-   added to db_session automatically. (This isn't the sqlalchemy default.)
-    
- * Modifications to the objects can be sent to the database
-   using one of several db_session methods :
+ Modifications to the objects can be sent to the database
+ using one of several db_session methods :
     * flush      which continues the current transaction
     * commit     which finishes this transaction.
-   Related db_session methods include
-    * begin      start a transaction (implied by changes, so not needed explicitly)
+ Related db_session methods include
+    * begin      start a transaction (implied; not needed explicitly)
     * rollback   undo everything back to the last commit
-   The flush or commit operations can be set to happen automatically
-   whenever an instance is modified. I've turned that off.
-   (See the creation of db_session below.)
+ The flush or commit operations can be set to happen automatically
+ whenever an instance is modified. I've turned that off.
+ (See the creation of db_session below.)
 
  For this project, the database tables themselves and their schema
  are defined with SQL, in database/create_umber_db.sql. Then the
@@ -207,12 +251,12 @@ db For more details, see e.g.
 from sqlalchemy import create_engine, orm
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from settings import project_os_path, pages_os_root, pages_url_root
+from settings import os_root, courses_os_base, courses_url_base
 from werkzeug.security import generate_password_hash, check_password_hash
 from random import randint
 import os
 
-db_path = 'sqlite:///' + project_os_path + '/database/umber.db'
+db_path = 'sqlite:///' + os_root + '/database/umber.db'
 db_engine = create_engine(db_path, convert_unicode = True)
 db_session = scoped_session(sessionmaker(autocommit = False, 
                                          autoflush = False, 
@@ -235,14 +279,14 @@ def randstring(base='', digits=3):
         >>> len(x) == 6 and x[0:3] == 'foo'
         True
     """
-    (low, high) = (10**digits, 10**(digits+1) - 1)
+    (low, high) = (10**(digits-1), 10**digits - 1)
     return base + str(randint(low, high))
 
 class Umber(object):
     """ All of this project's database objects inherit from this class. """
 
-    ## SqlAlchemy does *not* call this __init__ for its inherited objects.
-    ## So it doesn't work to put object initialization here.
+    ## SqlAlchemy does *not* call this __init__ for its inherited objects,
+    ## do don't put any initialization here. 
     # def __init__(self):
     #    print "in Umber.init id={}".format(id(self))
     
@@ -366,7 +410,8 @@ def umber_object_init(self, *args, **kwargs):
     # (These 'reconstructed' instances are automatically in db_session.
     # See db_session.new and db_session.dirty for lists of instances
     # that have been created but not yet inserted into the database,
-    # and instances which have been modified but not yet updated in the db.)
+    # and instances which have been modified but not yet updated in the db.
+    # And try list(db_session) for the loaded objects.)
     #
     # The discussions at 
     # http://stackoverflow.com/questions/16156650/sqlalchemy-init-not-runnning
@@ -425,7 +470,7 @@ class Person(Base):
     #   with is_authenticated(), is_active(), is_anonymous(), get_id()
     # password scheme from http://flask.pocoo.org/snippets/54/
     def __init__(self, *args, **kwargs):
-        if kwargs.get('name') and not kwargs.get('username'):
+        if 'name' in kwargs and 'username' not in kwargs:
             kwargs['username'] = kwargs['name'].lower().replace(' ', '_')
         kwargs['username'] = kwargs.get('username') or randstring('randperson')
         kwargs['name'] = kwargs.get('name') or kwargs['username']
@@ -494,54 +539,60 @@ class Role(Base):
 class Course(Base):
     # columns: course_id, name, name_as_title, path, credits,
     #          start_date, end_date, assignments_md5, active, notes
-    # relations: persons, assignments, directories, root
-    # derived: uri, semester, os_path
+    # relations: persons, assignments, directories
+    # derived: url, semester, os_fullpath, folder (top folder)
     def __init__(self, *args, **kwargs):
+        # print "debug: Course.__init__ kwargs = {}".format(kwargs)
         kwargs['name'] = kwargs.get('name') or randstring('randcourse')
         kwargs['name_as_title'] = kwargs.get('name_as_title') or kwargs['name']
-        if 'path' not in kwargs:  # path='' for 'Umber' course
+        if 'path' not in kwargs:   # Note : '' is a valid path ('Umber' course)
             kwargs['path'] = kwargs['name'].replace(' ', '_')
         kwargs['start_date'] = kwargs.get('start_date') or default_date
         umber_object_init(self, *args, **kwargs)
-        self.init_derived()
         self.init_directories()
+        self.init_derived()
     @orm.reconstructor
     def init_derived(self):
-        self.uri = self._uri()
+        self.url = self._url()
         self.semester = self._semester()
-        self.os_path = self._os_path()
+        self.os_fullpath = self._os_fullpath()
         self.userdict = self._userdict()
         self.roledict = self._roledict()
+        try:
+            self.folder
+        except AttributeError:
+            self.folder = Directory.find_by(path=self.path)
     def _semester(self):
         month = self.start_date[5:7]
         year = self.start_date[0:4]
         return month_to_semester(month) + ' ' + year
-    def _uri(self):
+    def _url(self):
         if self.path == '':
-            return '/'.join([pages_url_root, 'home'])
+            return '/'.join([courses_url_base, 'home'])
         else:
-            return '/'.join([pages_url_root, self.path, 'home'])
+            return '/'.join([courses_url_base, self.path, 'home'])
         #url_path = '/' + self.path if self.path != '' else ''
-        #return '/' + pages_url_root + url_path + '/home'
-    def _os_path(self):
+        #return '/' + courses_url_base + url_path + '/home'
+    def _os_fullpath(self):
         if self.path == '':
             # skip self.path; else end up with trailing /
-            return os.path.join(project_os_path, pages_os_root)
+            return os.path.join(os_root, courses_os_base)
         else:
-            return os.path.join(project_os_path, pages_os_root, self.path)
+            return os.path.join(os_root, courses_os_base, self.path)
     def init_directories(self):
         """ initialize default database Directory objects """
-        # root = Directory(name='', path='', pathincourse=self.path, course=self)
-        pass
+        # This will show up in self.directories after commit
+        self.folder = Directory(name='', course=self)
+
     #    """ Remove any old database directory objects and their permissions.
     #        Then create database directories and deafult permissions
     #        all folders in this course's file tree."""
     #    # print "-- init_directories( course.name='{}')".format(self.name)
-    #    # print "  project_os_path = ", project_os_path
-    #    # print "  pages_os_root   = ", pages_os_root
-    #    # print "  course_os_path  = ", self.os_path()
-    #    # for dir_os_path, dirnames, filenames in os.walk(self.os_path()):
-    #    #     print "  ", dir_os_path
+    #    # print "  os_root = ", os_root
+    #    # print "  courses_os_base   = ", courses_os_base
+    #    # print "  course_os_fullpath  = ", self.os_fullpath()
+    #    # for dir_os_fullpath, dirnames, filenames in os.walk(self.os_fullpath()):
+    #    #     print "  ", dir_os_fullpath
     #
     #    ### GETTING ERRORS - I think I'm trying to delete 
     #    ### a directory without deleting its permission first.
@@ -551,7 +602,7 @@ class Course(Base):
     #        #db_session.execute('delete from Permission where directory_id=:id;',
     #        #                   {'id': dir.directory_id})
     #        #db_session.delete(dir)
-    #    # There should always be a root os folder at self.os_path()
+    #    # There should always be a root os folder at self.os_fullpath()
     #    #try:
     #    #    db_session.delete(Directory.find_by(pathincourse=self.path))
     #    #    db_session.commit()
@@ -618,38 +669,22 @@ class Work(Base):
         self.course = self.assignment.course
 
 class Directory(Base):
-    # columns: directory_id, name, course_id, path, parent_id
+    # columns: directory_id, course_id, path, parent_id
     # relations: course, parent, children, permissions
-    # derived: name (path within course root folder), os_path (absolute)
+    # derived: name (folder path relative to course top folder), os_fullpath
+    #          basename (last folder in name, like os.path.basename)
     #
-    # The folder's location within the pages_os_root folder is its 'path'.
-    # (Each course has the same notion of 'path', under pages_os_root.)
+    # The folder's location within courses_os_base folder is its 'path'.
+    # (Each course has the same notion of 'path', under courses_os_base.)
     # This implies that
-    #    * the top-level default course has path=='', e.g. /.../umber/pages
+    #    * the top-level default course has path=='', e.g. /.../umber/courses
     #    * the absolute location of other directories is 
-    #      os.path.join(project_os_path, pages_os_root, path)
-    #      e.g. /.../umber/pages/a/b when path=='a/b'
+    #      os.path.join(os_root, courses_os_base, path)
+    #      e.g. /.../umber/courses/a/b when path=='a/b'
     #    * the folder's 'name' (its relative path within the course)
     #      is os.path.relpath(course.path, path)
-    #    * the root folder for a course has directory.path==course.path
+    #    * the top folder for a course has directory.path==course.path
 
-    def __init__(self, *args, **kwargs):
-        umber_object_init(self, *args, **kwargs)
-        self.init_derived()
-    @orm.reconstructor
-    def init_derived(self):
-        self.name = self._name()
-        self.os_path = self._os_path()
-    #def __init__(self, *args, **kwargs):
-    #    ## why did I want to do this? If when pulling from db,
-    #    ## then use @orm.reconstructor
-    #    #try:
-    #    #    old_dir = Directory.find_by(pathincourse=kwargs['pathincourse'])
-    #    #    db_session.delete(old_dir)
-    #    #    db_session.commit()
-    #   #except:
-    #   #    pass
-    #   umber_object_init(self, *args, **kwargs)
     no_access = 0
     read_access = 1
     write_access = 3
@@ -663,6 +698,42 @@ class Directory(Base):
                        'students': { 'read': (),         'write' : ()},
                        'wiki':     { 'read': ('all', ),  'write' : ('guest',)},
                       }
+    
+    def __init__(self, *args, **kwargs):
+        if 'course' in kwargs and 'name' in kwargs:
+            kwargs['path'] = os.path.join(kwargs['course'].path,
+                                          kwargs['name'])
+            del kwargs['name']
+        if 'path' in kwargs and len(kwargs['path']) > 0 \
+          and kwargs['path'][-1] == '/':
+            kwargs['path'] = kwargs['path'][:-1]
+        # print "Directory.__init__ kwargs={}".format(kwargs)
+        umber_object_init(self, *args, **kwargs)
+        self.init_derived()
+    @orm.reconstructor
+    def init_derived(self):
+        # print " Directory.init_derived self.path={} self.course={}".format(
+        #    self.path, self.course)
+        self.name = self._name()
+        self.os_fullpath = self._os_fullpath()
+    def _name(self):
+        if self.course.path != '':
+            name = os.path.relpath(self.course.path, self.path)
+        else:
+            name = self.path
+        if name == '.':
+            name = ''
+        return name
+    def _os_fullpath(self):
+        if self.path == '':
+            fullpath = os.path.join(os_root, courses_os_base)
+        else:
+            fullpath = os.path.join(os_root, courses_os_base, self.path)
+        if fullpath[-1] == '/':
+            return fullpath[:-1]
+        else:
+            return fullpath
+
     @classmethod
     def delete_pathincourse(cls, pathincourse):
         try:
@@ -680,13 +751,6 @@ class Directory(Base):
                                {'id': directory.directory_id})
         db_session.delete(directory)
         db_session.commit()
-    def _name(self):
-        return os.path.relpath(self.course.path, self.path)
-    def _os_path(self):
-        if self.path == '':
-            return os.path.join(project_os_path, pages_os_root)
-        else:
-            return os.path.join(project_os_path, pages_os_root, self.path)
     def set_1_permission(self, who, rights):
         if who in Role.names:
             r = Role.named(who)
@@ -730,7 +794,7 @@ class Directory(Base):
         for who in (set(readers) - set(writers)):
             self.set_1_permission(who, rights = Directory.read_access)
         db_session.commit()
-        for subname in os.walk(self.os_path()).next()[1]:
+        for subname in os.walk(self.os_fullpath()).next()[1]:
             subpath = os.path.join(self.path, subname)
             subpathincourse = os.path.join(self.course.path, subpath)
             #try:
@@ -846,20 +910,34 @@ Permission.directory = relationship(Directory)
 
 class Page(object):
     """ a url-accessable file in a Course """
-    # pages (i.e. files other than directories) are *not* in the database
-    # (and therefore inherit from object, not Base)
-    # ... though student Work objects do have a corresponding file.
-    # Instead, they're used during the lifetime of a URL request
-    # to manage access to the corresponding wiki or markdown or whatever
-    # file resource.
+    #
+    # Page objects (corresponding to files) are *not* in the sql database
+    # and therefore don't inherit from the sqlalchemy Base class.
+    # A Page object exists during the lifetime of a URL request
+    # to manage access to the corresponding disk file and its content.
+    #
+    # Directories (corresponding to folders) are in the sql database,
+    # so that (a) the enclosing Course can be found quickly and
+    # (b) they can be given permissions.
+    #
+    # Work objects, representing a student's response to an
+    # Assignment (and which does match a file) are also in the sql database.
+    #
+    # TODO (maybe) : the conversion of markdown or wiki files to html
+    # could be cached in sql database Page objects. If so, a hash
+    # would be needed to keep track of whether the file had changed
+    # since the sql data had been cached. That could speed things up
+    # (assuming the hash computation is faster than the markdown conversion)
+    # at the cost of database size and code complexity.
+    #
     def __str__(self):
         return "<Page pagepath='{}' id={}>".format(self.pagepath, id(self))
-    def os_path(self):
+    def os_fullpath(self):
         if self.pagepath == '':
             # skip self.path; else end up with trailing /
-            return os.path.join(project_os_path, pages_os_root)
+            return os.path.join(os_root, courses_os_base)
         else:
-            return os.path.join(project_os_path, pages_os_root, self.pagepath)
+            return os.path.join(os_root, courses_os_base, self.pagepath)
     def find_directory(self, pagepath):
         """ Find the directory in the database for this pagepath """
         # pagepath is e.g. one/two/three  (no leading or trailing slash)
@@ -883,7 +961,7 @@ class Page(object):
         except:
             return self.find_directory(os.path.dirname(pagepath))
     def __init__(self, 
-                 pagepath=None, # string from URL host/page_url_root/pagepath
+                 pagepath=None, # string from URL host/page_url_base/pagepath
                  request=None,  # Flask request object
                  user=None,     # Person
                  allow_insecure_login = False
@@ -894,7 +972,7 @@ class Page(object):
         self.pagepath = pagepath
         self.directory = self.find_directory(self.pagepath)
         self.name = os.path.basename(self.pagepath)
-        self.is_directory = self.os_path() == self.directory.os_path()
+        self.is_directory = self.os_fullpath() == self.directory.os_fullpath()
         self.course = self.directory.course
         self.title = self.course.name + " - " + self.name
         try:
@@ -931,13 +1009,11 @@ def populate_db():
     # and the 'demo' course along with its sample Persons,
     # Registrations, Assignments, and Works.
     #
-    # The sqlite database must already exist before this is run.
-    # To create it, run database/init_db. This may be run multiple
-    # times without ill effect.
+    # The sqlite database must already exist before this is run;
+    # to create it, run database/init_db.
     #
-    # The various .find*(...) methods look for things in the database,
-    # *not* in the current session, so they must be committed before
-    # they can be accessed via .find*(...).
+    # populate_db() is idempotent; that is, runing multiple times
+    # is no different than running it once.
     #
     # Although objects don't *_id fields until after they've been committed
     # to the database, and it's those *_id fields that are used in

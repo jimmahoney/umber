@@ -1,1 +1,2 @@
+: ${VIRTUAL_ENV:?"Invoke virtualenv with 'activate' first."}
 python -i -B src/console.py

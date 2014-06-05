@@ -54,6 +54,10 @@ CREATE TABLE Person (
   notes TEXT NOT NULL DEFAULT ''
 );
 
+-- Speed selects at the cost of slowing table modifications.
+CREATE UNIQUE INDEX person_username_index ON Person (username);
+CREATE INDEX person_ldap_index ON Person (ldap_id);
+
 --
 -- The status roles are (in order of ascending privileges)
 -- anonymous, guest, student, faculty, admin
@@ -88,6 +92,9 @@ CREATE TABLE Course (
   credits INTEGER NOT NULL DEFAULT 0,
   notes TEXT NOT NULL DEFAULT ''
 );
+
+-- Speed selects at the cost of slowing table modifications.
+CREATE UNIQUE INDEX course_path_index ON Course (path);
 
 --
 -- A Registration ties together a person, a course, and a role, 
@@ -171,10 +178,13 @@ CREATE TABLE Directory (
   directory_id INTEGER PRIMARY KEY NOT NULL,
   course_id INTEGER NOT NULL DEFAULT 0
    CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
-  path TEXT UNIQUE NOT NULL,
+  path TEXT UNIQUE NOT NULL DEFAULT '',
   parent_id INTEGER DEFAULT NULL
    CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
 );
+
+-- Speed selects at the cost of slowing table modifications.
+CREATE UNIQUE INDEX directory_path_index ON Directory (path);
 
 --
 -- Permission enables read and/or write access to Directories.
