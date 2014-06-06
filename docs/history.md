@@ -1,6 +1,24 @@
 # umber development history #
 
-## May 17
+## June 6
+
+Been mucking about with Directory and Permission objects.
+I'm not happy with them - they feel complicated and fragile.
+The disk folders and database Directory objects will get
+out of sync, and so code to create Directory objects
+on the fly will be needed. Since Permission(s) are set
+in the database, there isn't a clean way to specifiy 
+them in the file system alone, without giving default
+values here in the code. Blech.
+
+I'm almost tempted to go back to the .access.yaml files
+that I had before. Maybe the Directory and Permission 
+objects should be act as caches, with the real information
+being set (and saved) in the disk files.
+
+I think I need to just leave this alone for now,
+and see how they will be used once some of
+the other pieces are in place.
 
 
 ## May 16 2014
