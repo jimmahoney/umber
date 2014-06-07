@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Umber - first test - Mako</title>
+    <style>
+      div {padding:0.25em; }
+      footer {border-top: 1px solid grey; }
+      footer p {float:right; padding:0.5em; font-size: 80%; }
+    </style>
+  </head>
+  <body>
+
+    <h1>Umber - first test - Mako</h1>
+
+    <pre>
+    A Mako template
+      good:  real(ish) python in the template engine
+      bad:   piss poor error reporting - any template error is just "oops"
+    </pre>	
+
+    <hr>
+
+    <!-- mako escaping filters: 
+         u (url), h (html), x (xml), trim (whitespace), entity (html codes) 
+         commas for more than one filter (ugh) 
+         any single-arg python function in that context can be used.
+     -->
+
+    <h3>loop</h3>
+    % for i in range(10):
+      ${i}, 
+    % endfor
+    <hr>
+
+    <h3>python variables</h3>
+    <div>dir() = ${dir() | h} </div>    
+    ## <!-- app is in dir() but an error is thrown when I look at it. -->
+    ## <div>app = ${app | h}</div>
+    <hr>
+
+    <h3>context</h3>
+    <i>(In Mako this dictionary contains the other globals
+        including config, session, g, request.)</i>
+    <div> context = ${context | h}<br>
+          dir(context) = ${dir(context) | h}<br>
+          context.keys() = ${context.keys() | h}<br>
+          context.kwargs = ${context.kwargs | h}
+          <!-- context['config'] = ${context['config'] | h} # in kwargs -->
+    </div>
+    <hr>
+
+    <h3>Flask global g</h3>
+    <div> dir(g) = ${dir(g) | h} </div>
+    <div> g.alpha = ${g.alpha | h} </div>
+    <hr>
+
+    <h3>explicitly passed </h3>
+    <div> test1 = ${test1} </div>
+    <div> test2 = ${test2} </div>
+    <hr>
+
+    <h3>request</h3>
+    <div> request = ${request | h} </div>
+    <div> dir(request) = ${dir(request) | h} </div>
+    <div> request.url = ${request.url | h} </div>
+    <div> request.base_url = ${request.base_url | h} </div>
+    <div> request.url_root = ${request.url_root | h} </div>
+    <div> request.script_root = ${request.script_root | h} </div>
+    <div> request.full_path = ${request.full_path | h} </div>
+    <div> request.path = ${request.path | h} </div>
+    <div> request.host = ${request.host | h} </div>
+    <div> request.is_secure = ${request.is_secure | h} </div>
+    <hr>
+
+    <h3>current_user</h3>
+    <div> Flask-Login's current_user = ${ current_user | h} </div>
+    <div> current_user.is_anonymous() = ${current_user.is_anonymous() | h} </div>
+    <div> current_user.is_authenticated() = ${current_user.is_authenticated() | h} </div>
+    <hr>
+
+    <h3>session</h3>
+    <div> session = ${session | h} </div>
+    <div> dir(session) = ${dir(session) | h} </div>
+
+    <hr>
+
+    <!-- the path to the include file in mako is relative to this file -->
+    <%include file="include.html" args="**context.kwargs" />
+
+    <hr>
+
+    <h3>a passed function</h3>
+    <div> static_url() : ${static_url('styles/wikiacademia.css')} </div>
+    <div> OR { | static_url} : ${'styles/wikiacademia.css' | static_url} </div>
+    <h4>
+ 
+    <footer>
+      <p>
+	<a href="mailto:mahoney@marlboro.edu">Jim Mahoney</a> | 
+	<a href="http://cs.marlboro.edu">CS @ Marlboro College</a> | 
+	<a href="http://opensource.org/licenses/MIT">MIT License</a>
+      </p>
+    </footer>
+
+  </body>
+</html>

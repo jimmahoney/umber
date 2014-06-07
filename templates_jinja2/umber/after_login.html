@@ -1,0 +1,11 @@
+<div id="login"> <!-- start login -->
+<form class="login" name="login" method="POST" action="${page.url}" >
+<ul>
+  <li class="first ${user.role}">${user.username}</li>
+  <li class="middle">${user.role}</li>
+  <li class="rest"><a href="/courses/special/user">settings</a></li>
+  <li class="rest"><input name="submit_logout" type="submit" value="log out"/></li>
+</ul>
+<div class="error">${message()}</div>
+</form>
+</div>           <!-- end login -->

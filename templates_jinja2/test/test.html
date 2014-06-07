@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Umber - testing - Jinja2</title>
+    <style>
+      div {padding:0.25em; }
+      footer {border-top: 1px solid grey; }
+      footer p {float:right; padding:0.5em; font-size: 80%; }
+    </style>
+  </head>
+  <body>
+
+    <h1>Umber - testing - Jinja2</h1>
+
+    <pre>
+    A Jinja2 template
+      good:  integrated with flask, strong debugging
+      bad:   not python (so no dir() & other standard pythonic stuff)
+    </pre>
+
+    <!-- 
+        Jinja2  (see http://jinja.pocoo.org/docs/templates/ )
+        {#
+             {% for i in range(10)  %}          code
+               i = {{ i }} <br>                 insert value
+             {% endfor %}
+
+	     dict.key           dictionary values (like javascript)
+
+             autoescaping is on by default for all .html templates
+	     (same as passing things to the |e "escape" filter,
+              or saying {% autoescape %} )
+        #}
+      -->
+
+    <h3>loop</h3>
+    {% for i in range(10) %}
+      {{ i }},
+    {% endfor %}
+    <hr>
+
+    <h3>config</h3>
+    <div> config = {{config}} </div>
+    <div> dir(config) = {{dir(config)}}</div>
+    <hr>
+
+    <h3>Flask global g</h3>
+    {# <div> dir(g) = {{dir(g) }} </div> #}
+    <div> g.alpha = {{g.alpha }} </div>
+    <hr>
+
+    <h3>explicitly passed </h3>
+    <div> test1 = {{test1}} </div>
+    <div> test2 = {{test2}} </div>
+    <hr>
+
+    <h3>request</h3>
+    <div> request = {{request }} </div>
+    {# <div> dir(request) = {{dir(request) }} </div> #}
+    <div> request.url = {{request.url }} </div>
+    <div> request.base_url = {{request.base_url }} </div>
+    <div> request.url_root = {{request.url_root }} </div>
+    <div> request.script_root = {{request.script_root }} </div>
+    <div> request.full_path = {{request.full_path }} </div>
+    <div> request.path = {{request.path }} </div>
+    <div> request.host = {{request.host }} </div>
+    <div> request.is_secure = {{request.is_secure }} </div>
+    <hr>
+
+    <h3>user</h3>
+    <div> Flask-Login's current_user = {{ current_user }} </div>
+    <div> current_user.is_anonymous() = {{current_user.is_anonymous() }} </div>
+    <div> current_user.is_authenticated() = {{current_user.is_authenticated() }} </div>
+
+    <hr>
+
+    {#   no 'context' variable in jinja2 environment
+    <h3>context</h3>
+    <div> 
+          context = {{context }}<br>
+          dir(context) = {{dir(context) }}<br>
+          context.keys() = {{context.keys() }}<br>
+          context.kwargs = {{context.kwargs }}
+    </div>
+    #}
+
+    <!-- path is relative to template_jinja2, not this file #} -->
+    {% include "test/include.html" %}   <!-- args="**context.kwargs" -->
+
+    <hr>
+
+    <h3>a passed function</h3>
+    <div> static_url() : {{ static_url('styles/wikiacademia.css') }} </div>
+
+    <footer>
+      <p>
+	<a href="mailto:mahoney@marlboro.edu">Jim Mahoney</a> | 
+	<a href="http://cs.marlboro.edu">CS @ Marlboro College</a> | 
+	<a href="http://opensource.org/licenses/MIT">MIT License</a>
+      </p>
+    </footer>
+
+  </body>
+</html>
