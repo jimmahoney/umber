@@ -1,71 +1,71 @@
 <!doctype html>
 <html>
 <head>
-  <title>${ page.title }</title>
-  <meta charset="utf-8">
-  <link rel="icon" type="image/gif" 
-        href="${'images/favicon.ico' | static_url}">
-  <link rel="stylesheet" type="text/css" 
-        href="${'styles/umber.css' | static_url}">
+    <title>{{ page.title }}</title>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/gif" 
+          href="{{static_url('images/favicon.ico')}}">
+    <link rel="stylesheet" type="text/css" 
+          href="{{static_url('styles/umber.css')}}">
 </head>
 <body>
 
-% if True:
+{% if true %}
 <div id="header">                          <!-- start header -->
- <a id="cs-logo" href="/"><img 
-    src="${'images/cs_m_edu.png' | static_url}" 
-    alt="computer science @ marlboro.edu" /></a>
- % if user.is_authenticated() :
-  <%include file="sub/after_login.html" args="**context.kwargs" />
- % elif request.is_secure or page.allow_insecure_login :
-  <%include file="sub/form_login.html" args="**context.kwargs" />
- % else :
-  <%include file="sub/before_login.html" args="**context.kwargs" />
+    <a id="cs-logo" href="/"><img 
+        src="{{static_url('images/cs_m_edu.png')}}" 
+	alt="computer science @ marlboro.edu" /></a>
+    {% if user.is_authenticated() %}
+        {% include 'umber/after_login.html' %}
+    {% elif request.is_secure or page.allow_insecure_login %}
+        {% include 'umber/form_login.html' %}
+    {% else %}
+        {% include 'umber/before_login.html' %}
  % endif
 </div>                                     <!-- end header -->
-% endif
+{% endif %}
 
-% if True:
-<%include file="sub/actions.html" args="**context.kwargs" />
-% endif
+{% if true %}
+{% include 'umber/actions.html' %} 
+{% endif %}
 
-% if True:
+{% if true %}
 <div id="column-one">                      <!-- start column-one -->
- <h1><a href="${ page.course.uri() }"> ${ page.course.name_as_title }</a></h1>
- <div><div id="semester"> ${ page.course.semester() } </div></div>
- <%include file="sub/navigation.html" args="**context.kwargs" />
+ <h1><a href="{{ page.course.uri() }}"> {{ page.course.name_as_title }}</a></h1>
+ <div><div id="semester"> {{ page.course.semester() }} </div></div>
+ {% include 'umber/navigation.html' %}
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
-     src="${'images/mc-logo.gif' | static_url }" /></a>
+     src="{{static_url('images/mc-logo.gif')}}/></a>
  </div>
 </div>                                     <!-- end column-one -->
-% endif
+{% endif %}
 
-% if False:
+{% if false %}
 <div id="column-two">                      <!-- start column-two -->
- <div class="component">                     <!-- start component -->
-  % if page.has_error:
-    <%include file="sub/error.html" args="**context.kwargs" />
-  % endif
-  <%include file="sub/work.html" args="**context.kwargs" />
-  <%include file="sub/content.html" args="**context.kwargs" />
+  <div class="component">                     <!-- start component -->
+    {% if page.has_error %}
+      {% include 'umber/error.html' %}
+    {% endif %}
+  {% include 'umber/work.html' %}
+  {% include 'content.html' %}
   <div id="modified">
-   ${ page.uri_links }<br />
-  % if page.has_lastmodified:
+    {{ page.uri_links }}<br />
+  {% if page.has_lastmodified %}
     last modified ${ page.lastmodified }
-  % endif
+  {% endif %}
   </div>
  </div>                                       <!-- end component -->
- <%include file="sub/attachments.html" args="**context.kwargs" />
+ {% include 'umber/attachments.html %}
  <div class="footer">                         <!-- start footer -->
-   <%include file="sub/footer.html" args="**context.kwargs" />
+   {% include 'umber/footer.html' %}
  </div>                                       <!-- end footer -->
 </div>                                      <!-- end column-two -->
-% endif
+{% endif %}
 
-% if debug:
-  <%include file="sub/debug.html" args="**context.kwargs" />
-% endif
+{% if debug %}
+    {% include 'umber/debug.html' %}
+{% endif %}
 
 </body>
 </html>
