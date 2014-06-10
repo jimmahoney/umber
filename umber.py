@@ -97,9 +97,9 @@ def test():
                            test2 = 'foobar'
         )
 
-@app.route('/' + courses_url_base + '/<path:pagepath>', methods=['GET', 'POST'])
-def mainroute(pagepath):
-    page = Page(pagepath = pagepath,
+@app.route('/' + courses_url_base + '/<path:path>', methods=['GET', 'POST'])
+def mainroute(path):
+    page = Page(path = path,
                 request = request, 
                 user = current_user, 
                 allow_insecure_login = app.allow_insecure_login,

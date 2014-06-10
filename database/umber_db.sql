@@ -9,8 +9,10 @@
 --       Registration        FK Person, FK Course, FK Role
 --       Assignment          FK Course
 --       Work 		     FK Person, FK Assignment 
---       Directory           FK Course, FK Parent
---       Permission          FK Directory, FK Role, FK Person
+--
+--       disabled for now
+--       -- Directory           FK Course, FK Parent
+--       -- Permission          FK Directory, FK Role, FK Person
 --
 --   To create the database :          ./init_db
 --   To create & populate it:          ./reset_db
@@ -72,7 +74,10 @@ CREATE TABLE Role (
 -- A Course corresponds to a set of editable pages, assignments, and work, 
 -- with faculty and students assigned to it through Registration entries.
 --   * Its 'path' column gives the location of its 
---     root folder within the pages_os_root folder
+--     top folder within the courses_os_base folder (e.g. 'courses')
+--     for example 'demo' for the demo course 
+--     which is at /<os_root>/<courses_os_base>/demo
+--     e.g. /Users/mahoney/academics/umber/courses/demo
 --   * start_date sets which semester it's in.
 --     (ignoring the 'end_date' and 'active' fields)
 --   * The assignments_md5 keeps track of whether or not the corresponding
@@ -174,17 +179,17 @@ CREATE TABLE Work (
 -- Its 'path' column gives its location with the pages_os_root folder,
 -- which matches the notion of 'path' within the Course table.
 --
-CREATE TABLE Directory (
-  directory_id INTEGER PRIMARY KEY NOT NULL,
-  course_id INTEGER NOT NULL DEFAULT 0
-   CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
-  path TEXT UNIQUE NOT NULL DEFAULT '',
-  parent_id INTEGER DEFAULT NULL
-   CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
-);
+-- CREATE TABLE Directory (
+--   directory_id INTEGER PRIMARY KEY NOT NULL,
+--   course_id INTEGER NOT NULL DEFAULT 0
+--   CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
+--   path TEXT UNIQUE NOT NULL DEFAULT '',
+--   parent_id INTEGER DEFAULT NULL
+--    CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
+-- );
 
 -- Speed selects at the cost of slowing table modifications.
-CREATE UNIQUE INDEX directory_path_index ON Directory (path);
+-- CREATE UNIQUE INDEX directory_path_index ON Directory (path);
 
 --
 -- Permission enables read and/or write access to Directories.
@@ -194,15 +199,15 @@ CREATE UNIQUE INDEX directory_path_index ON Directory (path);
 --   non-admin, non-faculty folks need an explicit read or write permission,
 --   otherwise they should be denied access.
 --
-CREATE TABLE Permission (
- permission_id INTEGER PRIMARY KEY NOT NULL,
- rights INTEGER NOT NULL DEFAULT 0,
- write INTEGER NOT NULL DEFAULT 0,
- directory_id INTEGER NOT NULL DEFAULT 0
-   CONSTRAINT fk_directory_directory_id REFERENCES Directory(directory_id)
-   ON DELETE CASCADE,
- role_id INTEGER DEFAULT NULL
-   CONSTRAINT fk_role_role_id REFERENCES Role(role_id),
- person_id INTEGER DEFAULT NULL
-   CONSTRAINT fk_person_person_id REFERENCES Person(person_id)
-);
+-- CREATE TABLE Permission (
+--  permission_id INTEGER PRIMARY KEY NOT NULL,
+--  rights INTEGER NOT NULL DEFAULT 0,
+--  write INTEGER NOT NULL DEFAULT 0,
+--  directory_id INTEGER NOT NULL DEFAULT 0
+--    CONSTRAINT fk_directory_directory_id REFERENCES Directory(directory_id)
+--    ON DELETE CASCADE,
+--  role_id INTEGER DEFAULT NULL
+--    CONSTRAINT fk_role_role_id REFERENCES Role(role_id),
+--  person_id INTEGER DEFAULT NULL
+--    CONSTRAINT fk_person_person_id REFERENCES Person(person_id)
+-- );

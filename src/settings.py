@@ -1,12 +1,14 @@
 """
  settings.py
 
- Project site-specific paths and names :
+ Project site-specific directory and url paths :
 
     secret_key
     os_root
     courses_os_base
     courses_url_base
+
+ See model.py for a discussion of how these are used.
 
 """
 import sys, os
@@ -14,8 +16,8 @@ import sys, os
 # TODO: generate this randomly for production deployment.
 secret_key = "umber - SEEKRIT"
 
-courses_url_base = 'umber'   # e.g. http://<host>/umber/demo/home
-courses_os_base = 'courses'  # e.g. /<project_os_path>/courses/demo/home
+courses_url_base = 'umber'
+courses_os_base = 'courses'
 
 def _get_os_root():
     """ Return absolute path to project root folder without trailing slash."""
