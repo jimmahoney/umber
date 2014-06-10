@@ -997,6 +997,55 @@ class Page(object):
     # (assuming the hash computation is faster than the markdown conversion)
     # at the cost of database size and code complexity.
     #
+    def __init__(self, 
+                 path = None,     # string from URL host/course_url_base/path
+                 request = None,  # Flask request object
+                 user = None,     # Person
+                 allow_insecure_login = False
+                 ):
+        self.user = user or anonymous_person()
+        self.path = path
+        self.basename = os.path.basename(self.path)
+
+        # need:
+        # course ?
+        # file or directory ?
+        # access privileges 
+        
+                
+        #self.directory = self.find_directory(self.pagepath)
+        #self.is_directory = self.os_fullpath() == self.directory.os_fullpath()
+
+        #self.course = self.directory.course
+        #self.title = self.course.name + " - " + self.name
+        #try:
+        #    self.role = Registration.find_by(course=self.course, 
+        #                                     person=self.user).role
+        #except:
+        #    self.role = Role.named('all')
+        #self.can_write = self.directory.can_write(self.user, self.role)
+        #self.can_read = self.directory.can_read(self.user, self.role)
+        
+        if request:
+            self.request = request
+            self.secure_url = 'https://' + request.host + request.path
+            self.url = 'http://' + request.host + request.path            
+            # self.path = request.path
+            # self.full_path = request.full_path
+        else: # debugging only
+            self.request = None
+            self.secure_url = ''
+            self.url = ''
+            # self.path = pagepath
+            # self.full_path = pagepath
+        self.allow_insecure_login = allow_insecure_login # require https login?
+        if allow_insecure_login:
+            self.secure_url = self.url   # e.g. debugging without https
+        #
+        self.uri_links = '- uri_links -'
+        self.has_error = False
+        self.has_lastmodified = True
+        self.lastmodified = ' - MODIFIED DATE -'  # TODO : what should this be?
     def __str__(self):
         return "<Page pagepath='{}' id={}>".format(self.pagepath, id(self))
     def os_fullpath(self):
@@ -1027,48 +1076,6 @@ class Page(object):
             return Directory.find_by(fullpath = fullpath)
         except:
             return self.find_directory(os.path.dirname(path))
-    def __init__(self, 
-                 path=None,     # string from URL host/course_url_base/path
-                 request=None,  # Flask request object
-                 user=None,     # Person
-                 allow_insecure_login = False
-                 ):
-        if not user:
-            user = anonymous_person()
-        self.user = user
-        self.pagepath = pagepath
-        self.name = os.path.basename(self.pagepath)
-        #self.directory = self.find_directory(self.pagepath)
-        #self.is_directory = self.os_fullpath() == self.directory.os_fullpath()
-        self.course = self.directory.course
-        self.title = self.course.name + " - " + self.name
-        try:
-            self.role = Registration.find_by(course=self.course, 
-                                             person=self.user).role
-        except:
-            self.role = Role.named('all')
-        self.can_write = self.directory.can_write(self.user, self.role)
-        self.can_read = self.directory.can_read(self.user, self.role)
-        if request:
-            self.request = request
-            self.secure_url = 'https://' + request.host + request.path
-            self.url = 'http://' + request.host + request.path            
-            # self.path = request.path
-            # self.full_path = request.full_path
-        else: # debugging only
-            self.request = None
-            self.secure_url = ''
-            self.url = ''
-            # self.path = pagepath
-            # self.full_path = pagepath
-        self.allow_insecure_login = allow_insecure_login # require https login?
-        if allow_insecure_login:
-            self.secure_url = self.url   # e.g. debugging without https
-        #
-        self.uri_links = '- uri_links -'
-        self.has_error = False
-        self.has_lastmodified = True
-        self.lastmodified = ' - MODIFIED DATE -'  # TODO : what should this be?
 
 def populate_db():
     """ Create and commit the default database objects """

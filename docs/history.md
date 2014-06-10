@@ -1,5 +1,19 @@
 # umber development history #
 
+## June 10
+
+I have marked a "minimal_directory_and_permissions" branch
+at git commit fe20a41aa6aed29d70680e6f7bd7af036d8382fd
+
+I think I should not try to finesse https for testing,
+but instead set up my laptop to allow it. Google 
+"https localhost mac" for recipes, including 
+http://webdevstudios.com/2013/05/24/
+how-to-set-up-ssl-with-osx-mountain-lions-built-in-apache/
+
+ $ cd /private/etc/apache2
+ $ 
+
 ## June 6
 
 Been mucking about with Directory and Permission objects.
