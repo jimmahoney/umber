@@ -6,8 +6,11 @@
  To run this for development testing :
  
    $ ./database/reset_db ; ./console
-   $ python umber.py           # http://localhost:8080/test or umber/demo/home
-   $ SSL=true python umber.py  # same but https://localhost:8433/...
+   >>> # see src/model.py for what you can do
+
+   $ python umber.py
+   and then visit /test or /umber/demo/home
+   at http://localhost:8080/ or https://localhost:8443
 
  Also see ./README.md, src/*, database/*, and docs/history.txt .
 
@@ -159,9 +162,14 @@ def setup():
 
 if __name__ == '__main__':
     setup()
+    #try:
+    #    pid = os.fork()
+    #except:
+    #    print "OOPS - couldn't fork"
+    #    sys.exit(1)
     if os.environ.get('SSL'):
         app.run(host = '0.0.0.0',
-                port = 8433, 
+                port = 8443, 
                 debug = True,
                 ssl_context = ssl_context)
     else:

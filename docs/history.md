@@ -1,9 +1,21 @@
 # umber development history #
 
-## June 10
+## June 11
 
-I have marked a "minimal_directory_and_permissions" branch
-at git commit fe20a41aa6aed29d70680e6f7bd7af036d8382fd
+The jinja2 template debugging is worth keeping
+in spite of its non-python limitations. I'm abandoning
+the mako templates, and have marked a last_with_mako_templates
+branch which had support (and some tests and examples)
+for both sorts of templates.
+
+I've enabled https/ssl access so that I don't have 
+to finesse that in the code with "allow-login-without-https" stuff.
+However, that means I will have to have two sessions running :
+   
+    $ python umber.py              # http  8080
+    $ SSL=true python umber.py     # https 8443
+
+## June 10
 
 I think I should not try to finesse https for testing,
 but instead set up my laptop to allow it. Google 
@@ -11,8 +23,17 @@ but instead set up my laptop to allow it. Google
 http://webdevstudios.com/2013/05/24/
 how-to-set-up-ssl-with-osx-mountain-lions-built-in-apache/
 
- $ cd /private/etc/apache2
- $ 
+I have marked a "minimal_directory_and_permissions" branch
+at git commit fe20a41aa6aed29d70680e6f7bd7af036d8382fd
+which is the last with Directory and Permission sqlite
+objects, sqlalchemy classes, and support. It felt like
+all that was getting too messy. After getting the 
+old .access.yaml working, I'll do some performance
+tests and worry then about caching, either putting
+course names into the .access.yaml files and creating
+them in subfolders as needed, or putting some sort
+of cached thing into the sqlite database, perhaps
+with (path,user,course,permissions).
 
 ## June 6
 

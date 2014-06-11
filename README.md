@@ -16,16 +16,13 @@ development testing
     >>> demo.persons
     >>> Person.find_by(username='johnsmith')
     <Person name = 'Johnny Smith' ...>
+    >>> # see src/model.py for examples
 
-    $ python umber.py
-    visit http://localhost:8080/test
-    visit http://localhost:8080/umber/demo/home
- 
-    $ SSL=true python umber.py
-    visit https://localhost:8433/test
-    visit https://localhost:8433/umber/demo/home
+    $ ./server
+    then visit http://localhost:8080 or https://localhost:8433
+    at /test or /umber/demo/home
 
-See umber.py and docs/history.txt for more.
+For the details, start at umber.py and docs/history.txt.
 
 ----------------------------------------------------------
 
