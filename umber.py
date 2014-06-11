@@ -21,30 +21,20 @@ from src.settings import secret_key, os_root, \
      courses_url_base, courses_os_base
 from src.model import db_session, populate_db, anonymous_person, \
      Person, Role, Course, Registration, Assignment, Work, Page
-
-# setting up for https (see http://flask.pocoo.org/snippets/111/)
+from flask import render_template
 from OpenSSL import SSL
-ssl_context = SSL.Context(SSL.SSLv23_METHOD)
-ssl_context.use_privatekey_file('ssl/ssl.key')
-ssl_context.use_certificate_file('ssl/ssl.crt')
 
 sys.dont_write_bytecode = True   # don't create .pyc's during development
 
-template_engine = 'Jinja2'       # 'Mako' or 'Jinja2'
-
-if template_engine == 'Mako':
-    from flask.ext.mako import MakoTemplates, render_template
-    app = Flask('umber', template_folder='templates_mako')
-    MakoTemplates(app)
-elif template_engine == 'Jinja2':
-    from flask import render_template
-    app = Flask('umber', template_folder='templates_jinja2')
-else:
-    raise Exception('template_engine must be either Mako or Jinja2')
+app = Flask('umber')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.anonymous_user = anonymous_person
+
+ssl_context = SSL.Context(SSL.SSLv23_METHOD)
+ssl_context.use_privatekey_file('ssl/ssl.key')
+ssl_context.use_certificate_file('ssl/ssl.crt')
 
 @login_manager.user_loader
 def load_user(user_session_id):
