@@ -60,89 +60,6 @@
  student
  
  >>> db_session.rollback()     # Undo these uncommited database modifications,
-  
-
- Check to see that work.course (derived from work.assignment.course) is OK,
- and that finding instances from other instances behaves as expected.
- >> Work.find_by(person=john).course.name
- u'Demo Course'
- 
- >> (dirs['johnsmith'].name == 'johnsmith', 
- ...  dirs['johnsmith'].path == 'students/johnsmith',
- ...  dirs['johnsmith'].pathincourse == 'demo/students/johnsmith')
- (True, True, True)
-
-
- --- test deletion of Permission when Directory is deleted.
-     (This fake Directory doesn't correspond to an actual disk folder.)
- >> permission_count = len(Permission.all())
- >> fakefolder = Directory(name='fakefolder', course=demo)
- >> fakefolder.set_permissions(readers=['student'])
- >> db_session.commit()
- >> len(Permission.all()) == permission_count + 1 # added one permission
- True
- >> Directory.delete(fakefolder)
- >> db_session.commit()
- >> len(Permission.all()) == permission_count     # ... which is now gone.
- True
-
- --- test Directory and Permission in Demo Course
- >> dirs = {x : Directory.find_by(name=x, course=demo) 
- ...             for x in ('', 'protected', 'johnsmith')}
- >> for who in usernames:
- ...     for where in dirs.values():
- ...       role = roles[who]
- ...       print "{} {} read, {} write '{}.'".format( 
- ...              users[who].name, 
- ...              'can' if where.can_read(users[who], roles[who]) else 'cannot',
- ...              'can' if where.can_write(users[who], roles[who]) else 'cannot',
- ...              where.name)
- Jane Q. Doe can read, cannot write '.'
- Jane Q. Doe cannot read, cannot write 'johnsmith.'
- Jane Q. Doe can read, cannot write 'protected.'
- Johnny Smith can read, cannot write '.'
- Johnny Smith can read, can write 'johnsmith.'
- Johnny Smith can read, cannot write 'protected.'
- TedTeacher can read, can write '.'
- TedTeacher can read, can write 'johnsmith.'
- TedTeacher can read, can write 'protected.'
- >> for path in ('demo/students/johnsmith/foo', 
- ...              'demo/syllabus', 
- ...              'demo/protected',  
- ...              'one/two/three'):
- ...   p = Page(pagepath=path, user=john)
- ...   print "--- pagepath = {}".format(p.pagepath)
- ...   print "    name = '{}'".format(p.name)
- ...   print "    is_directory = {}".format(p.is_directory)
- ...   ## (os_fullpath is installation folder dependendet; not a good test.)
- ...   # print "    os_fullpath = '{}'".format(p.os_fullpath()) 
- ...   print "    can_read, can_write = {}, {}".format(p.can_read, p.can_write)
- ...   print "    course '{}' path='{}'".format(p.course.name, p.course.path)
- ...   print "    directory path='{}'".format(p.directory.path)
- --- pagepath = demo/students/johnsmith/foo
-     name = 'foo'
-     is_directory = False
-     can_read, can_write = True, True
-     course 'Demo Course' path='demo'
-     directory path='students/johnsmith'
- --- pagepath = demo/syllabus
-     name = 'syllabus'
-     is_directory = False
-     can_read, can_write = True, False
-     course 'Demo Course' path='demo'
-     directory path=''
- --- pagepath = demo/protected
-     name = 'protected'
-     is_directory = True
-     can_read, can_write = True, False
-     course 'Demo Course' path='demo'
-     directory path='protected'
- --- pagepath = one/two/three
-     name = 'three'
-     is_directory = False
-     can_read, can_write = True, False
-     course 'Umber' path=''
-     directory path=''
 
  
  >>> db_session.remove()       # close the session nicely.
@@ -637,42 +554,6 @@ class Course(Base):
             return os.path.join(os_root, courses_os_base)
         else:
             return os.path.join(os_root, courses_os_base, self.path)
-
-    #def init_folder(self):
-    #    """ initialize top folder database Directory object """
-    #    # This will show up in self.directories after commit
-    #    self.folder = Directory(name='', course=self)
-    #    self.folder.set_permissions()
-
-    #    """ Remove any old database directory objects and their permissions.
-    #        Then create database directories and deafult permissions
-    #        all folders in this course's file tree."""
-    #    # print "-- init_directories( course.name='{}')".format(self.name)
-    #    # print "  os_root = ", os_root
-    #    # print "  courses_os_base   = ", courses_os_base
-    #    # print "  course_os_fullpath  = ", self.os_fullpath()
-    #    # for dir_os_fullpath, dirnames, filenames in os.walk(self.os_fullpath()):
-    #    #     print "  ", dir_os_fullpath
-    #
-    #    ### GETTING ERRORS - I think I'm trying to delete 
-    #    ### a directory without deleting its permission first.
-    #    ### Perhaps set up a cascade delete ??
-    #    for dir in self.directories:
-    #        Directory.delete(dir)
-    #        #db_session.execute('delete from Permission where directory_id=:id;',
-    #        #                   {'id': dir.directory_id})
-    #        #db_session.delete(dir)
-    #    # There should always be a root os folder at self.os_fullpath()
-    #    #try:
-    #    #    db_session.delete(Directory.find_by(pathincourse=self.path))
-    #    #    db_session.commit()
-    #    #except:
-    #    #    pass
-    #    Directory.delete_pathincourse(self.path)
-    #    root_dir = Directory(name='', path='', pathincourse=self.path, course=self)
-    #    root_dir.set_permissions()
-    #    db_session.commit()
-
     def _userdict(self):
         """ Course.find_by(name=...).userdict[username] => user """
         return {p.username: p for p in self.persons}
@@ -728,210 +609,6 @@ class Work(Base):
     @orm.reconstructor
     def init_derived(self):
         self.course = self.assignment.course
-
-# class Directory(Base):
-#     # columns: directory_id, course_id, path, parent_id
-#     # relations: course, parent, children, permissions
-#     # derived: name (folder path relative to course top folder), os_fullpath
-#     #          basename (last folder in name, like os.path.basename)
-#     #
-#     # The folder's location within courses_os_base folder is its 'path'.
-#     # (Each course has the same notion of 'path', under courses_os_base.)
-#     # This implies that
-#     #    * the top-level default course has path=='', e.g. /.../umber/courses
-#     #    * the absolute location of other directories is 
-#     #      os.path.join(os_root, courses_os_base, path)
-#     #      e.g. /.../umber/courses/a/b when path=='a/b'
-#     #    * the folder's 'name' (its relative path within the course)
-#     #      is os.path.relpath(course.path, path)
-#     #    * the top folder for a course has directory.path==course.path
-#
-#     # from http://docs.sqlalchemy.org/en/doc_nav/orm/mapper_config.html
-#     # and warning generated when deleting a folder.
-#     __mapper_args__ = { 'confirm_deleted_rows' : False }
-#   
-#     no_access = 0
-#     read_access = 1
-#     write_access = 3
-#     # The following are in addition to the built-in
-#     # admin-write-everywhere, faculty-write-course.
-#     rights_defaults = {'':         { 'read': ['all'],   'write' : []},
-#                        'admin':    { 'read': [],        'write' : []},                 
-#                        'faculty':  { 'read': [],        'write' : []},
-#                        'private':  { 'read': [],        'write' : []},                 
-#                        'protected':{ 'read': ['guest'], 'write' : []},
-#                        'students': { 'read': [],        'write' : []},
-#                        'wiki':     { 'read': ['all'],   'write' : ['guest']},
-#                       }
-#    
-#     def __init__(self, *args, **kwargs):
-#         if 'course' in kwargs and 'name' in kwargs:
-#             kwargs['path'] = os.path.join(kwargs['course'].path,
-#                                           kwargs['name'])
-#             del kwargs['name']
-#         if 'path' in kwargs and len(kwargs['path']) > 0 \
-#           and kwargs['path'][-1] == '/':
-#             kwargs['path'] = kwargs['path'][:-1]
-#         # print "Directory.__init__ kwargs={}".format(kwargs)
-#         umber_object_init(self, *args, **kwargs)
-#         self.init_derived()
-#     @orm.reconstructor
-#     def init_derived(self):
-#         # print " Directory.init_derived self.path={} self.course={}".format(
-#         #    self.path, self.course)
-#         self.name = self._name()
-#         self.basename = os.path.basename(self.name)
-#         self.os_fullpath = self._os_fullpath()
-#     def _name(self):
-#         if self.path != '':
-#             name = os.path.relpath(self.path, self.course.path)
-#         else:
-#             name = self.path
-#         if name == '.':
-#             name = ''
-#         return name
-#     def _os_fullpath(self):
-#         if self.path == '':
-#             fullpath = os.path.join(os_root, courses_os_base)
-#         else:
-#             fullpath = os.path.join(os_root, courses_os_base, self.path)
-#         if fullpath[-1] == '/':
-#             return fullpath[:-1]
-#         else:
-#             return fullpath
-#
-#     @classmethod
-#     def delete_pathincourse(cls, pathincourse):
-#         try:
-#             dir = Directory.find_by(pathincourse=pathincourse)
-#             Directory.delete(dir)
-#         except:
-#             pass
-#     @classmethod 
-#     def delete(cls, directory):
-#         """ Course.delete(dir) 
-#             delete a directory and its permissions from the database """
-#         # syntax : Course.delete(dir)
-#         # 
-#         db_session.execute('delete from Permission where directory_id=:id;',
-#                                {'id': directory.directory_id})
-#         db_session.delete(directory)
-#         db_session.commit()
-#     def set_1_permission(self, who, rights):
-#         if who in Role.names:
-#             r = Role.named(who)
-#             Permission(rights=rights, directory=self, person=None, role=r)
-#         else:
-#             try:
-#                 if isinstance(who, str):
-#                     p = Person.find_by(username=who)
-#                 else:
-#                     p = who
-#                 x = Permission(rights=rights, directory=self, person=p, role=None)
-#             except:
-#                 pass # quietly fail if given username isn't in the database
-#                      # TODO - think about edge case here more ...
-#                      # student/joe folder before joe is in database ??
-#
-#     def set_permissions(self, course_defaults=True, readers=(), writers=()):
-#         """ Setup Permission database entries for this directory.
-#             defaults = True  =>  set readers() and writers() based
-#                                  on standard course folder names
-#                                  instead of readers() and writers()
-#                                  (e.g. protected, students, johnsmith, ...)
-#             recur = True     =>  recursively setup child directories
-#             readers, writers =>  list of username and role names
-#         """
-#         if course_defaults:
-#             if self.name in Directory.rights_defaults:
-#                 readers = Directory.rights_defaults[self.name]['read']
-#                 writers = Directory.rights_defaults[self.name]['write']
-#             elif os.path.dirname(self.name) == 'students' and \
-#               self.basename in self.course.userdict:
-#                 readers = ()
-#                 writers = (users[self.name], )
-#             else:
-#                 pass   # if no name match, use given readers and writers
-#         # delete old permissions
-#         db_session.execute('delete from Permission where directory_id=:id;',
-#                            {'id': self.directory_id})
-#         for who in writers:
-#             self.set_1_permission(who, rights = Directory.write_access)
-#         for who in (set(readers) - set(writers)):
-#             self.set_1_permission(who, rights = Directory.read_access)
-#         #db_session.commit()
-#         #for sub in os.walk(self.os_fullpath):
-#         #    subdir_fullpath = sub[0]
-#         #    subpath = os.path.join(self.path, subname)
-#         #    subpathincourse = os.path.join(self.course.path, subpath)
-#         #    #try:
-#         #    #    db_session.delete(Directory.find_by(pathincourse=subpathincourse))
-#         #    #    db_session.commit()
-#         #    #except:
-#         #    #    pass
-#         #    Directory.delete_pathincourse(subpathincourse)
-#         #    sub = Directory(course=self.course, 
-#         #            name=subname, path=subpath, pathincourse=subpathincourse)
-#         #    sub.set_permissions(course_defaults, recur, readers, writers)
-#     def can_read(self, user, role=None):
-#         return self.rights(user, role) >= Directory.read_access
-#     def can_write(self, user, role=None):
-#         return self.rights(user, role) >= Directory.write_access
-#     def rights(self, user, role=None):
-#         if role == None:
-#             role = Role.named('all')
-#         elif isinstance(role, str):
-#             role = Role.named(role)
-#         try:
-#             return self._result_[(user.person_id, role.role_id)]
-#         except:
-#             # I tried several variations on this sql syntax, expecting
-#             # to use the "select max() ..." to pull the largest value.
-#             # But various "join" efforts failed, i.e. when the first select
-#             # had no entries but the 2nd did, the join would be empty.
-#             # This is only one database query ... so good enough.
-#             rights_sql = """
-#               select rights from Permission 
-#                 where directory_id = :directory_id and person_id = :person_id
-#               union
-#               select rights from Permission natural join Role 
-#                 where directory_id = :directory_id and :rank >= rank;"""
-#             if role.name in ('admin', 'faculty'):
-#                 # assuming faculty => faculty for this course
-#                 result = Directory.write_access
-#             else:
-#                 sql_result = db_session.execute(
-#                     rights_sql, {'directory_id' : self.directory_id, 
-#                                  'person_id' : user.person_id,
-#                                  'rank' : role.rank}).fetchall()
-#                 if len(sql_result) == 0:
-#                     result = 0
-#                 else:
-#                     result = max(sql_result[0])  # sql_result is e.g. [(3,)]
-#             try:
-#                 self._result_
-#             except:
-#                 self._result_ = {}
-#             self._result_[(user.person_id, role.role_id)] = result
-#             return result
-#        
-# class Permission(Base):
-#     # columns: permission_id, rights, directory_id, role_id, person_id
-#     # relations: directory, role, person
-#     ##
-#     ##   These default permissions are *not* in the database :
-#     ##      'admin'  can always read & write everything. 
-#     ##      'faculty'can alway read & write their course
-#     ##   All other read/write directory permissions are configuable,
-#     ##   and therefore have corresponding Permission database entries.
-#     ##
-#     ##   The rights column is either 3 (write & read) or 1 (read),
-#     ##   and in the code here a 0 means no rights.
-#     ##     
-#     ##   a Permission has either a role (e.g. 'all') or person (e.g. 'smith')
-#     ##
-#     ##
-#     __init__ = umber_object_init
     
 Person.registrations = relationship(Registration)
 Person.works = relationship(Work)
@@ -941,7 +618,6 @@ Person.courses = relationship(Course, viewonly = True,
 Course.assignments = relationship(Assignment)
 Course.persons = relationship(Person, viewonly = True,
                               secondary = Registration.__table__)
-# Course.directories = relationship(Directory)
 
 Registration.person = relationship(Person)
 Registration.course = relationship(Course)
@@ -951,33 +627,6 @@ Assignment.course = relationship(Course)
 
 Work.person = relationship(Person)
 Work.assignment = relationship(Assignment)
-
-# Directory.course = relationship(Course)
-
-# Setting up the following .parent, .child relationships was nasty -
-# lots of trial and error. For a time, I was exlplicitly setting
-#   primaryjoin = Directory.parent_id == Directory.directory_id
-# which parses correctly, but apparently is deduced from the sqlite3
-# CONSTRAINT syntax correctly and wasn't the source of my problems.
-# Without the uselist=False, the system sets up parent as a list, not
-# a singe one-child-to-one-parent, and Directory(parent=x) would
-# crash. The remote_side= argument seems to be correctly setting which
-# end is which, but finding it in the sqlalchemy docs was not trivial.
-
-# Directory.parent = relationship(Directory, 
-#                    remote_side=Directory.directory_id, uselist=False)
-# Directory.children = relationship(Directory, remote_side=Directory.parent_id)
-
-# http://docs.sqlalchemy.org/en/rel_0_9/orm/collections.html#passive-deletes ;
-# http://www.sqlite.org/foreignkeys.html#fk_actions
-# umber_db.sql has matching Permission( ... directory_id ON DELETE CASCADE) .
-
-# Directory.permissions = relationship(Permission, cascade="all, delete-orphan",
-#                                     passive_deletes=True)
-
-# Permission.role = relationship(Role)
-# Permission.person = relationship(Person)
-# Permission.directory = relationship(Directory)
 
 class Page(object):
     """ a url-accessable file or folder in a Course """
@@ -1000,8 +649,7 @@ class Page(object):
     def __init__(self, 
                  path = None,     # string from URL host/course_url_base/path
                  request = None,  # Flask request object
-                 user = None,     # Person
-                 allow_insecure_login = False
+                 user = None      # Person
                  ):
         self.user = user or anonymous_person()
         self.path = path
@@ -1011,11 +659,7 @@ class Page(object):
         # course ?
         # file or directory ?
         # access privileges 
-        
                 
-        #self.directory = self.find_directory(self.pagepath)
-        #self.is_directory = self.os_fullpath() == self.directory.os_fullpath()
-
         #self.course = self.directory.course
         #self.title = self.course.name + " - " + self.name
         #try:
@@ -1038,9 +682,6 @@ class Page(object):
             self.url = ''
             # self.path = pagepath
             # self.full_path = pagepath
-        self.allow_insecure_login = allow_insecure_login # require https login?
-        if allow_insecure_login:
-            self.secure_url = self.url   # e.g. debugging without https
         #
         self.uri_links = '- uri_links -'
         self.has_error = False
@@ -1054,34 +695,11 @@ class Page(object):
             return os.path.join(os_root, courses_os_base)
         else:
             return os.path.join(os_root, courses_os_base, self.pagepath)
-    def find_directory(self, fullpath):
-        """ Find the directory in the database for this pagepath """
-        # pagepath is e.g. one/two/three  (no leading or trailing slash)
-        # This recursive procedure will try to find successively
-        #    'one/two/three', 'one/two', 'one', ''
-        # as a Directory's (unique) pathincourse. 
-        # Since the 'Umber' course has pathincourse '', 
-        # this should always terminate there if not before.
-        #    os.path.split('/one/two/three')  => ('/one/two', 'three')
-        #    os.path.join(a, b)                   dirname     basename
-        #    os.path.isdir(path)
-        #    os.path.isfile(path)
-        #    os.path.abspath(path)          normalized absolute path
-        #    os.path.relpath(path, [start]) default is relative to os.curdir  
-        #    os.chdir(path)        Note that on unix, os.curdir = '.'
-        #    os.getcwd()
-        #    os.curdir, os.pardir    ('.', '..') on unix
-        # TODO : put missing directories into the database?
-        try:
-            return Directory.find_by(fullpath = fullpath)
-        except:
-            return self.find_directory(os.path.dirname(path))
 
 def populate_db():
     """ Create and commit the default database objects """
-    # i.e. Roles, the 'umber' course and its root Directory,
-    # and the 'demo' course along with its sample Persons,
-    # Registrations, Assignments, and Works.
+    # i.e. Roles, the 'umber' course and he 'demo' course
+    # along with its sample Persons, Registrations, Assignments, and Works.
     #
     # The sqlite database must already exist before this is run;
     # to create it, run database/init_db.

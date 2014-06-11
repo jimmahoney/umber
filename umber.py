@@ -2,20 +2,31 @@
 # -- coding: utf-8 --
 """
  umber.py
- See ./README.txt
+
+ To run this for development testing :
+ 
+   $ ./database/reset_db ; ./console
+   $ python umber.py           # http://localhost:8080/test or umber/demo/home
+   $ SSL=true python umber.py  # same but https://localhost:8433/...
+
+ Also see ./README.md, src/*, database/*, and docs/history.txt .
+
  Jim Mahoney | mahoney@marlboro.edu | June 2013 | MIT License
 """
-import sys 
+import sys, datetime, re, os
 from flask import Flask, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask.ext.login import LoginManager, login_user, logout_user, current_user
 from src.settings import secret_key, os_root, \
      courses_url_base, courses_os_base
 from src.model import db_session, populate_db, anonymous_person, \
-     Person, Role, Course, Registration, Assignment, Work, \
-     Directory, Permission, Page
-from datetime import timedelta
-from re import match
+     Person, Role, Course, Registration, Assignment, Work, Page
+
+# setting up for https (see http://flask.pocoo.org/snippets/111/)
+from OpenSSL import SSL
+ssl_context = SSL.Context(SSL.SSLv23_METHOD)
+ssl_context.use_privatekey_file('ssl/ssl.key')
+ssl_context.use_certificate_file('ssl/ssl.crt')
 
 sys.dont_write_bytecode = True   # don't create .pyc's during development
 
@@ -102,14 +113,13 @@ def mainroute(path):
     page = Page(path = path,
                 request = request, 
                 user = current_user, 
-                allow_insecure_login = app.allow_insecure_login,
                 )
     #print " mainroute: current_user = " + str(current_user)
     #print " mainroute: page = " + str(page)
     #print " mainroute: course = " + str(page.course)
     if request.method == 'POST':
         handle_post()
-    return render_template('main.html',
+    return render_template('umber/main.html',
                            name = 'main',
                            page = page,
                            user = current_user,
@@ -137,7 +147,7 @@ def submit_login():
         return
 
 def starts_with_submit(string):
-    return match('submit', string)
+    return re.match('submit', string)
     
 def handle_post():
     """ Process a form submission (login, edit, upload, ...) """
@@ -155,12 +165,18 @@ def handle_post():
 def setup():
     app.secret_key = secret_key
     app.session_cookie_name = 'umber_session'
-    app.permanent_session_lifetime = timedelta(days=1)
-    app.allow_insecure_login = True
+    app.permanent_session_lifetime = datetime.timedelta(days=1)
 
 if __name__ == '__main__':
     setup()
-    app.run(debug = True,
-            port = 8090,
-            host = '0.0.0.0')
+    if os.environ.get('SSL'):
+        app.run(host = '0.0.0.0',
+                port = 8433, 
+                debug = True,
+                ssl_context = ssl_context)
+    else:
+        app.run(host = '0.0.0.0',
+                port = 8080,
+                debug = True,
+                )
 

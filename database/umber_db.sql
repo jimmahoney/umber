@@ -10,10 +10,6 @@
 --       Assignment          FK Course
 --       Work 		     FK Person, FK Assignment 
 --
---       disabled for now
---       -- Directory           FK Course, FK Parent
---       -- Permission          FK Directory, FK Role, FK Person
---
 --   To create the database :          ./init_db
 --   To create & populate it:          ./reset_db
 --   To create an ERD diagram of it:   ./erd/make_png
@@ -56,7 +52,7 @@ CREATE TABLE Person (
   notes TEXT NOT NULL DEFAULT ''
 );
 
--- Speed selects at the cost of slowing table modifications.
+-- Speed select statements at the cost of slowing table modifications.
 CREATE UNIQUE INDEX person_username_index ON Person (username);
 CREATE INDEX person_ldap_index ON Person (ldap_id);
 
@@ -98,7 +94,6 @@ CREATE TABLE Course (
   notes TEXT NOT NULL DEFAULT ''
 );
 
--- Speed selects at the cost of slowing table modifications.
 CREATE UNIQUE INDEX course_path_index ON Course (path);
 
 --
@@ -173,41 +168,3 @@ CREATE TABLE Work (
   notes TEXT NOT NULL DEFAULT ''
 );
 
---
--- Directory represents a disk folder,
--- including which course it's in and its permissions.
--- Its 'path' column gives its location with the pages_os_root folder,
--- which matches the notion of 'path' within the Course table.
---
--- CREATE TABLE Directory (
---   directory_id INTEGER PRIMARY KEY NOT NULL,
---   course_id INTEGER NOT NULL DEFAULT 0
---   CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
---   path TEXT UNIQUE NOT NULL DEFAULT '',
---   parent_id INTEGER DEFAULT NULL
---    CONSTRAINT fk_parent_directory_id REFERENCES Directory(directory_id)
--- );
-
--- Speed selects at the cost of slowing table modifications.
--- CREATE UNIQUE INDEX directory_path_index ON Directory (path);
-
---
--- Permission enables read and/or write access to Directories.
---   rights : 3 => write & read access ; 1 => read access 
---   for either a person or a role. 
---   (admin & faculty have read/write always, if without a Permission)
---   non-admin, non-faculty folks need an explicit read or write permission,
---   otherwise they should be denied access.
---
--- CREATE TABLE Permission (
---  permission_id INTEGER PRIMARY KEY NOT NULL,
---  rights INTEGER NOT NULL DEFAULT 0,
---  write INTEGER NOT NULL DEFAULT 0,
---  directory_id INTEGER NOT NULL DEFAULT 0
---    CONSTRAINT fk_directory_directory_id REFERENCES Directory(directory_id)
---    ON DELETE CASCADE,
---  role_id INTEGER DEFAULT NULL
---    CONSTRAINT fk_role_role_id REFERENCES Role(role_id),
---  person_id INTEGER DEFAULT NULL
---    CONSTRAINT fk_person_person_id REFERENCES Person(person_id)
--- );

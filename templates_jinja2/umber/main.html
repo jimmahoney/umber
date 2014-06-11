@@ -21,7 +21,7 @@
         {% include 'umber/form_login.html' %}
     {% else %}
         {% include 'umber/before_login.html' %}
- % endif
+    {% endif %}
 </div>                                     <!-- end header -->
 {% endif %}
 
@@ -31,12 +31,15 @@
 
 {% if true %}
 <div id="column-one">                      <!-- start column-one -->
- <h1><a href="{{ page.course.uri() }}"> {{ page.course.name_as_title }}</a></h1>
- <div><div id="semester"> {{ page.course.semester() }} </div></div>
+ {# <h1><a href="{{ page.course.uri() }}"> {{ page.course.name_as_title }}</a></h1>
+    <div><div id="semester"> {{ page.course.semester() }} </div></div>  
+ #}
+ <h1><a href="#"> page.course.name_as_title </a></h1>
+ <div><div id="semester"> page.course.semester() </div></div>
  {% include 'umber/navigation.html' %}
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
-     src="{{static_url('images/mc-logo.gif')}}/></a>
+     src="{{static_url('images/mc-logo.gif')}}"/></a>
  </div>
 </div>                                     <!-- end column-one -->
 {% endif %}
@@ -48,7 +51,7 @@
       {% include 'umber/error.html' %}
     {% endif %}
   {% include 'umber/work.html' %}
-  {% include 'content.html' %}
+  {% include 'umber/content.html' %}
   <div id="modified">
     {{ page.uri_links }}<br />
   {% if page.has_lastmodified %}
@@ -56,16 +59,18 @@
   {% endif %}
   </div>
  </div>                                       <!-- end component -->
- {% include 'umber/attachments.html %}
+ {% include 'umber/attachments.html' %}
  <div class="footer">                         <!-- start footer -->
    {% include 'umber/footer.html' %}
  </div>                                       <!-- end footer -->
 </div>                                      <!-- end column-two -->
 {% endif %}
 
+{#
 {% if debug %}
     {% include 'umber/debug.html' %}
 {% endif %}
+#}
 
 </body>
 </html>
