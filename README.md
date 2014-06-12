@@ -8,7 +8,9 @@ with python's Flask web framework, sqlite3, and git.
 development testing
 --------------------
 
-    $ ./database/reset_db
+    $ . env/bin/activate       # turn on python's virtualenv
+    $ ./database/reset_db      # initialize & populate database
+
     $ ./console
     >>> demo
     <Course name='Demo Course' ...>

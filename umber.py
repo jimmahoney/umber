@@ -3,14 +3,25 @@
 """
  umber.py
 
- To run this for development testing :
- 
-   $ ./database/reset_db ; ./console
+ Running this for development looks like this.
+
+   setup
+   $ . env/bin/activate      # (which I alias to just "activate")
+   $ ./database/reset_db
+
+   interact with sql database
+   $ ./console
    >>> # see src/model.py for what you can do
 
+   turn on http and https with the server script to browse & debug pages
+   $ ./server
+   and then visit urls like
+   https://localhost:8443/test
+   http://localhost:8080/umber/demo/home
+   
+   the server script is running these in the background
    $ python umber.py
-   and then visit /test or /umber/demo/home
-   at http://localhost:8080/ or https://localhost:8443
+   $ python umber.py ssl
 
  Also see ./README.md, src/*, database/*, and docs/history.txt .
 
@@ -20,10 +31,11 @@ import sys, datetime, re, os
 from flask import Flask, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask.ext.login import LoginManager, login_user, logout_user, current_user
-from src.settings import secret_key, os_root, \
-     courses_url_base, courses_os_base
+from src.settings import secret_key, os_root, url_base, os_base, \
+     http_port, https_port
 from src.model import db_session, populate_db, anonymous_person, \
-     Person, Role, Course, Registration, Assignment, Work, Page
+     Person, Role, Course, Registration, Assignment, Work
+from src.page import Page
 from flask import render_template
 from OpenSSL import SSL
 
@@ -63,7 +75,7 @@ def get_message():
     if len(messages) > 0:
         return messages[0]
     else:
-        return "&nbsp;"
+        return " "
 
 @app.context_processor
 def template_context():
@@ -101,17 +113,25 @@ def test():
                            test2 = 'foobar'
         )
 
-@app.route('/' + courses_url_base + '/<path:path>', methods=['GET', 'POST'])
-def mainroute(path):
-    page = Page(path = path,
+@app.route('/' + url_base + '/<path:pagepath>', methods=['GET', 'POST'])
+def mainroute(pagepath):
+    page = Page(path = pagepath,  # e.g. 'demo/home'
                 request = request, 
                 user = current_user, 
                 )
-    #print " mainroute: current_user = " + str(current_user)
-    #print " mainroute: page = " + str(page)
+
+    # if user not allowed access to this folder: reply access denied
+    # else if is folder but url without trailing slash : redirect to url/
+    # 
+    
+    # print " mainroute: path = '{}'".format(path)
+    # print " mainroute: current_user = {}".format(current_user)
+    # print " mainroute: page = {}".format(page)
     #print " mainroute: course = " + str(page.course)
+    
     if request.method == 'POST':
         handle_post()
+    
     return render_template('umber/main.html',
                            name = 'main',
                            page = page,
@@ -119,12 +139,31 @@ def mainroute(path):
                            debug = app.debug   # True or False; see app.run
                            )
 
+@app.route('/' + url_base + '/', methods=['GET', 'POST'])
+def mainroute_blank():
+    mainroute('')
+
+def handle_post():
+    """ Process a form submission (login, edit, upload, ...) """
+    # Each form has an input field named 'submit_X' for some X,
+    # and is handled by a corresponding function submit_X().
+    # The data is in the Flask request global.
+    try:
+        keys_named_submit = filter(lambda s: re.match('submit', s),
+                                   request.form.keys())
+        submit_what = keys_named_submit[0]
+        globals()[submit_what]()  # get function given its name & invoke it
+    except:
+        print " OOPS : handle_post() couldn't handle request.keys() = ", \
+          request.keys()
+
 def submit_logout():
+    """ handle logout action """
     # invoked from handle_post()
     logout_user()
 
 def submit_login():
-    """ Process <input name='submit_login' ...> form submission. """
+    """ handle <input name='submit_login' ...> form submission. """
     # invoked from handle_post()
     try:
         user = Person.find_by(username = request.form['username'])
@@ -138,23 +177,7 @@ def submit_login():
     else:
         flash('Oops: wrong username or password.')
         return
-
-def starts_with_submit(string):
-    return re.match('submit', string)
-    
-def handle_post():
-    """ Process a form submission (login, edit, upload, ...) """
-    # Each form has an input field named 'submit_X' for some X,
-    # and is handled by a corresponding function submit_X().
-    # The data is in the Flask request global.
-    try:
-        keys_named_submit = filter(starts_with_submit, request.form.keys())
-        submit_what = keys_named_submit[0]
-        globals()[submit_what]()  # get function given its name & invoke it
-    except:
-        print " OOPS : handle_post() couldn't handle request.keys() = ", \
-          request.keys()
-
+          
 def setup():
     app.secret_key = secret_key
     app.session_cookie_name = 'umber_session'
@@ -162,19 +185,14 @@ def setup():
 
 if __name__ == '__main__':
     setup()
-    #try:
-    #    pid = os.fork()
-    #except:
-    #    print "OOPS - couldn't fork"
-    #    sys.exit(1)
-    if os.environ.get('SSL'):
+    if len(sys.argv) > 1 and sys.argv[1] == 'ssl':
         app.run(host = '0.0.0.0',
-                port = 8443, 
+                port = https_port,
                 debug = True,
                 ssl_context = ssl_context)
     else:
         app.run(host = '0.0.0.0',
-                port = 8080,
+                port = http_port,
                 debug = True,
                 )
 

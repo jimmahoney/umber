@@ -1,13 +1,6 @@
-# stop old backgrounded servers
+# stop old background servers
 pkill -f umber.py
 
-# start http and https development servers in the background
-(./env/bin/python umber.py &)
-(SSL=true ./env/bin/python umber.py &)
-
-
-
-
-
-
-
+# start new background http and https development servers
+./env/bin/python umber.py     &
+./env/bin/python umber.py ssl &

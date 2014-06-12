@@ -1,5 +1,7 @@
 # -- coding: utf-8 --
 """
+ model.py
+ 
  sqlalchemy database model for umber
 
  --- examples / tests ---
@@ -60,7 +62,6 @@
  student
  
  >>> db_session.rollback()     # Undo these uncommited database modifications,
-
  
  >>> db_session.remove()       # close the session nicely.
  
@@ -170,64 +171,13 @@
 
  python-ldap may also be used for authentication,
  in addition to the password hashes in the database.
-
- --- paths, folders, urls, and all that ---
-
- The vocabulary terms that I'm using to describe file and url addresses
- for courses, directories, and files are 'path', 'basename', and 'name.
- I'll use an example to illustrate.
-
- If the settings on my laptop development machine are
-
-    os_root            /Users/mahoney/academics/umbr
-    courses_url_base   umber
-    courses_os_base    courses
-
- then for the 'notes/week1' file within a course at 'fall/math'
- we would have
-
-    url          http://localhost:8090/umber/fall/math/notes/week1
-                        host           base  course    file
-                       
-    file         /Users/mahoney/academics/umbr/courses/fall/math/notes/week1
-                 os_root                       base    course    file
-                 
- My definitions are then
  
-    path         address after base
-                 e.g. fall/math               for this course
-                      fall/math/notes/week1   for this file
-
-    basename     last word in address (same as os.path.basename)
-                 e.g. math                    for this course
-                      week1                   for this file
-                      
-    file name    address after course's path
-                 e.g. notes/week1             for this file
-    
-    course name  anything (actual name of course, not part of address)
-                 e.g. "Math 101" (or whatever)
- 
- This implies that
-    * course paths and file paths are unique
-    * course_path + file_name = file_path
-    * file paths therefore always have a course path as a prefix
-    * many courses may have files with the same name (i.e. notes/week1)
-
- Folders have the same notion of path, basename, and name as files, i.e.
-    * their path has the course path as a prefix, and
-    * their name is the address within the course
-      (which may be the empty string if it the top folder in a course).
-      
- This Page object can correspond to either a file or a folder
-
-
 """
 
 from sqlalchemy import create_engine, orm
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from settings import os_root, courses_os_base, courses_url_base
+from settings import os_root, os_base, url_base
 from werkzeug.security import generate_password_hash, check_password_hash
 from random import randint
 import os
@@ -543,17 +493,17 @@ class Course(Base):
         return month_to_semester(month) + ' ' + year
     def _url(self):
         if self.path == '':
-            return '/'.join([courses_url_base, 'home'])
+            return '/'.join([url_base, 'home'])
         else:
-            return '/'.join([courses_url_base, self.path, 'home'])
+            return '/'.join([url_base, self.path, 'home'])
         #url_path = '/' + self.path if self.path != '' else ''
-        #return '/' + courses_url_base + url_path + '/home'
+        #return '/' + url_base + url_path + '/home'
     def _os_fullpath(self):
         if self.path == '':
             # skip self.path; else end up with trailing /
-            return os.path.join(os_root, courses_os_base)
+            return os.path.join(os_root, os_base)
         else:
-            return os.path.join(os_root, courses_os_base, self.path)
+            return os.path.join(os_root, os_base, self.path)
     def _userdict(self):
         """ Course.find_by(name=...).userdict[username] => user """
         return {p.username: p for p in self.persons}
@@ -627,74 +577,6 @@ Assignment.course = relationship(Course)
 
 Work.person = relationship(Person)
 Work.assignment = relationship(Assignment)
-
-class Page(object):
-    """ a url-accessable file or folder in a Course """
-    #
-    # A Page object exists during the lifetime of a URL request to
-    # manage access to the corresponding file or folder and its content.
-    # Page objects are *not* in the sql database and therefore
-    # don't inherit from the sqlalchemy Base class.
-    #
-    # Note however that Work objects, representing a student's response to
-    # an Assignment, do correspond to a file and are in the sql database.
-    #
-    # TODO maybe : the conversion of markdown or wiki files to html
-    # could be cached in sql database Page objects. If so, a hash
-    # would be needed to keep track of whether the file had changed
-    # since the sql data had been cached. That could speed things up
-    # (assuming the hash computation is faster than the markdown conversion)
-    # at the cost of database size and code complexity.
-    #
-    def __init__(self, 
-                 path = None,     # string from URL host/course_url_base/path
-                 request = None,  # Flask request object
-                 user = None      # Person
-                 ):
-        self.user = user or anonymous_person()
-        self.path = path
-        self.basename = os.path.basename(self.path)
-
-        # need:
-        # course ?
-        # file or directory ?
-        # access privileges 
-                
-        #self.course = self.directory.course
-        #self.title = self.course.name + " - " + self.name
-        #try:
-        #    self.role = Registration.find_by(course=self.course, 
-        #                                     person=self.user).role
-        #except:
-        #    self.role = Role.named('all')
-        #self.can_write = self.directory.can_write(self.user, self.role)
-        #self.can_read = self.directory.can_read(self.user, self.role)
-        
-        if request:
-            self.request = request
-            self.secure_url = 'https://' + request.host + request.path
-            self.url = 'http://' + request.host + request.path            
-            # self.path = request.path
-            # self.full_path = request.full_path
-        else: # debugging only
-            self.request = None
-            self.secure_url = ''
-            self.url = ''
-            # self.path = pagepath
-            # self.full_path = pagepath
-        #
-        self.uri_links = '- uri_links -'
-        self.has_error = False
-        self.has_lastmodified = True
-        self.lastmodified = ' - MODIFIED DATE -'  # TODO : what should this be?
-    def __str__(self):
-        return "<Page pagepath='{}' id={}>".format(self.pagepath, id(self))
-    def os_fullpath(self):
-        if self.pagepath == '':
-            # skip self.path; else end up with trailing /
-            return os.path.join(os_root, courses_os_base)
-        else:
-            return os.path.join(os_root, courses_os_base, self.pagepath)
 
 def populate_db():
     """ Create and commit the default database objects """

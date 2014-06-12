@@ -11,9 +11,18 @@ for both sorts of templates.
 I've enabled https/ssl access so that I don't have 
 to finesse that in the code with "allow-login-without-https" stuff.
 However, that means I will have to have two sessions running :
-   
     $ python umber.py              # http  8080
     $ SSL=true python umber.py     # https 8443
+which is wrapped into just
+    $ ./server
+with a bash script that invokes both the background
+after killing any previously running umber.py processes.
+
+This url is doing fine as a test 
+    /test
+And the next thing to do is to get
+    /demo/home
+into better shape.
 
 ## June 10
 
