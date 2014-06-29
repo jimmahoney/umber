@@ -22,6 +22,9 @@ Flask-Login >= 0.2.5
 Python-LDAP >= 2.4.13
 PyYAML >= 3.10
 
+# time/date ; see http://crsmithdev.com/arrow/
+yaArrow >= 0.4.0
+
 # http://stackoverflow.com/questions/7340784/easy-install-pyopenssl-error
 # suggests that later versions are buggy.
 pyOpenSSL == 0.12

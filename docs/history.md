@@ -1,5 +1,13 @@
 # umber development history #
 
+## June 19
+
+some perhaps related resources :
+
+ https://news.ycombinator.com/item?id=7913176 discussion of mdwiki
+ http://dynalon.github.io/mdwiki/#!index.md   markdown conversion in js
+ http://pythonhosted.org/MarkWiki/            python markdown engine
+
 ## June 11
 
 The jinja2 template debugging is worth keeping

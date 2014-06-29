@@ -60,16 +60,33 @@
  not ids - to identify which registration to find.)
  >>> print Registration.find_by(person=john, course=demo).role.name
  student
- 
+
  >>> db_session.rollback()     # Undo these uncommited database modifications,
+
+ A raw SQL query for raw data looks like this, which returns a list of tuples.
+ >>> db_session.execute(
+ ...   'SELECT c.name, c.credits FROM Course AS c WHERE c.path=="demo";'
+ ...   ).fetchall()
+ [(u'Demo Course', 0)]
  
+ Or sqlalchemy objects can be returned with a snippet of SQL which would go
+ after WHERE in something like 'SELECT * FROM Course WHERE ...'
+ In this example, the :p marker is replaced by the corresponding data
+ from params(), the .one() method returns the first matching Course,
+ and the .name extracts the course's name.
+ >>> Course.filter('path==:p').params(p='demo').one().name
+ u'Demo Course'
+
+ The shorter way to do the same thing is just the following.
+ But sometimes having access to the SQL itself is useful.
+ >>> Course.find_by(path='demo').name
+ u'Demo Course'
+
  >>> db_session.remove()       # close the session nicely.
  
- --- discussion ---
+ --- sqlalchemy ORM discussion and issues ---
  
- Here are a few of the concepts behind all this.
-
- For more details, see e.g.
+ The documentation is at 
    http://flask.pocoo.org/docs/patterns/sqlalchemy/ ,
    http://docs.sqlalchemy.org/en/rel_0_7/orm/query.html ,
    and the other reams of stuff at docs.sqlalchemy.org
@@ -94,37 +111,49 @@
  put it into the sql database looks like this.
 
       # SqlAlchemy default
-      jane = Person(name='Jane')      # create a python object
-      db_session.add(jane)            # stick it in the current session
-      db_session.commit()             # output it to the sql database
+      >> jane = Person(name='Jane')   # create a sqlalchemy object
+      >> db_session.add(jane)         # stick it in the current session
+      >> db_session.commit()          # output it to the sql database
  
  However, I've set things up (see below) so that the second step
  happens automatically when an object is created.
 
       # my default 
-      jane = Person(name='Jane')      # create python object & add to db_session
-      db_session.commit()             # output it to the sql database
+      >> jane = Person(name='Jane')   # create object & add to db_session.new
+      >> db_session.commit()          # output it to the sql database
 
- This still leaves open possible confusion between what's in
- db_session vs what's in the sql database. I've found this to
- be particularly true for SqlAlchemy's .find*() methods,
- which look only in the database, not in db_session.
- For example, this code fails
-
-      jane = Person(name='Jane')
-      ...
-      who = Person.find_by(name='Jane')   # Fails!
+ Another sqlalchemy "gotcha" is its find_by (and similar methods)
+ behavior, which doesn't look in db_session, and only finds
+ new objects after they're committed. That would suggest that
+ find_by only looks in the sql database. However, it does return objects
+ from db_session.dirty which have been pulled from the sql
+ database and which contain uncommitted changes. This seems
+ inconsistent to me.
  
- because jane is not yet in the sql database when the .find_by is called.
- This, on the other hand, works fine.
+      >> jane = Person(name='Jane')  # new person
+      >> db_session.new              # not yet committed
+      IdentitySet([<Person name='Jane' id=4408204944>])
+      >> jane.username
+      'jane'
+      >> Person.find_all_by(username='jane')  # doesn't find jane
+      []
 
-      jane = Person(name='Jane')
-      db_session.commit()
-      ...
-      who = Person.find_by(name='Jane')   # Succeeds!
+      >> john = Person.find_by(username='johnsmith')
+      >> john.name
+      u'Johnny Smith'
+      >> john.name = 'John New Smith'   # changed
+      >> db_session.dirty               # not yet commited
+      IdentitySet([<Person name='John New Name' ...>])
+      >> Person.find_by(username='johnsmith').name
+      'John New Name'                   # finds data not in database yet(!)
 
- I considered overriding SqlAlchemy's find_by (at least) method to
- look in db_session and avoid this issue but decided that was overkill.
+ I think what's going on is that sqlalchemy's IdentitySet
+ is making sure that there aren't two johnsmith objects
+ in db_session with the same id.
+
+ I don't much like this behavior - it isn't what I expect -
+ but haven't (yet) modified my sqlalchemy objects to look in
+ db_session.new. Instead, I'll just committ early & often.
       
  I've also been confused by SqlAlchemy's notion of "reconstruction":
  objects which are pulled from the database don't have their __init__
@@ -141,37 +170,53 @@
  whenever an instance is modified. I've turned that off.
  (See the creation of db_session below.)
 
- For this project, the database tables themselves and their schema
+ --- database definition ---
+ 
+ In this project, the database tables themselves and their schema
  are defined with SQL, in database/create_umber_db.sql. Then the
  parent Umber class automatically defines the methods and matching
  fields within each inherited Person, Course, etc object.
-
+ 
  Often this is done the other way around, with the database tables defined
- by the python classes, and the SQL generated automatically. That way of
- working is for example described at flask.pocoo.org/docs/patterns/sqlalchemy,
- where the model is e.g.
+ by the python classes, and the SQL generated automatically. That workflow
+ is described at flask.pocoo.org/docs/patterns/sqlalchemy, where the model
+ is something like
+ 
       class User(Base):
           __tablename__ = 'users'
           id = Column(Integer, primary_key=True)
           name = Column(Integer, unique=True)
           # and so on
- Then the sqlite (or other) database itself can be created automatically 
- via something like
-      Base.metadata.create_all(bind=engine)
- But here I'm working in the direction, starting from the SQL 
+
+ In that paradigm, the sqlite (or other) database itself would be
+ created automatically with something like
+
+       Base.metadata.create_all(bind=engine)
+
+ But here I'm starting with the raw SQL table definitions,
+ all of which are in the <os_base>/database/ folder
+ 
       CREATE TABLE Person (
           person_id INTEGER PRIMARY KEY NOT NULL,
           username TEXT UNIQUE NOT NULL,
           # and so on )
- and then use 'autoload' (see below) to generate the Person.username 
- and similar object interfaces.
+          
+ Then in the code below, the sqlalchemy ORM classes 'autoload'
+ the sqlite table definitions and generate object interfaces
+ such as Person.username. This seems a better division of
+ responsibility between the SQLite and SqlAlchemy worlds,
+ allowing me to define a single base class for all my
+ database ORM classes.
 
- The Person and AnonymousPerson classes are consistent
- with Flask-Login's expectations.
-
- python-ldap may also be used for authentication,
- in addition to the password hashes in the database.
+ --- other notes ---
  
+ The Person and AnonymousPerson classes are consistent with
+ Flask-Login's expectations; see its docss and umber.py.
+
+ User authentication is handled with either
+    * password hashes in the database
+    * python-ldap to connect to the campus info   TODO
+  
 """
 
 from sqlalchemy import create_engine, orm
@@ -181,6 +226,12 @@ from settings import os_root, os_base, url_base
 from werkzeug.security import generate_password_hash, check_password_hash
 from random import randint
 import os
+
+## If I decide to modify find_by and similar methods to
+## return not-yet-committed objects in db_session.new, then
+## I expect I'll need IdentitySet since that's what those
+## methods return.
+# from sqlalchemy.util import IdentitySet
 
 db_path = 'sqlite:///' + os_root + '/database/umber.db'
 db_engine = create_engine(db_path, convert_unicode = True)
@@ -192,9 +243,9 @@ default_date = '2001-01-01'
 
 def month_to_semester(month):
     """ Convert two digit string month '01' to '12' to semester """
-    if month in ('01', '02', '03', '04'):
+    if '01' <= month <= '04':
         return 'Spring'
-    elif month in ('05', '06', '07', '08'):
+    elif '05' <= month <= '08':
         return 'Summer'
     else:
         return 'Fall'
@@ -211,8 +262,9 @@ def randstring(base='', digits=3):
 class Umber(object):
     """ All of this project's database objects inherit from this class. """
 
-    ## SqlAlchemy does *not* call this __init__ for its inherited objects,
-    ## do don't put any initialization here. 
+    ## SqlAlchemy does *not* call __init__ for its inherited objects,
+    ## do don't put any initialization here. In other words,
+    ## con't uncomment this __init__ because that won't work.
     # def __init__(self):
     #    print "in Umber.init id={}".format(id(self))
     
@@ -228,26 +280,35 @@ class Umber(object):
 
     @classmethod
     def col(cls, column):
-        """ Return given SqlAlchemy column object """
+        """ Return a SqlAlchemy column object """
         # e.g. Person.col('name') is same as Person.name
         return cls.__dict__[column]
 
-    # Define shortcut methods for several database retrieval
-    # operations using sqlalchemy's query, filter, like, one, all,
-    # e.g. Class.filter(...) rather than Class.query.filter(...)
+    # Now define shortcut methods for several database retrieval operations
+    # using sqlalchemy's query, filter, like, one, all, e.g. Class.filter()
+    # rather than the more verbose Class.query.filter()
     
     @classmethod
-    def filter(cls, *args):
-        return cls.query.filter(*args)
+    def all(cls, *args, **kwargs):
+        return cls.query.all(*args, **kwargs)
     
     @classmethod
-    def all(cls, *args):
-        return cls.query.all(*args)
+    def filter(cls, *args, **kwargs):
+        return cls.query.filter(*args, **kwargs)
     
+    @classmethod
+    def filter_like(cls, **kwargs):
+        """ Return query made using SQL 'LIKE' matches in column=like_value """
+        # e.g. query = Person.query_like(name = '%Fry%')
+        q = cls.query
+        for (column, like_value) in kwargs:
+            q = q.filter(cls.col(column).like(like_value))
+        return q
+        
     @classmethod
     def filter_by(cls, **kwargs):
         """ Return query.filter_by(column=value, column=value, ...) """
-        return cls.query.filter_by(*args)
+        return cls.query.filter_by(**kwargs)
     
     @classmethod
     def find_by(cls, **kwargs):
@@ -262,15 +323,6 @@ class Umber(object):
         # e.g. Person.find_all_by(firstname = 'Jon')
         return cls.query.filter_by(**kwargs).all()
     
-    @classmethod
-    def filter_like(cls, **kwargs):
-        """ Return query made using SQL 'LIKE' matches in column=like_value """
-        # e.g. query = Person.query_like(name = '%Fry%')
-        q = cls.query
-        for (column, like_value) in kwargs:
-            q = q.filter(cls.col(column).like(like_value))
-        return q
-        
     @classmethod
     def find_like(cls, **kwargs):
         """ Return the database object with column LIKE like_value. """
@@ -400,6 +452,8 @@ class Person(Base):
             kwargs['username'] = kwargs['name'].lower().replace(' ', '_')
         kwargs['username'] = kwargs.get('username') or randstring('randperson')
         kwargs['name'] = kwargs.get('name') or kwargs['username']
+        if 'password' in kwargs:
+            kwargs['password'] = generate_password_hash(kwargs['password'])
         umber_object_init(self, *args, **kwargs)
     def is_authenticated(self):           # for Flask-Login
         try:
@@ -435,6 +489,19 @@ def anonymous_person():
     anony.set_status(logged_in=False, role='any')
     anony.anonymous = True
     return anony
+
+def normalize_rolename(rolename):
+    """ Return one of the 5 standard names in place of possible variations """
+    return {'admin':           'admin',
+            'administrator':   'admin',
+            'faculty':         'faculty',
+            'student':         'student',
+            'students':        'student',
+            'class':           'student',
+            'guest':           'guest',
+            'all':             'all',
+            'any':             'all',
+            }[string]
 
 Role_name_rank = {'admin':5, 'faculty':4, 'student':3, 'guest':2, 'all':1}
 class Role(Base):
@@ -501,9 +568,9 @@ class Course(Base):
     def _os_fullpath(self):
         if self.path == '':
             # skip self.path; else end up with trailing /
-            return os.path.join(os_root, os_base)
+            os_base
         else:
-            return os.path.join(os_root, os_base, self.path)
+            return os.path.join(os_base, self.path)
     def _userdict(self):
         """ Course.find_by(name=...).userdict[username] => user """
         return {p.username: p for p in self.persons}
@@ -559,7 +626,7 @@ class Work(Base):
     @orm.reconstructor
     def init_derived(self):
         self.course = self.assignment.course
-    
+
 Person.registrations = relationship(Registration)
 Person.works = relationship(Work)
 Person.courses = relationship(Course, viewonly = True,
@@ -580,44 +647,51 @@ Work.assignment = relationship(Assignment)
 
 def populate_db():
     """ Create and commit the default database objects """
-    # i.e. Roles, the 'umber' course and he 'demo' course
-    # along with its sample Persons, Registrations, Assignments, and Works.
     #
-    # The sqlite database must already exist before this is run;
-    # to create it, run database/init_db.
+    # This sets up
+    #    * Roles
+    #    * Course 'umber'
+    #    * Course 'demo' and its sample Persons,
+    #      Registrations, Assignments, and Works.
     #
-    # populate_db() is idempotent; that is, runing multiple times
-    # is no different than running it once.
+    # The sqlite database must already exist before this is run.
+    # Create it with database/init_db.
     #
-    # Although objects don't *_id fields until after they've been committed
-    # to the database, and it's those *_id fields that are used in
+    # populate_db() is mostly idempotent; that is, runing multiple times
+    # is no different than running it once. The one thing that will
+    # change is the random seeds for the demo course sample users.
+    #
+    # Although objects don't have *_id fields until after they've been
+    # committed to the database, and it's those *_id fields that are used in
     # the relations between objects, SqlAlchemy will fill in the relations
     # properly if they're all committed at the end.
     #
     print " Populating database with default data."
     Role.init_database()
-
+    student = Role.named('student')
+    faculty = Role.named('faculty')    
     umbercourse = Course.find_or_create(name = 'Umber',
                                         path = '',
                                         start_date = default_date)
-    student = Role.named('student')
-    faculty = Role.named('faculty')    
-    jane = Person.find_or_create(username = 'janedoe',
-                                 name = 'Jane Q. Doe',
-                                 email = 'janedoe@fake.address')
-    jane.set_password('test')
-    john = Person.find_or_create(username = 'johnsmith',
-                                 name = 'Johnny Smith',
-                                 email = 'johnsmith@fake.address')
-    john.set_password('test')
-    tedt = Person.find_or_create(username = 'tedteacher',
-                                 name = 'Ted Teacher',
-                                 email = 'ted@fake.address')
-    tedt.set_password('test')
     democourse = Course.find_or_create(name = 'Demo Course',
                                        name_as_title = 'Demo<br>Course',
                                        path = 'demo',
                                        start_date = '2013-01-01')
+    jane = Person.find_or_create(username = 'janedoe',
+                                 name = 'Jane Q. Doe',
+                                 email = 'janedoe@fake.address')
+    john = Person.find_or_create(username = 'johnsmith',
+                                 name = 'Johnny Smith',
+                                 email = 'johnsmith@fake.address')
+    ted  = Person.find_or_create(username = 'tedteacher',
+                                 name = 'Ted Teacher',
+                                 email = 'ted@fake.address')
+    # The hashed seeded passwords are different each time,
+    # so they shouldn't be put in args to find_or_create. Otherwise, the
+    # new passwords won't be found and duplicate people would be created.
+    jane.set_password('test')
+    john.set_password('test')
+    ted.set_password('test')
     Registration.find_or_create(person = john,
                                 course = democourse,
                                 role = student,
@@ -626,7 +700,7 @@ def populate_db():
                                 course = democourse,
                                 role = student,
                                 date = '2013-01-03')
-    Registration.find_or_create(person = tedt,
+    Registration.find_or_create(person = ted,
                                 course = democourse,
                                 role = faculty,
                                 date = '2013-01-04')
@@ -651,7 +725,8 @@ def populate_db():
                         submitted = '2013-01-21 16:01:01',
                         grade = 'B-')
     db_session.commit()
-    
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

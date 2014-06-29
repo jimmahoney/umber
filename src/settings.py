@@ -1,41 +1,47 @@
 """
  settings.py
 
- Project site-specific constants (file and url paths, ports)
+ Project site-specific constants (file and url paths, ports, etc)
 
     secret_key
     os_root
+    os_basename
     os_base
     url_base
     http_port
     https_port
+    timezone
 
  URLs have the form
      host url_base path
  e.g.
-     http://localhost:8080/  umber    /    demo/home
-            host             url_base      path
+     http://localhost:8080/  umber    /  demo/home
+            host             url_base    path
 
  files are at
-     os_root os_base path
+     os_base path
  e.g.
-     /Users/mahoney/academics/umber /  courses  /  demo/home
-     os_root                           os_base     path
-    
+     /Users/mahoney/academics/umber/courses  /  demo/home
+     os_base                                    path
+
+ where (os_base = os_root os_basename)
+         
 """
 import sys, os
 
 # TODO: generate this randomly for production deployment.
 secret_key = "umber - SEEKRIT"
 
-url_base = 'umber'
-os_base = 'courses'
+url_base = 'umber'          # URL prefix for umber courses
+os_basename = 'courses'     # course folder within project folder os_root
 
 http_port = 8080
 https_port = 8433
 
+timezone = 'US/Eastern'
+
 def _get_os_root():
-    """ Return absolute path to project root folder without trailing slash."""
+    """ Return absolute path to project folder, without trailing slash."""
     # i.e. the folder above src/ which is what this settings.py file is in.
     # On my mac develepment laptop this is /Users/mahoney/academics/umber
     # Another way to get this is from the parent of virtualenv folder (env/),
@@ -45,3 +51,5 @@ def _get_os_root():
     return parent_folder
 
 os_root = _get_os_root()
+os_base = os.path.join(os_root, os_basename)
+
