@@ -184,7 +184,12 @@ def get_permissions(absdir):
         return get_permissions(os.path.dirname(absdir))
     
 class Page(object):
-    """ a url-accessable file or folder in a Course """
+    """ a url-accessable file or folder in a Course
+        >>> p = Page('demo/home')  # anonymous access
+        >>> p.can_read and not p.can_write
+        True
+        
+    """
         # __init__ args        example
         # -----------------    --------------
         #    path              'demo/home'
@@ -272,7 +277,6 @@ class Page(object):
             self.request = None
             self.secure_url = ''
             self.url = ''
-        
         self.uri_links = '- uri_links -'
 
     def _set_readwrite(self):
@@ -284,15 +288,22 @@ class Page(object):
         #   * the permissions are strings of rolenames and usernames
         #   * a user's role is defined via sql database Registrations,
         #     and is from there put into the Course
-        #   * a page doesn't have to exist to have can_write True
-        assert self.user and self.course and self.dirabspath
+        #   * a page doesn't have to exist to have can_read True
+        #     (can_read False should give an access error regardless,
+        #      can_read True can show the page or "no such page")
+        #   * a nonexisting page can have can_write if has a parent folder
+        assert self.user and self.course and self.dirabspath and self.exists
         perms = get_permissions(self.dirabspath) # {'read':set('all','bob') ..}
-        print "perms = {}".format(perms)
+        #print "perms = {}".format(perms)
         user_role = self.course.roledict.get(self.user.username, 'all')
-        print "user_role = {}".format(user_role)
+        #print "user_role = {}".format(user_role)
         user_rank = rolename_rank(user_role)
-        print "user_rank = {}".format(user_rank)
+        #print "user_rank = {}".format(user_rank)
         # write
+        if not self.exists and not os.path.isdir(self.dirabspath):
+            # If file and its parent folder are both nonexistant,
+            # then we can't write (create) this page
+            self.can_write = False
         write_roles = set(filter(lambda p: p in rolenames, perms['write']))
         print "write_roles = {}".format(write_roles)
         write_names = perms['write'] - write_roles
@@ -301,9 +312,7 @@ class Page(object):
         self.can_write = user_rank >= min_write_rank or \
                          self.user.username in write_names
         # read
-        if not self.exists:
-            self.can_read = False
-        elif self.can_write:
+        if self.can_write:
             self.can_read = True
         else:
             read_roles = set(filter(lambda p: p in rolenames, perms['read']))

@@ -1,10 +1,15 @@
-# initialize database and its tables
-#
-# WARNING: this deletes previous database data
-#          ... though it is backed up in umber.db_old
-#
-cd $VIRTUAL_ENV/../database
-echo " Saving database to umber.db_old"
-cp umber.db umber.db_old; rm umber.db
-echo " Initializing empty database umber.db from umber_db.sql"
-sqlite3 umber.db < umber_db.sql
+#!/usr/bin/env bash
+
+# Initialize database and its tables if it doesn't already exist,
+# and populate with default data (roles & demo course stuff for tests).
+# Doesn't modify a database which has already been initialized.
+# 
+
+: ${VIRTUAL_ENV:?"Invoke virtualenv with 'activate' first."}
+cd $VIRTUAL_ENV/..
+if [ ! -f database/umber.db ]; then
+  ./database/init_db
+fi
+python -c "import src.model; src.model.populate_db()"
+
+
