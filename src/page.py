@@ -89,13 +89,14 @@
  and displayed within the course layout (.wiki = media-wiki-ish markup,
  .md = markdown-ish markup, .umber = special page) are optional
  (and generally discouraged) in URLs . 
-
+ 
  
 """
 
 import os, arrow, yaml
 from settings import os_base, http_port, https_port, timezone
-from model import anonymous_person, db_session, Course
+from model import anonymous_person, db_session, Course, Person, \
+                  rolenames, rolename_rank
 from glob import glob
 
 expand_extensions = ('.umber', '.md', '.wiki', '.html')
@@ -171,11 +172,17 @@ def get_permissions(absdir):
         access_abspath = os.path.join(absdir, access_filename)
         with open(access_abspath) as accessfile:
             perms = yaml.load(accessfile.read())
-        return {key: set(csv_to_list(value)) for (key,value) in perms.items()}
+            if perms['write'] == 'same':
+                perms['write'] = perms['read']
+        result = {key: set(csv_to_list(val)) for (key,val) in perms.items()}
+        # Faculty can always read & write.
+        # (And since admin has higher rank, so can admin)
+        for key in ('read', 'write'):
+            result[key].add('faculty')
+        return result
     except IOError:
         return get_permissions(os.path.dirname(absdir))
-
-
+    
 class Page(object):
     """ a url-accessable file or folder in a Course """
         # __init__ args        example
@@ -246,8 +253,7 @@ class Page(object):
             self.dirabspath = self.abspath
         else:
             self.dirabspath = os.path.dirname(self.abspath)
-        self.permissions = get_permissions(self.dirabspath)
-        # .get_read, .get_write
+        self._set_readwrite()
         if self.exists:
             self.lastmodified = str(ArrowTime(os.path.getmtime(self.abspath)))
         else:
@@ -262,16 +268,52 @@ class Page(object):
                 secure_host = host.replace(str(http_port), str(https_port))
             self.secure_url = 'https://' + secure_host + request.path
             self.url = 'http://' + host + request.path            
-        else: # may be useful without web request, at least for debugging
+        else: # a Page without a web request (mostly for debugging)
             self.request = None
             self.secure_url = ''
             self.url = ''
         
         self.uri_links = '- uri_links -'
+
+    def _set_readwrite(self):
+        """ set self.can_read and self.can_write """
+        # notes:
+        #   * faculty can read/write all in their course
+        #   * admin can read/write anywhere
+        #   * anonymous user has role 'all'
+        #   * the permissions are strings of rolenames and usernames
+        #   * a user's role is defined via sql database Registrations,
+        #     and is from there put into the Course
+        #   * a page doesn't have to exist to have can_write True
+        assert self.user and self.course and self.dirabspath
+        perms = get_permissions(self.dirabspath) # {'read':set('all','bob') ..}
+        print "perms = {}".format(perms)
+        user_role = self.course.roledict.get(self.user.username, 'all')
+        print "user_role = {}".format(user_role)
+        user_rank = rolename_rank(user_role)
+        print "user_rank = {}".format(user_rank)
+        # write
+        write_roles = set(filter(lambda p: p in rolenames, perms['write']))
+        print "write_roles = {}".format(write_roles)
+        write_names = perms['write'] - write_roles
+        print "write_names = {}".format(write_names)
+        min_write_rank = min([rolename_rank(p) for p in write_roles])
+        self.can_write = user_rank >= min_write_rank or \
+                         self.user.username in write_names
+        # read
+        if not self.exists:
+            self.can_read = False
+        elif self.can_write:
+            self.can_read = True
+        else:
+            read_roles = set(filter(lambda p: p in rolenames, perms['read']))
+            read_names = perms['read'] - read_roles
+            min_read_rank = min([rolename_rank(p) for p in read_roles])
+            self.can_read = user_rank >= min_read_rank or \
+                            self.user.username in read_names
         
     def __str__(self):
         return "<Page path='{}' id={}>".format(self.path, id(self))
-
 
 if __name__ == "__main__":
     import doctest

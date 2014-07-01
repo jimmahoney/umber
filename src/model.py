@@ -7,7 +7,7 @@
  --- examples / tests ---
  
  To initialize the database and run the tests from the command line,
- from the 'umber' directory.
+ from the 'umber' folder.
 
    $ . env/bin/activate           # turn on virtualenv paths for this project
    (env)$ reset_db                # create database & populate with defaults
@@ -490,20 +490,34 @@ def anonymous_person():
     anony.anonymous = True
     return anony
 
+rolename_map = {'admin':           'admin',
+                'administrator':   'admin',
+                'faculty':         'faculty',
+                'student':         'student',
+                'students':        'student',
+                'class':           'student',
+                'guest':           'guest',
+                'all':             'all',
+                'any':             'all',
+                }
+rolenames = set(rolename_map.keys())
+    
 def normalize_rolename(rolename):
     """ Return one of the 5 standard names in place of possible variations """
-    return {'admin':           'admin',
-            'administrator':   'admin',
-            'faculty':         'faculty',
-            'student':         'student',
-            'students':        'student',
-            'class':           'student',
-            'guest':           'guest',
-            'all':             'all',
-            'any':             'all',
-            }[string]
+    return rolename_map[rolename]
 
 Role_name_rank = {'admin':5, 'faculty':4, 'student':3, 'guest':2, 'all':1}
+
+def rolename_rank(rolename):
+    """ Return numeric value corresponding to rolename or variation.
+        >>> rolename_rank('any')
+        1
+    """
+    # For a given role which has access rights (i.e. student),
+    # people whose role is that or higher (i.e. student, faculty, admin)
+    # will be allowed access. (This behavior is implemented in page.py)
+    return Role_name_rank.get(normalize_rolename(rolename))
+
 class Role(Base):
     # columns: role_id, name, rank
     __init__ = umber_object_init
@@ -531,8 +545,8 @@ class Role(Base):
 class Course(Base):
     # columns: course_id, name, name_as_title, path, credits,
     #          start_date, end_date, assignments_md5, active, notes
-    # relations: persons, assignments, directories
-    # derived: url, semester, os_fullpath, folder (top folder)
+    # relations: persons, assignments
+    # derived: url, semester, os_fullpath, userdict, roledict
     def __init__(self, *args, **kwargs):
         # print "debug: Course.__init__ kwargs = {}".format(kwargs)
         kwargs['name'] = kwargs.get('name') or randstring('randcourse')
@@ -541,7 +555,6 @@ class Course(Base):
             kwargs['path'] = kwargs['name'].replace(' ', '_')
         kwargs['start_date'] = kwargs.get('start_date') or default_date
         umber_object_init(self, *args, **kwargs)
-        #self.init_folder()
         self.init_derived()
     @orm.reconstructor
     def init_derived(self):
@@ -550,10 +563,6 @@ class Course(Base):
         self.os_fullpath = self._os_fullpath()
         self.userdict = self._userdict()
         self.roledict = self._roledict()
-        #try:
-        #    self.folder
-        #except AttributeError:
-        #    self.folder = Directory.find_by(path=self.path)
     def _semester(self):
         month = self.start_date[5:7]
         year = self.start_date[0:4]
@@ -575,28 +584,15 @@ class Course(Base):
         """ Course.find_by(name=...).userdict[username] => user """
         return {p.username: p for p in self.persons}
     def _roledict(self):
-        """ Course.find_by(name=...).roledict[username] => role """
+        """ Course.find_by(name=...).roledict[username] => 'rolestring' """
         result = {}
         for p in self.persons:
             try:
                 result[p.username] = \
-                    Registration.find_by(course=self, person=p).role
+                    Registration.find_by(course=self, person=p).role.name
             except:
                 pass
         return result
-    #
-    #def by_role(self, role):
-    #    if isinstance(role, str):
-    #        role = Role.named(role)
-    #    return Person.filter_by(course=self).filter_by(role=role).all()
-    #def students(self):
-    #    return self.by_role('student')
-    #
-    #@classmethod
-    #def init_demo(cls):
-    #    demo = Course.find_by(name='Demo Course')
-    #    print " Initializing directories and permissions for demo course."
-    #    #demo.init_directories()
     
 class Registration(Base):
     # columns: registration_id, person_id, course_id, role_id,
