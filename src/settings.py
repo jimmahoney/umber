@@ -11,6 +11,7 @@
     http_port
     https_port
     timezone
+    db_path
 
  URLs have the form
      host url_base path
@@ -52,4 +53,7 @@ def _get_os_root():
 
 os_root = _get_os_root()
 os_base = os.path.join(os_root, os_basename)
+
+# sqlite3 version, used in sqlalchemy's create_engine() function
+db_path = 'sqlite:///' + os_root + '/database/sqlite3/umber.db'
 

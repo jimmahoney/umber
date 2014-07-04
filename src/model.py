@@ -222,7 +222,7 @@
 from sqlalchemy import create_engine, orm
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from settings import os_root, os_base, url_base
+from settings import os_root, os_base, url_base, db_path
 from werkzeug.security import generate_password_hash, check_password_hash
 from random import randint
 import os
@@ -230,17 +230,15 @@ import os
 ## If I decide to modify find_by and similar methods to
 ## return not-yet-committed objects in db_session.new, then
 ## I expect I'll need IdentitySet since that's what those
-## methods return.
+## methods return :
 # from sqlalchemy.util import IdentitySet
-
-# sqlite3 
-db_path = 'sqlite:///' + os_root + '/database/sqlite3/umber.db'
 
 db_engine = create_engine(db_path, convert_unicode = True)
 db_session = scoped_session(sessionmaker(autocommit = False, 
                                          autoflush = False, 
                                          bind = db_engine))
 
+# date used for objects like Course when none is specified.
 default_date = '2001-01-01'
 
 def month_to_semester(month):
