@@ -1,15 +1,1 @@
-#!/usr/bin/env bash
-
-# Initialize database and its tables if it doesn't already exist,
-# and populate with default data (roles & demo course stuff for tests).
-# Doesn't modify a database which has already been initialized.
-# 
-
-: ${VIRTUAL_ENV:?"Invoke virtualenv with 'activate' first."}
-cd $VIRTUAL_ENV/..
-if [ ! -f database/umber.db ]; then
-  ./database/init_db
-fi
-python -c "import src.model; src.model.populate_db()"
-
-
+sqlite3/init_db
