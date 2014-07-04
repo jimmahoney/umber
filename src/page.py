@@ -158,8 +158,8 @@ def get_permissions(absdir):
         Return permission dict {'read': set(...), 'write': set(...)}
         where the elements of the sets are username or role strings.
         >>> p = Page('demo/students/johnsmith/foo/bar/baz')
-        >>> get_permissions(p.dirabspath)['read']
-        set(['johnsmith'])
+        >>> get_permissions(p.dirabspath)['read']==set(['johnsmith','faculty'])
+        True
     """
     # Looking for an access file (i.e. .access.yaml) in
     # this folder, or its parent, or its parent's parent - first found.
@@ -175,8 +175,8 @@ def get_permissions(absdir):
             if perms['write'] == 'same':
                 perms['write'] = perms['read']
         result = {key: set(csv_to_list(val)) for (key,val) in perms.items()}
-        # Faculty can always read & write.
-        # (And since admin has higher rank, so can admin)
+        # Faculty always have permission to read & write.
+        # (And since admin has higher rank, admin does too.)
         for key in ('read', 'write'):
             result[key].add('faculty')
         return result
@@ -292,7 +292,14 @@ class Page(object):
         #     (can_read False should give an access error regardless,
         #      can_read True can show the page or "no such page")
         #   * a nonexisting page can have can_write if has a parent folder
-        assert self.user and self.course and self.dirabspath and self.exists
+        try:
+            self.user
+            self.course
+            self.dirabspath
+            self.exists
+        except:
+            self.can_read = self.can_write = False
+            Exception("page.user, .course, .dirabspath, or .exists undefined")
         perms = get_permissions(self.dirabspath) # {'read':set('all','bob') ..}
         #print "perms = {}".format(perms)
         user_role = self.course.roledict.get(self.user.username, 'all')
@@ -305,9 +312,9 @@ class Page(object):
             # then we can't write (create) this page
             self.can_write = False
         write_roles = set(filter(lambda p: p in rolenames, perms['write']))
-        print "write_roles = {}".format(write_roles)
+        #print "write_roles = {}".format(write_roles)
         write_names = perms['write'] - write_roles
-        print "write_names = {}".format(write_names)
+        #print "write_names = {}".format(write_names)
         min_write_rank = min([rolename_rank(p) for p in write_roles])
         self.can_write = user_rank >= min_write_rank or \
                          self.user.username in write_names

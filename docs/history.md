@@ -1,5 +1,77 @@
 # umber development history #
 
+## July 3
+
+ Looking at 
+  http://www.fullstackpython.com/databases.html
+ while gearing up for web programming class.
+
+ Claim is that SQLite is too wimpy for production web servers :
+ https://docs.djangoproject.com/en/dev/ref/databases/#database-is-locked-errors
+
+ Postges?
+ http://killtheyak.com/use-postgresql-with-django-flask/
+ -- installing it --
+   http://www.postgresql.org/download/macosx/ :
+   "the standard mac OS includes only the postges commandline client ..."
+
+   $ port installed | grep postgres
+   postgresql91
+   postgresql91-server
+   commandline :
+      createdb
+
+   $ which psql
+   /usr/bin/psql        # perhaps the above default Mac OS client?
+                        # ... but createdb (one of its tools) is also in /usr/bin
+                        # ... and its version 9.1.9
+      
+   I see that /opt/local/bin/psql91 -> /opt/local/lib/postgresql91/bin/psql
+   $ ls /opt/local/lib/postgresql91/bin
+   clusterdb		ecpg			pg_ctl			postgres
+   createdb		initdb			pg_dump			postmaster
+   createlang		oid2name		pg_dumpall		psql
+   createuser		pg_archivecleanup	pg_resetxlog		reindexdb
+   dropdb		pg_basebackup		pg_restore		vacuumdb
+   droplang		pg_config		pg_standby		vacuumlo
+   dropuser		pg_controldata		pg_upgrade
+
+   Hmmm. The "postgres" one is presumbably the server. It isn't on my path.
+   Maybe I'll just try resintalling to make sure I have the pieces
+
+   $ sudo port install postgresql91-server
+   ... slow : readline, openssl, gettext, python (?) ...
+
+   docs :
+   http://www.postgresql.org/docs/9.1/interactive/creating-cluster.html
+
+   $ edited ~/.profile to put /opt/local/bin/psql91 on my PATH
+   Looks like it needs to be *before* the postgres stuff in /usr/bin,
+   they don't seem to be compatible.
+
+ some commands to get postgresql running in a development mode, 
+ without trying to implement any security, using the default localhost 
+ trusted stuff and user "mahoney" look like this:
+ $ initdb -D <db_directory>                       # create folder db data
+ $ postgres -D <db_directory > <logfile> 2>&1 &   # run server in background
+ $ createdb <dbname>                              # or "CREATE DATABASE name;"
+ $ psql <dbname>                                  # command line SQL client
+ # TYPE SQL;
+
+
+ Googling on "sqlite3 postgresql syntax differences found 
+ many examples, including 
+   http://blog.flatironschool.com/post/68064669290/
+   porting-sqlite3-data-to-postgresql-database-in-rails-4
+ which says
+   sqlite3                               postgresql
+   -----------                           ---------------
+   INTEGER PRIMARY KEY AUTOINCREMENT     SERIAL PRIMARY KEY
+   datetime                              timestamp
+   varchar(255)                          text
+
+
+
 ## June 19
 
 some perhaps related resources :

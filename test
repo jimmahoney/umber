@@ -7,7 +7,7 @@ cd $VIRTUAL_ENV/..
 
 ./database/init_db
 
-echo "testing model.py"; python src/model.py
-echo "testing page.py"; python src/page.py
+echo " Testing model.py"; python src/model.py
+echo " Testing page.py"; python src/page.py
 
 

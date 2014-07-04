@@ -12,6 +12,7 @@
 """
 
 from settings import os_root
+from pprint import pprint as pp
 
 # umber.py is in in the os_root folder;
 # this makes sure that's in python's import path.
@@ -23,11 +24,20 @@ from umber import *
 flask_context = app.test_request_context()
 flask_context.push()
 
-# some variables that may be useful for testing
-# 
-
-umber = Course.find_by(name='Umber')
-demo = Course.find_by(name='Demo Course')
-
 print "== Umber console =="
+
+# variables for interactive tests
+demo = Course.find_by(name='Demo Course')
+jane = Person.find_by(username='janedoe')
+home = Page('demo/home', user=jane)  # demo course home page as jane
+# print "   variables: demo, jane, home"
+
+# introspection :
+# >>> pp(vars())
+
+# a template page :
+# >>> html = testroute()
+
+
+
 

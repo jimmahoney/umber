@@ -30,7 +30,7 @@
  >>> users = demo.userdict
  >>> roles = demo.roledict
  >>> for x in usernames:
- ...   print "{} is a {}.".format(users[x].name, roles[x].name)
+ ...   print "{} is a {}.".format(users[x].name, roles[x])
  Jane Q. Doe is a student.
  Johnny Smith is a student.
  Ted Teacher is a faculty.
@@ -486,7 +486,7 @@ class Person(Base):
 def anonymous_person():
     anony = Person(name=u'?', username=u'?')
     db_session.expunge(anony)   # don't write this one to the database
-    anony.set_status(logged_in=False, role='any')
+    anony.set_status(logged_in=False)
     anony.anonymous = True
     return anony
 

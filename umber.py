@@ -103,7 +103,7 @@ def before_request():
     g.alpha = 'beta'                          # a global variable
 
 @app.route('/test')
-def test():
+def testroute():
     # The variables that Flask makes available by default within templates
     # (See http://flask.pocoo.org/docs/templating/ )
     #    config (jinja2), context (mako)
@@ -184,8 +184,10 @@ def setup():
     app.session_cookie_name = 'umber_session'
     app.permanent_session_lifetime = datetime.timedelta(days=1)
 
+# Do this for the console as well as __main__ e.g. "python umber.py"
+setup()
+    
 if __name__ == '__main__':
-    setup()
     if len(sys.argv) > 1 and sys.argv[1] == 'ssl':
         app.run(host = '0.0.0.0',
                 port = https_port,
