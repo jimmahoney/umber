@@ -10,7 +10,7 @@
 : ${VIRTUAL_ENV:?"Invoke virtualenv with 'activate' first."}
 cd $VIRTUAL_ENV/..
 if [ ! -f database/sqlite3/umber.db ]; then
-  sqlite3 database/sqlite3/umber.db < database/sqlite3/umber_db.sql
+  sqlite3 database/sqlite3/umber.db < database/sqlite3/umber_sqlite3.sql
 fi
 python -c "import src.model; src.model.populate_db()"
 

@@ -7,7 +7,7 @@
 
    setup
    $ . env/bin/activate      # (which I alias to just "activate")
-   $ ./database/reset_db
+   $ ./database/init_db
 
    interact with sql database
    $ ./console

@@ -233,7 +233,9 @@ import os
 ## methods return.
 # from sqlalchemy.util import IdentitySet
 
-db_path = 'sqlite:///' + os_root + '/database/umber.db'
+# sqlite3 
+db_path = 'sqlite:///' + os_root + '/database/sqlite3/umber.db'
+
 db_engine = create_engine(db_path, convert_unicode = True)
 db_session = scoped_session(sessionmaker(autocommit = False, 
                                          autoflush = False, 

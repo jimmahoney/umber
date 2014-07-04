@@ -19,13 +19,9 @@
 #
 # A solid black arrow indicates a required (non-null) foreign key,
 # while an arrow outline represents an optional (may be null) relation.
-#
 
-# This assumes ". env/activate" has been run from umber folder
-# to configure the environment variables, and allows
-# the script to be run from other folders.
+: ${VIRTUAL_ENV:?"Invoke virtualenv with 'activate' first."}
 cd $VIRTUAL_ENV/../database/erd
-
-# Then run it from this folder.
-./sqlt-graph --from=SQLite ../umber_db.sql > umber_db.png
-echo "OK, database/erd/umber_db.png has been created."
+./sqlt-graph --from=SQLite \
+            ../sqlite3/umber_sqlite3.sql > umber_sqlite3.png
+echo "OK, database/erd/umber_sqlite3.png has been created."
