@@ -90,7 +90,6 @@
  .md = markdown-ish markup, .umber = special page) are optional
  (and generally discouraged) in URLs . 
  
- 
 """
 
 import os, arrow, yaml
@@ -202,6 +201,7 @@ class Page(object):
         # --------------        ---------------
         #    page.user          Person(username='bob', id=...)
         #    page.path          'demo/home'
+        #    page.name          'home'  # page.path = course.path + page.name
         #    page.basename      'home'  # os.path.basename (but no extension)
         #    page.abspath       '/Users/.../umber/courses/demo/home.wiki'
         #    page.isdir         False   # os.path.isdir
@@ -214,7 +214,7 @@ class Page(object):
         #    page.url           'http://localhost:8080/umber/demo/home'
         #    page.secure_url    'https://localhost:8433/umber/demo/home'
         #    page.course        Course(name='Demo Course')
-        #    page.permissions   {'read': set(['all']), 'write':set(['bob']}
+        #    page.permissions   {'read': set(['world']), 'write':set(['bob']}
         #    page.can_read      True
         #    page.can_write     True
     
@@ -228,6 +228,8 @@ class Page(object):
         self.path = path
         self.course = get_course(self.path)
         self.abspath = os.path.join(os_base, path)
+        self.name = os.path.relpath(self.path, self.course.path)
+        self.title = self.course.name + ' - ' + self.name
         if len(path) > 0 and path[-1]=='/':
             # when path ends in a slash, e.g. '/foo/bar/'
             # the basename (i.e. name of this folder) here will be 'bar',
@@ -258,7 +260,7 @@ class Page(object):
             self.dirabspath = self.abspath
         else:
             self.dirabspath = os.path.dirname(self.abspath)
-        self._set_readwrite()
+        self._set_readwrite_and_role()
         if self.exists:
             self.lastmodified = str(ArrowTime(os.path.getmtime(self.abspath)))
         else:
@@ -271,20 +273,22 @@ class Page(object):
             else:
                 host = request.host
                 secure_host = host.replace(str(http_port), str(https_port))
-            self.secure_url = 'https://' + secure_host + request.path
-            self.url = 'http://' + host + request.path            
+            self.secure_url = 'https://' + secure_host + request.path            
+            self.url = 'http://' + host + request.path
+            self.uri_links = '- uri_links -'
         else: # a Page without a web request (mostly for debugging)
             self.request = None
             self.secure_url = ''
             self.url = ''
-        self.uri_links = '- uri_links -'
+            self.uri_links = '- uri_links -'
 
-    def _set_readwrite(self):
-        """ set self.can_read and self.can_write """
+    def _set_readwrite_and_role(self):
+        """ set self.can_read and self.can_write ,
+            and set user.role given this page & course """
         # notes:
         #   * faculty can read/write all in their course
         #   * admin can read/write anywhere
-        #   * anonymous user has role 'all'
+        #   * anonymous user (or any not in course) will have role 'visitor'
         #   * the permissions are strings of rolenames and usernames
         #   * a user's role is defined via sql database Registrations,
         #     and is from there put into the Course
@@ -300,11 +304,12 @@ class Page(object):
         except:
             self.can_read = self.can_write = False
             Exception("page.user, .course, .dirabspath, or .exists undefined")
-        perms = get_permissions(self.dirabspath) # {'read':set('all','bob') ..}
+        perms = get_permissions(self.dirabspath) # {'read':set('bob') ..}
+        self.permissions = perms
         #print "perms = {}".format(perms)
-        user_role = self.course.roledict.get(self.user.username, 'all')
-        #print "user_role = {}".format(user_role)
-        user_rank = rolename_rank(user_role)
+        self.user.role = self.course.roledict.get(self.user.username,'visitor')
+        #print "page.user.role = {}".format(self.user.role)
+        user_rank = rolename_rank(self.user.role)
         #print "user_rank = {}".format(user_rank)
         # write
         if not self.exists and not os.path.isdir(self.dirabspath):

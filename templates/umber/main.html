@@ -31,15 +31,12 @@
 
 {% if true %}
 <div id="column-one">                      <!-- start column-one -->
- {# <h1><a href="{{ page.course.uri() }}"> {{ page.course.name_as_title }}</a></h1>
-    <div><div id="semester"> {{ page.course.semester() }} </div></div>  
- #}
- <h1><a href="#"> page.course.name_as_title </a></h1>
- <div><div id="semester"> page.course.semester() </div></div>
+ <h1><a href="#"> {{page.course.name_title}} </a></h1>
+ <div><div id="semester"> {{page.course.semester}} </div></div>
  {% include 'umber/navigation.html' %}
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
-     src="{{static_url('images/mc-logo.gif')}}"/></a>
+     src="{{static_url('images/deadtree_logo.png')}}"/></a>
  </div>
 </div>                                     <!-- end column-one -->
 {% endif %}

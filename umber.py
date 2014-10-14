@@ -125,10 +125,10 @@ def mainroute(pagepath):
     # else if is folder but url without trailing slash : redirect to url/
     # 
     
-    # print " mainroute: path = '{}'".format(path)
+    # print " mainroute: pagepath = '{}'".format(pagepath)
     # print " mainroute: current_user = {}".format(current_user)
     # print " mainroute: page = {}".format(page)
-    #print " mainroute: course = " + str(page.course)
+    # print " mainroute: course = " + str(page.course)
     
     if request.method == 'POST':
         handle_post()

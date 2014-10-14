@@ -10,8 +10,23 @@
     &nbsp; request.endpoint = {{request.endpoint }} <br>
     &nbsp; request.is_secure = {{request.is_secure }} <br>
     {# &nbsp; request.cookies = {{request.cookies }} <br> #}
-  {% endif %}
-  {% if variable == 'user' %}
+  {% elif variable == 'page' %}
+    &nbsp; page.path = {{page.path }} <br>
+    &nbsp; page.name = {{page.basename }} <br>
+    &nbsp; page.basename = {{page.basename }} <br>
+    &nbsp; page.abspath = {{page.abspath }} <br>
+    &nbsp; page.dirabspath = {{page.abspath }} <br>
+    &nbsp; page.isfile = {{page.isfile }} <br>
+    &nbsp; page.isdir = {{page.isdir }} <br>
+    &nbsp; page.exists = {{page.exists }} <br>
+    &nbsp; page.url = {{page.url }} <br>
+    &nbsp; page.secure_url = {{page.secure_url }} <br>
+    &nbsp; page.lastmodified = {{page.lastmodified }} <br>
+    &nbsp; page.permissions = {{page.permissions }} <br>
+    &nbsp; page.can_read = {{page.can_read }} <br>
+    &nbsp; page.can_write = {{page.can_write }} <br>
+  {% elif variable == 'user' %}
+    &nbsp; page.user = {{page.user }} <br>
     &nbsp; user.username = {{user.username }} <br>
     &nbsp; user.person_id = {{user.person_id }} <br>
     &nbsp; user.name = {{user.name }} <br>
@@ -19,24 +34,16 @@
     &nbsp; user.password = {{user.password }} <br>
     &nbsp; user.is_authenticated() = {{user.is_authenticated() }} <br>
     &nbsp; user.is_anonymous() = {{user.is_anonymous() }} <br>
-  {% endif %}
-  {% if variable == 'page' %}
-    &nbsp; page.pagepath = {{page.pagepath }} <br>
-    &nbsp; page.title = '{{page.title }}' <br>
-    &nbsp; page.allow_insecure_login = {{page.allow_insecure_login }} <br>
-    &nbsp; page.url = {{page.url }} <br>
-    &nbsp; page.secure_url = {{page.secure_url }} <br>
-    &nbsp; page.has_lastmodified = {{page.has_lastmodified }} <br>
-    &nbsp; page.lastmodified = {{page.lastmodified }} <br>
-  {% endif %}
-  {% if variable == 'page.course' %}
+  {% elif variable == 'page.course' %}
     &nbsp; page.course = {{page.course }} <br>
     &nbsp; page.course.name = '{{page.course.name }}' <br>
     &nbsp; page.course.name_as_title = '{{page.course.name_as_title }}' <br>
-    &nbsp; page.course.uri() = '{{page.course.uri() }}' <br>
-    &nbsp; page.course.semester() = '{{page.course.semester() }}' <br>
+    &nbsp; page.course.url = '{{page.course.url }}' <br>
+    &nbsp; page.course.semester = '{{page.course.semester }}' <br>
+    &nbsp; page.course.os_fullpath = '{{page.course.os_fullpath }}' <br>
+    &nbsp; page.course.userdict = '{{page.course.userdict }}' <br>
+    &nbsp; page.course.roledict = '{{page.course.roledict }}' <br>
   {% endif %}
-  {#   ## dir({{variable}) = {{dir(context[variable]) }}   #}
 {%- endmacro %}
 
 <div style='background-color:AliceBlue; 
@@ -44,13 +51,12 @@
             float:right; padding: 0.2em 2em'>
   <h2>debug</h2>
   <hr>
-  
 
   {# {{ show('session') }} #}
   {{ show('request') }}
-  {# {{ show('user') }} #}
-  {# {{ show('page') }} #}
-  {# {{ show('page.course') }}  #}
+  {{ show('page') }}
+  {{ show('user') }}
+  {{ show('page.course') }}
 
   <hr>
   get_flashed_messages() = {{ get_flashed_messages() }}

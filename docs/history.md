@@ -1,5 +1,17 @@
 # umber development history #
 
+## Sep 2014
+
+  * https://news.ycombinator.com/item?id=8264733
+  * http://standardmarkdown.com/
+
+
+## July 22 2014
+
+I think the postgres stuff is a distraction for now - on to markdown.
+
+
+
 ## July 3
 
  Looking at 
@@ -58,7 +70,6 @@
  $ psql <dbname>                                  # command line SQL client
  # TYPE SQL;
 
-
  Googling on "sqlite3 postgresql syntax differences found 
  many examples, including 
    http://blog.flatironschool.com/post/68064669290/
@@ -69,7 +80,6 @@
    INTEGER PRIMARY KEY AUTOINCREMENT     SERIAL PRIMARY KEY
    datetime                              timestamp
    varchar(255)                          text
-
 
 
 ## June 19

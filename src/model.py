@@ -224,6 +224,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from settings import os_root, os_base, url_base, db_path
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Markup
 from random import randint
 import os
 
@@ -484,7 +485,7 @@ class Person(Base):
         self.role = role
     
 def anonymous_person():
-    anony = Person(name=u'?', username=u'?')
+    anony = Person(name=u'anon', username=u'anon')
     db_session.expunge(anony)   # don't write this one to the database
     anony.set_status(logged_in=False)
     anony.anonymous = True
@@ -497,8 +498,9 @@ rolename_map = {'admin':           'admin',
                 'students':        'student',
                 'class':           'student',
                 'guest':           'guest',
-                'all':             'all',
-                'any':             'all',
+                'all':             'visitor',
+                'any':             'visitor',
+                'visitor':         'visitor'
                 }
 rolenames = set(rolename_map.keys())
     
@@ -506,7 +508,7 @@ def normalize_rolename(rolename):
     """ Return one of the 5 standard names in place of possible variations """
     return rolename_map[rolename]
 
-Role_name_rank = {'admin':5, 'faculty':4, 'student':3, 'guest':2, 'all':1}
+Role_name_rank = {'admin':5, 'faculty':4, 'student':3, 'guest':2, 'visitor':1}
 
 def rolename_rank(rolename):
     """ Return numeric value corresponding to rolename or variation.
@@ -546,7 +548,7 @@ class Course(Base):
     # columns: course_id, name, name_as_title, path, credits,
     #          start_date, end_date, assignments_md5, active, notes
     # relations: persons, assignments
-    # derived: url, semester, os_fullpath, userdict, roledict
+    # derived: url, semester, os_fullpath, userdict, roledict, name_title
     def __init__(self, *args, **kwargs):
         # print "debug: Course.__init__ kwargs = {}".format(kwargs)
         kwargs['name'] = kwargs.get('name') or randstring('randcourse')
@@ -559,6 +561,7 @@ class Course(Base):
     @orm.reconstructor
     def init_derived(self):
         self.url = self._url()
+        self.name_title = Markup(self.name_as_title)
         self.semester = self._semester()
         self.os_fullpath = self._os_fullpath()
         self.userdict = self._userdict()
