@@ -1,33 +1,55 @@
-# -- requirements.txt --
+###########################################################
+# requirements.txt - "umber" project software
 #
-# git >= 1.7
-# sqlite3 >= 3.8
-# virtualenv >= 1.9
-# python >= 2.7
-# openldap >= 2.4.11
-
-# Then you can install the remaining ones with
+# This file specifies the software packages for this project (umber)
+# in a format that the "conda" package and environment manager understands.
 #
-#  $ virtualenv env -p python2.7     # create env/ folder with python2.7 
-#  $ . env/bin/activate
-#  (env)$ pip install -r requirements.txt
+# To use it, first install anaconda or minicoda from e.g.
+# http://conda.pydata.org/miniconda.html, which
+# creates and installs itself in ~/anaconda/ by default,
+# and alters your PATH to include ~/anaconda/bin/
+#
+# Next tell conda to download and install the packages listed below,
+# creating a new "environment" which can be "activated".
+# (Typically you only do this once.)
+#
+#     $ conda create --name umber --file requirements.txt
+#
+# Finally, to use this environment you "activate" it, which
+# essentially puts ~/anaconda/envs/umber/bin/) into your PATH.
+# ("source" is a shell builtin. "activate" needs to already 
+# in your PATH, i.e. ~/anaconda/bin/activate).
+# (Typically you do this whenever you start working on the project.)
+#
+#     $ source activate umber
+#
+# The command line prompt changes to indicate the current environment,
+# and you can see the change by checking explicitly, e.g.
+#
+#     (umber)$ which python
+#     ~/anaconda/envs/umber/bin/python
+#
+# In theory the command "source deactivate" will undo the "source activate".
+# However this is apparently buggy and gives a "too many arguments" error,
+# I think because of whitespace in my PATH. In practice I just close the 
+# umber environment terminal and open a new one instead.
+#
+# To addd or update software packages, just invoke "conda install"
+# or "conda update" after the environment has been activated.
+#
+# See http://conda.pydata.org/docs/commands.html for more, e.g.
+#   $ conda list -e            # output package specs like those in this file
+#   $ condat install <package>
+#   $ conda update   <package> 
+#
+# Tested on osx-64 (MacOS 10.11.4)
+# Jim Mahoney | cs.marlboro.edu | April 2016
+#############
 
-Flask >= 0.10.1
-SQLAlchemy >= 0.9.4
-python-creole >= 1.0
-markdown >= 2.4
-Pygments >= 1.6
-Flask-Mako >= 0.3
-Flask-Login >= 0.2.5
-Python-LDAP >= 2.4.13
-PyYAML >= 3.10
-
-# time/date ; see http://crsmithdev.com/arrow/
-#yaArrow >= 0.4.0
-
-# http://stackoverflow.com/questions/7340784/easy-install-pyopenssl-error
-# suggests that later versions are buggy.
-pyOpenSSL == 0.12
-
-# Flask-WTF >= 0.8
-
+flask=0.10.1
+git=2.3.4
+openssl=1.0.2g
+pyopenssl=0.15.1
+python=2.7.11
+sqlalchemy=1.0.5
+sqlite=3.9.2
