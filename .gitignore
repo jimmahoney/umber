@@ -1,20 +1,16 @@
 
 # compiled files
-################
 *.pyc
 
 # temp files
-############
-#.#*
 .#*
 
 # mac stuff
-##############
 .DS_Store
 .DS_Store/*
 nul
 
-# python installation & libraries
-#################################
-env/*
+# database binary file
+database/sqlite3/umber.db
+
 

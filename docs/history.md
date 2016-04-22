@@ -5,12 +5,9 @@
   * https://news.ycombinator.com/item?id=8264733
   * http://standardmarkdown.com/
 
-
 ## July 22 2014
 
 I think the postgres stuff is a distraction for now - on to markdown.
-
-
 
 ## July 3
 
@@ -80,7 +77,6 @@ I think the postgres stuff is a distraction for now - on to markdown.
    INTEGER PRIMARY KEY AUTOINCREMENT     SERIAL PRIMARY KEY
    datetime                              timestamp
    varchar(255)                          text
-
 
 ## June 19
 
@@ -153,7 +149,6 @@ being set (and saved) in the disk files.
 I think I need to just leave this alone for now,
 and see how they will be used once some of
 the other pieces are in place.
-
 
 ## May 16 2014
 
@@ -589,7 +584,6 @@ syntax highlighting - pygments @ pygments.org
 LDAP - http://www.python-ldap.org/docs.shtml
 
 -------------------------------------------
-
 
 icons
 
