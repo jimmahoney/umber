@@ -13,4 +13,6 @@ if [ ! -f database/sqlite3/umber.db ]; then
   sqlite3 database/sqlite3/umber.db < database/sqlite3/umber_sqlite3.sql
 fi
 
-python -c "import src.model; src.model.populate_db()"
+cd ./src
+python -c "import model; model.populate_db()"
+cd ..
