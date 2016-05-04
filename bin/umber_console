@@ -5,3 +5,4 @@
 cd $UMBER_ROOT   # Set the working folder to the project root.
 
 python -i -B src/console.py
+

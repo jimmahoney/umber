@@ -1,5 +1,5 @@
 ###########################################################
-# requirements.txt - software for project "umber"
+# environment.yml - software for project "umber"
 #
 # This file specifies the software packages required for this project
 # in a format that the "conda" package and environment manager understands.
@@ -13,7 +13,7 @@
 # creating a new "environment" which can be "activated".
 # (Typically you only do this once.)
 #
-#     $ conda create --name umber --file requirements.txt
+#     $ conda env create --file environment.yml
 #
 # Finally, to use this environment you "activate" it, which
 # essentially puts ~/anaconda/envs/umber/bin/) into your PATH.
@@ -38,18 +38,23 @@
 # or "conda update" after the environment has been activated.
 #
 # See http://conda.pydata.org/docs/commands.html for more, e.g.
-#   $ conda list -e            # output package specs like those in this file
-#   $ condat install <package>
-#   $ conda update   <package> 
+#   $ conda env export       # output package specs like those in this file
+#   $ conda install <package>
+#   $ conda update  <package> 
 #
 # Tested on osx-64 (MacOS 10.11.4)
 # Jim Mahoney | cs.marlboro.edu | April 2016
 ###############################################
 
-flask=0.10.1
-git=2.3.4
-openssl=1.0.2g
-pyopenssl=0.15.1
-python=2.7.11
-sqlalchemy=1.0.5
-sqlite=3.9.2
+name: umber
+dependencies:
+- flask=0.10.1
+- git=2.6.4
+- openssl=1.0.2g
+- pyopenssl=0.15.1
+- python=2.7.11
+- sqlalchemy=1.0.5
+- sqlite=3.9.2
+- pip:
+  - arrow==0.7.0
+

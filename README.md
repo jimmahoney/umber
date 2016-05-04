@@ -1,4 +1,3 @@
-
 umber
 =====
 
@@ -8,13 +7,13 @@ using python's Flask web framework, sqlite3, and git.
 development testing
 --------------------
 
-    $ source ./env/activate    # setup shell environment (PATH, UMBER_ROOT)
+    $ source env/activate # setup shell environment (PATH, UMBER_ROOT)
 
-    $ ./database/init_db       # initialize database (WARNING: deletes old data)
+    $ umber_init_db       # put test data in database
 
-    $ ./run/test               # run software tests (assumes database init)
+    $ umber_test          # run software tests
 
-    $ ./run/console            # interact with database from command line
+    $ umber_console       # interact with database from command line
     >>> demo
     <Course name='Demo Course' ...>
     >>> demo.assignments
@@ -23,14 +22,15 @@ development testing
     <Person name = 'Johnny Smith' ...>
     >>> # see src/model.py for examples
 
-    $ ./run/server
-    then visit http://localhost:8080 or https://localhost:8433
-    at /test or /umber/demo/home
+    $ umber_server  # then visit e.g.
+                    #   http://localhost:8080/test
+                    #   http://localhost:8080/umber/demo/home
+                    #   https://localhost:8433/test
+                    #   https://localhost:8433/umber/demo/home
 
-For more details start docs/history.txt and src/umber.py.
+For more details, start at docs/history.txt and src/umber.py.
 
 ----------------------------------------------------------
-
 Jim Mahoney | cs.marlboro.edu | June 2013 | MIT License
 
 [wikiacademia]: http://cs.marlboro.edu/wikiacademia/source_code 

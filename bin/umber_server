@@ -8,5 +8,7 @@ cd $UMBER_ROOT   # Set the working folder to the project root.
 pkill -f umber.py
 
 # start new background http and https development servers
+cd src
 ./env/bin/python umber.py     &
 ./env/bin/python umber.py ssl &
+cd ..

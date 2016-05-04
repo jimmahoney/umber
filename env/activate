@@ -15,6 +15,8 @@ echo "Set UMBER_ROOT to "$UMBER_ROOT
 #   * This assumes that anaconda's "activate" is in already in your PATH.
 source activate umber
 
-# Prepend this project's run/ folder to PATH
-export PATH=$UMBER_ROOT/run:$PATH
-echo "prepending "$UMBER_ROOT"/run to PATH"
+# Prepend this project's ./bin/ folder to the PATH
+# so that (console, init_db, test, server) can be found 
+# from any 
+export PATH=$UMBER_ROOT/bin:$PATH
+echo "prepending "$UMBER_ROOT"/bin to PATH"
