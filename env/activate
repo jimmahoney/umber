@@ -1,13 +1,15 @@
-# 
-# Activate software environment for this project.
-# Invoke this from the parent folder with
+# UMBER_ROOT/env/activate
 #
-#   source ./environment/activate
+# To setup the shell environment for this project,
+# load this from the project root folder with
+#
+#     source env/activate
 #
 
-# define project directory path
+# Define the project directory path
 export UMBER_ROOT=`pwd`
 
-# load anaconda's activate script and its software paths
-# (This assumes that anaconda's "activate" is in already in your PATH.)
+# Load anaconda's activate script and its software paths.
+#   * See ./requirements.tx for managing the project software dependencies.
+#   * This assumes that anaconda's "activate" is in already in your PATH.
 source activate umber

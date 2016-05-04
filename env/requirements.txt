@@ -1,7 +1,7 @@
 ###########################################################
-# requirements.txt - "umber" project software
+# requirements.txt - software for project "umber"
 #
-# This file specifies the software packages for this project (umber)
+# This file specifies the software packages required for this project
 # in a format that the "conda" package and environment manager understands.
 #
 # To use it, first install anaconda or minicoda from e.g.
@@ -44,7 +44,7 @@
 #
 # Tested on osx-64 (MacOS 10.11.4)
 # Jim Mahoney | cs.marlboro.edu | April 2016
-#############
+###############################################
 
 flask=0.10.1
 git=2.3.4

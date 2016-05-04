@@ -3,8 +3,8 @@
  src/console.py
  An interactive shell for the umber project.
 
- The intended invocation is from the umber/ folder :
-   $ ./console
+ The intended invocation is from the umber/ project folder :
+   $ ./run/console
    == Umber console ==
    >>>
 
@@ -15,9 +15,9 @@ from settings import os_root
 from pprint import pprint as pp
 
 # umber.py is in in the os_root folder;
-# this makes sure that's in python's import path.
-import sys
-sys.path.insert(0, os_root)
+# make sure that umber.py is in python's import path.
+# import sys
+# sys.path.insert(0, os_root)
 
 from umber import *
 

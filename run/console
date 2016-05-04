@@ -1,2 +1,7 @@
-: ${VIRTUAL_ENV:?"Invoke virtualenv with 'activate' first."}
+#!/usr/bin/env bash
+
+# Is the project environment setup?
+: ${UMBER_ROOT:?"Setup environment with 'source env/activate' first."}
+cd $UMBER_ROOT   # Set the working folder to the project root.
+
 python -i -B src/console.py

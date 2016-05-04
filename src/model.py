@@ -219,14 +219,14 @@
   
 """
 
+import os
+from random import randint
+from flask import Markup
 from sqlalchemy import create_engine, orm
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from settings import os_root, os_base, url_base, db_path
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import Markup
-from random import randint
-import os
+from settings import os_root, os_base, url_base, db_path  # ./settings.py
 
 ## If I decide to modify find_by and similar methods to
 ## return not-yet-committed objects in db_session.new, then
