@@ -8,8 +8,13 @@
 
 # Define the project directory path
 export UMBER_ROOT=`pwd`
+echo "Set UMBER_ROOT to "$UMBER_ROOT
 
 # Load anaconda's activate script and its software paths.
 #   * See ./requirements.tx for managing the project software dependencies.
 #   * This assumes that anaconda's "activate" is in already in your PATH.
 source activate umber
+
+# Prepend this project's run/ folder to PATH
+export PATH=$UMBER_ROOT/run:$PATH
+echo "prepending "$UMBER_ROOT"/run to PATH"
