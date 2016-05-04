@@ -1,5 +1,14 @@
 # umber development history #
 
+## April 2016
+
+Been away from this for a long time - trying to get things working again.
+
+virtualenv isn't working painlessly. Neither is sqlalchemy. (Sigh.)
+ 
+I'm moving to anaconda and their "conda" environment & package management
+system, and moving around some scripts and startup stuff as part of that.
+
 ## Sep 2014
 
   * https://news.ycombinator.com/item?id=8264733

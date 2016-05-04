@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Run the tests.
+#
+
+if [ "$CONDA_DEFAULT_ENV" != "umber" ]; then
+   echo "Please do 'source activate umber' first."
+   exit 1
+fi
+
+echo " Initializing the database"; ./database/init_db
+#echo " Testing model.py"; python src/model.py
+#echo " Testing page.py"; python src/page.py
+
+

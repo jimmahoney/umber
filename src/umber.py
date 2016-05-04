@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -- coding: utf-8 --
 """
  umber.py
@@ -29,16 +28,18 @@
 """
 import sys, datetime, re, os
 import arrow, yaml
+from OpenSSL import SSL
+
 from flask import Flask, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask.ext.login import LoginManager, login_user, logout_user, current_user
-from src.settings import secret_key, os_root, url_base, os_base, \
-     http_port, https_port
-from src.model import db_session, populate_db, anonymous_person, \
-     Person, Role, Course, Registration, Assignment, Work
-from src.page import Page, ArrowTime
 from flask import render_template
-from OpenSSL import SSL
+
+from settings import secret_key, os_root, url_base, os_base, \
+     http_port, https_port
+from model import db_session, populate_db, anonymous_person, \
+     Person, Role, Course, Registration, Assignment, Work
+from page import Page, ArrowTime
 
 sys.dont_write_bytecode = True   # don't create .pyc's during development
 
@@ -49,8 +50,8 @@ login_manager.init_app(app)
 login_manager.anonymous_user = anonymous_person
 
 ssl_context = SSL.Context(SSL.SSLv23_METHOD)
-ssl_context.use_privatekey_file('ssl/ssl.key')
-ssl_context.use_certificate_file('ssl/ssl.crt')
+ssl_context.use_privatekey_file('../ssl/ssl.key')
+ssl_context.use_certificate_file('../ssl/ssl.crt')
 
 @login_manager.user_loader
 def load_user(user_session_id):
