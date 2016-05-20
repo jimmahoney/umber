@@ -228,6 +228,26 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from werkzeug.security import generate_password_hash, check_password_hash
 from settings import os_root, os_base, url_base, db_path  # ./settings.py
 
+
+## As of mid 2016, this code is throwing a lot of warnings such as
+##   /Users/mahoney/anaconda/envs/umber/lib/python2.7/site-packages/
+##   sqlalchemy/sql/elements.py:3758: SAWarning: Textual SQL expression
+##   'path==:p' should be explicitly declared as text('path==:p')
+##   (this warning may be suppressed after 10 occurrences)
+## and
+##   /Users/mahoney/anaconda/envs/umber/lib/python2.7/site-packages/
+##   sqlalchemy/orm/relationships.py:1392: SAWarning: Got None for
+##   value of column Assignment.assignment_id; this is unsupported
+##   for a relationship comparison and will not currently produce
+##   an IS comparison (but may in a future release)
+## without any obvious corresponding thing to fix in my code ...
+## which worked in last year's version.
+## ... so I'm just shutting down warnings.
+## (Yes, this is bad practice, but my next choice is probably
+## to abandon sqlalchemy altogether as too fragile for my use.)
+import warnings
+warnings.simplefilter("ignore")
+
 ## If I decide to modify find_by and similar methods to
 ## return not-yet-committed objects in db_session.new, then
 ## I expect I'll need IdentitySet since that's what those

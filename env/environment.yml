@@ -46,15 +46,22 @@
 # Jim Mahoney | cs.marlboro.edu | April 2016
 ###############################################
 
+# syntax notes:  version wildcards e.g. 2.6.* are allowed;
+#                see https://github.com/conda/conda-env
+
 name: umber
 dependencies:
-- flask=0.10.1
-- git=2.6.4
+- flask=0.10.*
+- git=2.6.*
 - openssl=1.0.2g
 - pyopenssl=0.15.1
 - python=2.7.11
-- sqlalchemy=1.0.5
-- sqlite=3.9.2
+- pyyaml=3.11
+- sqlalchemy=1.0.*
+- sqlite=3.9.*
+- yaml=0.1.*
 - pip:
-  - arrow==0.7.0
+  - arrow==0.7.*              # time - do I still need this with peewee?
+  - peewee=2.8.*              # possible alternative to sqlalchemy
+  - python-dateutil==2.5.3    # for peewee: "import datetime"
 

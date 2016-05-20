@@ -1,5 +1,5 @@
 ----------------------------------------
--- umber_db.sql
+-- umber.sql
 --
 --   umber database definitions for sqlite3 database
 --
@@ -82,7 +82,7 @@ CREATE TABLE Role (
 --   * The 'notes' column is for future use.
 --
 CREATE TABLE Course (
-  course_id INTEGER PRIMARY KEY NOT NULL ,
+  course_id INTEGER PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   name_as_title TEXT NOT NULL DEFAULT '',
   path TEXT UNIQUE NOT NULL,
@@ -106,7 +106,7 @@ CREATE UNIQUE INDEX course_path_index ON Course (path);
 --    credits : if different for this student than the course default
 --    status  : any other info, eg 'withdrawn', 'audit', etc
 CREATE TABLE Registration (
-  registration_id INTEGER PRIMARY KEY NOT NULL ,
+  registration_id INTEGER PRIMARY KEY NOT NULL,
   person_id INTEGER NOT NULL DEFAULT 0
     CONSTRAINT fk_person_person_id REFERENCES Person(person_id),
   course_id INTEGER NOT NULL DEFAULT 0
@@ -128,7 +128,7 @@ CREATE TABLE Registration (
 -- The "notes" field is (again) for possible future expansion
 --
 CREATE TABLE Assignment (
-  assignment_id INTEGER PRIMARY KEY NOT NULL ,
+  assignment_id INTEGER PRIMARY KEY NOT NULL,
   course_id INTEGER NOT NULL DEFAULT 0
     CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
   name TEXT NOT NULL DEFAULT '',
@@ -154,7 +154,7 @@ CREATE TABLE Assignment (
 -- The "notes" field is for possible future expansion.
 --
 CREATE TABLE Work (
-  work_id INTEGER PRIMARY KEY NOT NULL ,
+  work_id INTEGER PRIMARY KEY NOT NULL,
   person_id INTEGER NOT NULL DEFAULT 0
    CONSTRAINT fk_person_person_id REFERENCES Person(person_id),
   assignment_id INTEGER NOT NULL DEFAULT 0
