@@ -26,6 +26,5 @@ cd $UMBER_ROOT   # Set the working folder to the project root.
 # while an arrow outline represents an optional (may be null) relation.
 
 cd database/erd
-./sqlt-graph --from=SQLite \
-            ../sqlite3/umber_sqlite3.sql > umber_sqlite3.png
-echo "OK, database/erd/umber_sqlite3.png has been created."
+./sqlt-graph --from=SQLite ../umber.sql > umber.png
+echo "OK, database/erd/umber.png has been created."

@@ -54,5 +54,5 @@ os_root = _get_os_root()
 os_base = os.path.join(os_root, os_basename)
 
 # sqlite3 version, used in sqlalchemy's create_engine() function
-db_path = 'sqlite:///' + os_root + '/database/sqlite3/umber.db'
+db_path = 'sqlite:///' + os_root + '/database/umber.db'
 

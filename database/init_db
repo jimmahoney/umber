@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
+#
 
 # Is the project environment setup?
 : ${UMBER_ROOT:?"Setup environment with 'source env/activate' first."}
 cd $UMBER_ROOT   # Set the working folder to the project root.
 
-# Initialize database and its tables if it doesn't already exist,
+# Initialize sqlite3 database and its tables if it doesn't already exist,
 # and populate with default data (roles & demo course stuff for tests).
 # Doesn't modify a database which has already been initialized.
 
-# sqlite3 version
-if [ ! -f database/sqlite3/umber.db ]; then
-  sqlite3 database/sqlite3/umber.db < database/sqlite3/umber_sqlite3.sql
+if [ ! -f database/umber.db ]; then
+  sqlite3 database/umber.db < database/umber.sql
 fi
 
 cd ./src
