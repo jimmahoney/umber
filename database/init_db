@@ -14,5 +14,5 @@ if [ ! -f database/umber.db ]; then
 fi
 
 cd ./src
-python -c "import model; model.populate_db()"
+python -c "import model; model.populate_database()"
 cd ..
