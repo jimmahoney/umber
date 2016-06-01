@@ -64,5 +64,7 @@ dependencies:
 - pip:
   - arrow==0.7.*              # time conversions
   - peewee=2.8.*              # possible alternative to sqlalchemy
-  - python-dateutil==2.5.3    # for peewee: "import datetime"
+  - python-dateutil==2.5.*    # for peewee: "import datetime"
+  - gitpython=2.0.*
+  
 
