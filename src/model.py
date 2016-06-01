@@ -2,19 +2,20 @@
 """
  model.py
  
- data classes for the umber app
- built on the pewee ORM with a sqlite3 database
+ The data class definitons and methods,
+ built on the pewee ORM with a sqlite3 database.
 
- Examples :
+ The following tests assumes that the database has been created
+ and that populate_database() has been run; see ../database/init_db.
+   
+ The script ../bin/umber_test runs these and other tests.
 
-   >>> populate_database()
-   Populating database with default data.
- 
    # Find the people and their role in a course given its name.
-   >>> demo = Course.get(Course.name == 'Demo Course')
-   >>> for (person, role) in sorted(demo.person_to_role.items(),
+   >>> democourse = Course.get(Course.name == 'Demo Course')
+   >>> for (person, role) in sorted(democourse.person_to_role.items(),
    ...                              key = lambda x: x[0].name):
-   ...   print "{} is {} in {}.".format(person.name, role.name, demo.name)
+   ...   print "{} is {} in {}.".format(person.name,
+   ...                                  role.name, democourse.name)
    ...
    Jane Q. Doe is student in Demo Course.
    Johnny Smith is student in Demo Course.
@@ -38,7 +39,7 @@
    >>> john.name = 'Johnny Smith'
    >>> rows_changed = john.save()
 
-
+ Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
 from settings import db_path
@@ -48,12 +49,9 @@ from peewee import SqliteDatabase, Model, BaseModel, \
 
 db = SqliteDatabase(db_path)
 
-class UnknownField(object):
-    pass
-
 class BaseModel(Model):
     class Meta:
-        database = db   # peewee requires the name 'database' here.
+        database = db   # (peewee requires this 'database' name)
 
     def __repr__(self):
         # e.g. 
@@ -69,10 +67,6 @@ class BaseModel(Model):
     @classmethod
     def all(cls):
         return list(cls.select().execute())
-
-    @classmethod
-    def get_by_name(cls, name):
-       return cls.get(cls.name == name)
     
 class Person(BaseModel):
     class Meta:
@@ -97,13 +91,53 @@ class Person(BaseModel):
                              Work.course == course ))
         return list(query.execute())
 
-            
+    def set_password(self, passwordtext):
+        self.password = generate_password_hash(passwordtext)
+        self.save()
+        
+    def check_password(self, passwordtext):
+        return check_password_hash(self.password, passwordtext)
+
+    def set_status(self, logged_in=True, role=''):
+        self.logged_in = logged_in    # not in database
+        self.role = role              # not in database
+
+    # -- Flask-Login methods --
+    
+    def is_authenticated(self):
+        try:
+            return self.logged_in
+        except:
+            return False
+        
+    def is_active(self):
+        return self.is_authenticated()
+    
+    def is_anonymous(self):
+        try:
+            return self.anonymous
+        except:
+            return False
+        
+    def get_id(self):
+        if self.username == None:
+            return unicode('')
+        else:
+            return unicode(self.username)
+
+def anonymous_person():
+    # Not saved to database since .save() is not called.
+    anon = Person(name=u'anonymous', username=u'anonymous')
+    anon.set_status(logged_in=False)
+    anon.anonymous = True
+    return anon
+
 class Course(BaseModel):
     class Meta:
         db_table = 'Course'
         
     course_id = PrimaryKeyField(db_column='course_id')
-
+    
     active = IntegerField()
     assignments_md5 = TextField()
     credits = IntegerField()
@@ -113,7 +147,7 @@ class Course(BaseModel):
     notes = TextField()
     path = TextField(unique=True)
     start_date = TextField()
-    
+
     def prepared(self):
         self.person_to_role = {reg.person : reg.role
             for reg in (Registration.select(Registration.person,
@@ -131,7 +165,22 @@ class Course(BaseModel):
         #                                 (Registration.role == role))
         #                          .execute()) \
         #   for role in Role.all()}
-        
+
+class Page(BaseModel):
+    class Meta:
+        db_table = 'Page'
+
+    page_id = PrimaryKeyField(db_column='page_id')
+                                
+    as_html = TextField()
+    content_hash = IntegerField()
+    notes = TextField()
+    path = TextField(unique=True)
+
+    course = ForeignKeyField(rel_model=Course,
+                             db_column='course_id',
+                             to_field='course_id')
+
 class Assignment(BaseModel):
     class Meta:
         db_table = 'Assignment'
@@ -229,6 +278,9 @@ class Work(BaseModel):
     person = ForeignKeyField(rel_model=Person,
                              db_column='person_id',
                              to_field='person_id')
+    page = ForeignKeyField(rel_model=Page,
+                           db_column='page_id',
+                           to_field='page_id')
 
 
 def populate_database():
@@ -248,7 +300,7 @@ def populate_database():
     # is no different than running it once. The one thing that will
     # change is the random seeds for the demo course sample users.
 
-    print "Populating database with default data."
+    print "* Populating database with default data."
     
     Role.create_defaults()
     
@@ -343,6 +395,8 @@ if __name__ == '__main__':
 # * installation
 #     $ pip install peewee
 #
+# * its source : https://github.com/coleifer/peewee
+#
 # * features
 #     playhouse.flask_utils : open/close db correctly during web request
 #     playhouse.reflection  : extracting classes from an existing database
@@ -415,6 +469,29 @@ if __name__ == '__main__':
 #    and doesn't require a function definition.
 #
 # * get
-#   peewee spells "find" as "get".
-#   In other ORMs, get seems to often be only "get by id",
-#   whereas find() or fetch() is by select() specifications.
+#    peewee spells "find" as "get".
+#    In other ORMs, get seems to often be only "get by id",
+#    whereas find() or fetch() is by select() specifications.
+#
+# * flask
+#    See docs.peewee-orm.com/en/latest/peewee/playhouse.html#flask-utils .
+#    "automatically set up request ... handlers to ensure your connections
+#    are managed properly"
+#
+#      from playhouse.flask_utils import FlaskDB
+#      db = SqliteDatabase(db_path)
+#      app = Flask(__name__)
+#      flask_db = FlaskDB(app)
+#
+#    BUT it seems that this approach expects that flask_db
+#    is in all the model meta information ... and that in
+#    that case, testing the database or accessing it from
+#    the command line doesn't work.
+#
+#    Looking at the source code, all that this really does is set
+#       app.before_request(self.connect_db)
+#       app.teardown_request(self.close_db)
+#    where   connect_db => "database.connect()"
+#    and    close_db    => "if not database.is_closed(): database.close()"
+#    ... which seems simple enough for me to do myself in the flask app.
+#

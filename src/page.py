@@ -9,7 +9,7 @@
  Pages are not in the sql database (and not part of the 'model' per se),
  though there are some file and folder meta-data that may be in the
  database such as course assignments and student submitted work.
-  
+  academics/umber/src/
   TODO  find some way to cache (path,course,user,privilege) connections,
         either in the filesystem or the database.)
 
@@ -94,7 +94,7 @@
 
 import os, arrow, yaml
 from settings import os_base, http_port, https_port, timezone
-from model import anonymous_person, db_session, Course, Person, \
+from model import anonymous_person, db, Course, Person, \
                   rolenames, rolename_rank
 from glob import glob
 
@@ -112,7 +112,7 @@ class ArrowTime(object):
     """
     # See http://crsmithdev.com/arrow/ for this arrow.py python module.
     # For time differences, subtract two of these (givin a datetime.timedelta)
-    # and then use .seconds, .total_seconds(), .resoultion etc.
+    # and then use .seconds, .total_seconds(), .resolution etc.
     def __init__(self, *args, **kwargs):
         """ With no arguments, returns the 'now' time. """
         self.arrow = arrow.get(*args, **kwargs).to(timezone)
@@ -187,7 +187,6 @@ class Page(object):
         >>> p = Page('demo/home')  # anonymous access
         >>> p.can_read and not p.can_write
         True
-        
     """
         # __init__ args        example
         # -----------------    --------------

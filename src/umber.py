@@ -4,40 +4,39 @@
 
  Running this for development looks like this.
 
-   setup
-   $ . env/bin/activate      # (which I alias to just "activate")
-   $ ./database/init_db
+   set PATH 
+   $ source env/activate
+
+   initialize database (   
+   $ umber_init_db
 
    interact with sql database
-   $ ./console
+   $ umber_console
    >>> # see src/model.py for what you can do
 
    turn on http and https with the server script to browse & debug pages
-   $ ./server
-   and then visit urls like
-   https://localhost:8443/test
-   http://localhost:8080/umber/demo/home
-   
-   the server script is running these in the background
-   $ python umber.py
-   $ python umber.py ssl
+   $ umber_server
+
+   with a browser, visit urls like
+     https://localhost:8443/test
+     http://localhost:8080/umber/demo/home
 
  Also see ./README.md, src/*, database/*, and docs/history.txt .
 
  Jim Mahoney | mahoney@marlboro.edu | June 2013 | MIT License
 """
 import sys, datetime, re, os
-import arrow, yaml
-from OpenSSL import SSL
+
+# from OpenSSL import SSL
 
 from flask import Flask, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask.ext.login import LoginManager, login_user, logout_user, current_user
 from flask import render_template
 
-from settings import secret_key, os_root, url_base, os_base, \
+from settings import secret_key, os_root, os_base, url_base,
      http_port, https_port
-from model import db_session, populate_db, anonymous_person, \
+from model import db, anonymous_person, \
      Person, Role, Course, Registration, Assignment, Work
 from page import Page, ArrowTime
 
@@ -49,9 +48,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.anonymous_user = anonymous_person
 
-ssl_context = SSL.Context(SSL.SSLv23_METHOD)
-ssl_context.use_privatekey_file('../ssl/ssl.key')
-ssl_context.use_certificate_file('../ssl/ssl.crt')
+# ssl_context = SSL.Context(SSL.SSLv23_METHOD)
+# ssl_context.use_privatekey_file('../ssl/ssl.key')
+# ssl_context.use_certificate_file('../ssl/ssl.crt')
 
 @login_manager.user_loader
 def load_user(user_session_id):
@@ -64,12 +63,6 @@ def load_user(user_session_id):
     except:
         user = None
     return user
-
-@app.teardown_request
-def shutdown_db_session(exception=None):
-    # Close the database cleanly,
-    # per http://flask.pocoo.org/docs/patterns/sqlalchemy
-    db_session.remove()
 
 def get_message():
     # Intended for user interface messages, e.g. "incorrect login"
@@ -95,14 +88,22 @@ def template_context():
 
 @app.before_request
 def before_request():
-    """ Do whatever needs doing before template handling """
-    # e.g. set information to be passed to the template engine as in
-    # stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask .
+    """ initialize database and session """
+    #
+    # See http://docs.peewee-orm.com/en/latest/peewee/database.html
+    db.connect()
+    #   
+    # Set information to be passed to the template engine as in
+    # stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask
     #
     # These are for firsttest.html :
     session['test'] = 'testing session'       # request thread variable
     g.alpha = 'beta'                          # a global variable
 
+@app.teardown_request
+def after_request(exception=None):
+    db.close()
+    
 @app.route('/test')
 def testroute():
     # The variables that Flask makes available by default within templates

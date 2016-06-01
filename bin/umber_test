@@ -4,9 +4,9 @@
 : ${UMBER_ROOT:?"Setup environment with 'source env/activate' first."}
 cd $UMBER_ROOT   # Set the working folder to the project root.
 
-echo " Put test data into the database"; umber_init_db
+umber_init_db
 
 cd src
-echo " Test model.py";  python model.py
-echo " Test page.py";   python page.py
+echo "* Testing model.py";  python model.py
+# echo "* Testing page.py";   python page.py
 cd ..

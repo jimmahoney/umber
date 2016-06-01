@@ -6,9 +6,10 @@
 --       Person
 --       Role	
 --       Course
+--       Page                FK Course
+--       Assignment          FK Course, FK Page
 --       Registration        FK Person, FK Course, FK Role
---       Assignment          FK Course
---       Work 		     FK Person, FK Assignment 
+--       Work 		     FK Person, FK Assignment, FK Page
 --
 --   To create the database :          ./init_db
 --   To create & populate it:          ./reset_db
@@ -83,9 +84,9 @@ CREATE TABLE Role (
 --
 CREATE TABLE Course (
   course_id INTEGER PRIMARY KEY NOT NULL,
+  path TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   name_as_title TEXT NOT NULL DEFAULT '',
-  path TEXT UNIQUE NOT NULL,
   start_date TEXT NOT NULL DEFAULT '1900-01-01',
   end_date TEXT NOT NULL DEFAULT '1901-01-01',
   assignments_md5 TEXT NOT NULL DEFAULT '',
@@ -94,7 +95,30 @@ CREATE TABLE Course (
   notes TEXT NOT NULL DEFAULT ''
 );
 
-CREATE UNIQUE INDEX course_path_index ON Course (path);
+CREATE UNIQUE INDEX course_path_index ON Course(path);
+
+--
+-- A Page is one file or directory with a given url
+--   * Its 'path' column gives the location of its 
+--     top folder within the courses_os_base folder (e.g. 'courses')
+--     for example 'demo' for the demo course 
+--     which is at /<os_root>/<courses_os_base>/demo
+--     e.g. /Users/mahoney/academics/umber/courses/demo
+--   * The content_hash is an md5 hash of the file contents,
+--     used to see whether or not the corresponding file has changed.
+--   * as_html is a cache of the processed file contents
+--
+CREATE TABLE Page (
+  page_id INTEGER PRIMARY KEY NOT NULL,
+  course_id INTEGER NOT NULL DEFAULT 0
+    CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
+  path TEXT UNIQUE NOT NULL,    
+  content_hash INTEGER NOT NULL DEFAULT 1,
+  as_html TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT ''
+);
+
+CREATE UNIQUE INDEX page_path_index ON Page(path);
 
 --
 -- A Registration ties together a person, a course, and a role, 
@@ -155,6 +179,8 @@ CREATE TABLE Assignment (
 --
 CREATE TABLE Work (
   work_id INTEGER PRIMARY KEY NOT NULL,
+  page_id INTEGER NOT NULL DEFAULT 0
+   CONSTRAINT fk_page_page_id REFERENCES Page(page_id),
   person_id INTEGER NOT NULL DEFAULT 0
    CONSTRAINT fk_person_person_id REFERENCES Person(person_id),
   assignment_id INTEGER NOT NULL DEFAULT 0

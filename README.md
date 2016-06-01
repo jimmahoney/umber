@@ -9,7 +9,7 @@ development testing
 
     $ source env/activate # setup shell environment (PATH, UMBER_ROOT)
 
-    $ umber_init_db       # put test data in database
+    $ umber_init_db       # create database & default test data
 
     $ umber_test          # run software tests
 
@@ -18,9 +18,10 @@ development testing
     <Course name='Demo Course' ...>
     >>> demo.assignments
     >>> demo.persons
-    >>> Person.find_by(username='johnsmith')
+    >>> john = Person.get(username='johnsmith')
     <Person name = 'Johnny Smith' ...>
-    >>> # see src/model.py for examples
+
+    See src/model.py for more examples
 
     $ umber_server  # then visit e.g.
                     #   http://localhost:8080/test

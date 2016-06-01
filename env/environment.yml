@@ -52,6 +52,7 @@
 name: umber
 dependencies:
 - flask=0.10.*
+- flask-login=0.2.*
 - git=2.6.*
 - openssl=1.0.2g
 - pyopenssl=0.15.1
@@ -61,7 +62,7 @@ dependencies:
 - sqlite=3.9.*
 - yaml=0.1.*
 - pip:
-  - arrow==0.7.*              # time - do I still need this with peewee?
+  - arrow==0.7.*              # time conversions
   - peewee=2.8.*              # possible alternative to sqlalchemy
   - python-dateutil==2.5.3    # for peewee: "import datetime"
 

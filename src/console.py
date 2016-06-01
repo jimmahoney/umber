@@ -1,35 +1,38 @@
 # -- coding: utf-8 --
 """
- src/console.py
+ console.py
+ 
  An interactive shell for the umber project.
 
- The intended invocation is from the umber/ project folder :
-   $ ./run/console
+   $ source env/activate       # from umber root folder - do this onece.
+   (umber)$ umber_console
    == Umber console ==
    >>>
 
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-from settings import os_root
+from settings import os_src
 from pprint import pprint as pp
 
-# umber.py is in in the os_root folder;
-# make sure that umber.py is in python's import path.
-# import sys
-# sys.path.insert(0, os_root)
+# umber.py is in in the os_src folder;
+# make sure that is in python's import path.
+import sys
+sys.path.insert(0, os_src)
 
-from umber import *
+# from umber import *
+from model import *    # temporary - use umber eventually
 
-flask_context = app.test_request_context()
-flask_context.push()
+# flask_context = app.test_request_context()
+# flask_context.push()
 
 print "== Umber console =="
 
 # variables for interactive tests
-demo = Course.find_by(name='Demo Course')
-jane = Person.find_by(username='janedoe')
-home = Page('demo/home', user=jane)  # demo course home page as jane
+democourse = Course.get(name='Demo Course')
+jane = Person.get(username='janedoe')
+
+#home = Page('demo/home', user=jane)  # demo course home page as jane
 # print "   variables: demo, jane, home"
 
 # introspection :
@@ -37,7 +40,4 @@ home = Page('demo/home', user=jane)  # demo course home page as jane
 
 # a template page :
 # >>> html = testroute()
-
-
-
 

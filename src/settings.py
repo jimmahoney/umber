@@ -7,6 +7,7 @@
     os_root         # e.g. /Users/mahoney/sugar/academics/umber
     os_basename     # e.g. courses , folder with content pages
     os_base         # e.g. /Users/mahoney/sugar/academics/umber/courses
+    os_src          # e.g. /Users/mahoney/sugar/academics/umber/src
     url_base        # e.g. umber , url prefix http://host/umber/...
     http_port
     https_port
@@ -52,6 +53,7 @@ def _get_os_root():
 
 os_root = _get_os_root()
 os_base = os.path.join(os_root, os_basename)
+os_src = os.path.join(os_root, 'src')
 
 # sqlite3 version, used in sqlalchemy's create_engine() function
 db_path = os_root + '/database/umber.db'

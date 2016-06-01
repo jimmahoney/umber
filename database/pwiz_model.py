@@ -1,12 +1,3 @@
-#
-# peewee python classes corresponding to the sql database,
-# generated (except for these top comments) with
-#
-#    $ python -m pwiz -e sqlite3 umber.db > pwiz_model.py
-#
-# This code here is not used directly, but is instead is the
-# starting place for the class definitions in ../src/model.py
-
 from peewee import *
 
 database = SqliteDatabase('umber.db', **{})
@@ -29,6 +20,7 @@ class Course(BaseModel):
     notes = TextField()
     path = TextField(unique=True)
     start_date = TextField()
+
     class Meta:
         db_table = 'Course'
 
@@ -45,6 +37,17 @@ class Assignment(BaseModel):
 
     class Meta:
         db_table = 'Assignment'
+
+class Page(BaseModel):
+    as_html = TextField()
+    content_hash = IntegerField()
+    course = ForeignKeyField(db_column='course_id', rel_model=Course, to_field='course')
+    notes = TextField()
+    page = PrimaryKeyField(db_column='page_id')
+    path = TextField(unique=True)
+
+    class Meta:
+        db_table = 'Page'
 
 class Person(BaseModel):
     crypto = TextField()
