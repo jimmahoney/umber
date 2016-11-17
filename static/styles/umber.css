@@ -8,6 +8,7 @@
  * colors: 
  *    I'm using a brown-ish background, 
  *    with green-ish color themes (still wikiacademia's.) 
+ *    http://www.w3schools.com/colors/colors_picker.asp
  * 
  * There are a couple InternetExplorer fixes at the bottom of the page,
  * but this will need more attention; monobook has a whole slew of 
@@ -18,9 +19,13 @@
  *
  * body:
  *       ----------------------------------------------------------
- *      | header                                                   |
+ *      |                                              |           |
+ *      | header                                      3em          |
+ *      |                                              |           |
  *      |----------------------------------------------------------|
  *      | column-one(float:left)   | column-two(margin:...)        |
+ *      |                                                          |
+ *      |                                                          |
  *       ----------------------------------------------------------
  *
  * header:
@@ -38,11 +43,13 @@
  *       ------------------------------------------------
  *
  *
- * column-two:
+ * column-two:     ---------------------------------
+ *                | action    top=2em; height=1em   |
  *       ------------------------------------------------
  *      | component border:solid; background:white     content
  *      | footer    text-align:right                   contact etc.
  *       ------------------------------------------------
+ *
  *
  * $Id: wikiacademia.css 22681 2008-08-26 20:48:31Z mahoney $
  *********************************************************/
@@ -202,7 +209,7 @@ div#header {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 3.1em;             /* height of header */
+  height: 3.0em;             /* height of header */
   /* border-bottom: solid black 1px; */
 }
 
@@ -270,7 +277,7 @@ div#header {
 }
 #login li input {
   /* border: solid 1px #90C0C0; */
-  background-color: #FFFFFF;
+  background: #FFFFFC;    /* was white */    
   margin: 0;
   padding: 1px 1px 0 2px;
 }
@@ -365,13 +372,12 @@ form.login {
   z-index: -1;  
 }
 
-
-/* --- wiki-actions ------------------------------------------ */
-#wiki-actions { 
+/* --- actions ------------------------------------------ */
+#actions { 
   position: absolute;
   left: 11em;
-  top: 2em;       /* = 3.1em (position of column-two) - 1em (its height) - 0.1em (bottom edge fudge factor) */
-  height: 1em;
+  top: 2em;       /* = 3.0em (position of column-two) - 1em (its height) */
+  height: 1.1em;  /* = 1.0em (desired height) + 0.1 em (fudge, behind) */
   margin: 0;
   padding: 0 0 0 1em;
   white-space: nowrap;
@@ -380,16 +386,16 @@ form.login {
   border-collapse: collapse;
   list-style: none;
 }
-#wiki-actions a:hover {  
+#actions a:hover {  
   text-decoration: none; /* underline is close to border .. */
   color: #5a3696;        /* so I'll try just a color change. */
 }
-#wiki-actions ul {
+#actions ul {
   margin: 0 0 0 2em;
   padding: 0;
   list-style: none;
 }
-#wiki-actions li {
+#actions li {
   position: relative;
   z-index: 2;                  /* in front of column-two */
   display: inline;
@@ -400,40 +406,41 @@ form.login {
   line-height: 1.0em;
   font-size: 100%;
   overflow: visible;
-  background: white;
+  background: #FFFFFC;    /* was white */
 }
-#wiki-actions .front-yellow {
+#actions .front-yellow {
   border: 1px solid #F0C0C0;   /* F0C0C0 is yellowish */
   border-bottom: none;
 }
-#wiki-actions .behind-yellow {
+#actions .behind-yellow {
   border: 1px solid #F0C0C0;   /* F0C0C0 is yellowish */
   /* border-bottom: none; */
   position: relative;
   z-index: 0;
 }
-#wiki-actions .front { 
+#actions .front { 
   border-bottom: none;
 }
-#wiki-actions .behind { 
+#actions .behind { 
   position: relative;
   z-index: 0;                 /* behind column-two */
+  background-color: #F5F5F0;  /* or EAEAE1 or F1E6DA */
 }
-#wiki-actions .front-gap {  
+#actions .front-gap {  
   border-bottom: none;
   margin-left: 2em;  /* instead of 1em */
 }
-#wiki-actions .behind-gap {  
+#actions .behind-gap {  
   position: relative;
   margin-left: 2em;  /* instead of 1em */
   z-index: 0;                 /* behind column-two */
 }
-#wiki-actions .front a{ color:black; text-decoration:none }
-#wiki-actions .front a:hover{  color:black; text-decoration:none }
-#wiki-actions .front-yellow a{ color:black; text-decoration:none }
-#wiki-actions .front-yellow a:hover{  color:black; text-decoration:none }
-#wiki-actions .front-gap a{ color:black; text-decoration:none }
-#wiki-actions .front-gap a:hover{  color:black; text-decoration:none }
+#actions .front a{ color:black; text-decoration:none }
+#actions .front a:hover{  color:black; text-decoration:none }
+#actions .front-yellow a{ color:black; text-decoration:none }
+#actions .front-yellow a:hover{  color:black; text-decoration:none }
+#actions .front-gap a{ color:black; text-decoration:none }
+#actions .front-gap a:hover{  color:black; text-decoration:none }
 
 /* --- column 1 ------------------------------------------ */
 
@@ -501,7 +508,7 @@ form.login {
 #column-one div div div  {
   border: solid 1px #90C0C0;
   border-left: none;
-  background-color: white; 
+  background-color: #FFFFFC;    /* was white */
   margin: 1px;
   /* padding: .1em .5em .1em 0; */
   padding: 0;
@@ -601,7 +608,7 @@ form.login {
   padding: 0 1em 0 1em;             /* !!! right whitespace; see .footer */
   border: 1px solid #90C0C0; 
   border-right: none;
-  background-color: white;
+  background-color: #FFFFFC;    /* was white */
 }
 
 /*** 

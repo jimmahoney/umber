@@ -16,3 +16,7 @@ fi
 cd ./src
 python -c "import model; model.populate_database()"
 cd ..
+
+# To create pwiz_model.py (which isn't loaded into the software but 
+# instead is a starting point for classes in src/model.py), run
+# $ python -m pwiz -e sqlite3 umber.db > pwiz_model.py

@@ -1,1 +1,14 @@
-<!-- actions -->
+<!-- actions i.e. buttons for edit, history, ... -->
+
+{% if actionHTML.tabs %}
+<div id="actions">
+  <ul>
+  {%   for tab in actionHTML.tabs %}
+  <li class={{actionHTML.style[tab]}}><a
+	href="{{request.url + actionHTML.uri[tab]}}"
+	>{{actionHTML.link[tab]}}</a></li>
+  {%   endfor  %}
+  </ul>
+</div>
+{% endif %}
+

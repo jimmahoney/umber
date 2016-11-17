@@ -15,8 +15,17 @@ echo "Set UMBER_ROOT to "$UMBER_ROOT
 #   * This assumes that anaconda's "activate" is in already in your PATH.
 source activate umber
 
-# Prepend this project's ./bin/ folder to the PATH
-# so that (console, init_db, test, server) can be found 
-# from any 
+# Prepend this project's ./bin/ and ./src/ folders to the PATH
+# so that (console, init_db, test, server, umber.py) can be found 
 export PATH=$UMBER_ROOT/bin:$PATH
 echo "prepending "$UMBER_ROOT"/bin to PATH"
+
+# Used by the command line "flask" tool as of flask v0.11
+export FLASK_APP=src/umber.py
+echo "defining FLASK_APP=src/umber.py"
+
+# These should all be COMMENTED OUT FOR PRODUCTION !!
+export FLASK_DEBUG=1
+export WERKZEUG_DEBUG_PIN=off
+echo "turning on FLASK_DEBUG"
+echo "disabling WERKZEUG_DEBUG_PIN"

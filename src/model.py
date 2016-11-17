@@ -12,10 +12,9 @@
 
    # Find the people and their role in a course given its name.
    >>> democourse = Course.get(Course.name == 'Demo Course')
-   >>> for (person, role) in sorted(democourse.person_to_role.items(),
-   ...                              key = lambda x: x[0].name):
-   ...   print "{} is {} in {}.".format(person.name,
-   ...                                  role.name, democourse.name)
+   >>> for (username, role) in sorted(democourse.username_to_role.items()):
+   ...   user = Person.by_username(username)
+   ...   print "{} is {} in {}.".format(user.name, role.name, democourse.name)
    ...
    Jane Q. Doe is student in Demo Course.
    Johnny Smith is student in Demo Course.
@@ -42,12 +41,61 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-from settings import db_path
+from settings import db_path, timezone, timezoneoffset, os_base
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
+import os, yaml, arrow
 
 db = SqliteDatabase(db_path)
+
+class Time(object):
+    """ Time in an ISO GMT form, as typically stored in the sqlite database.
+        including a timezone-aware offset.
+        >>> print Time('2013-01-01T12:24:52.3327-05:00')
+        2013-01-01T12:24:52-05:00
+        >>> print Time('2013-05-09')
+        2013-05-09T12:00:00-05:00        
+    """
+    # Uses the python Arrow library; see http://crsmithdev.com/arrow/  .
+    # For time differences, subtract two of these (given a datetime.timedelta)
+    # and then use .seconds, .total_seconds(), .resolution etc.
+    #
+    def __init__(self, *args, **kwargs):
+        """ With no arguments, returns the 'now' time. """
+        # And if the arg is just e.g. '2015-01-02', add utc 'T12:00:00-05:00'
+        # (Apparently an ISO string date string like '2015-12-01' ignores
+        #  the tzinfo optional arg. However
+        #  arrow.get(datetime.date(2015,12,01), tzinfo=timezone) does work.)
+        if len(args)>=1 and isinstance(args[0], basestring) \
+                        and len(args[0])==10:
+            args = (args[0] + 'T12:00:00' + timezoneoffset,) +  args[1:]
+        self.arrow = arrow.get(*args, **kwargs).to(timezone)
+    def __str__(self):
+        """ ISO representation rounded down to the nearest second """
+        return self.arrow.floor('second').isoformat()
+    def human(self):
+        """ Return in human friendly form, e.g. 'seconds ago'"""
+        return self.arrow.humanize()
+    def month_day_year(self):
+        """ Return as e.g. 'May 09 2013' """
+        return self.arrow.format('MMMM DD YYYY')
+    def slashes(self):
+        """ Return as e.g. '06/09/13' """
+        return self.arrow.format('MM/DD/YY')
+    def semester(self):
+        """ Return as e.g. 'Summer 2013' """
+        month = self.arrow.month
+        if month < 6:
+            season = 'Spring '
+        elif month < 9:
+            season = 'Summer '
+        else:
+            season = 'Fall'
+        return season + str(self.arrow.year)
+        
+    def str(self):
+        return str(self)
 
 class BaseModel(Model):
     class Meta:
@@ -55,7 +103,7 @@ class BaseModel(Model):
 
     def __repr__(self):
         # e.g. 
-        fields = ', '.join(map(lambda x: '{}={}'.format(x[0],x[1]),
+        fields = ', '.join(map(lambda x: "{}={}".format(x[0],repr(x[1])),
                            self.__dict__['_data'].items()))
         return '<{}({}) at 0x{:X}>'.format(self.__class__.__name__,
                                        fields, id(self))
@@ -74,64 +122,98 @@ class Person(BaseModel):
 
     person_id = PrimaryKeyField(db_column='person_id')
         
-    crypto = TextField()
-    email = TextField()                
-    ldap = IntegerField(db_column='ldap_id', index=True)
-    name = TextField()
-    notes = TextField()
-    password = TextField()
     username = TextField(unique=True)
+    password = TextField()
+    name = TextField()
+    email = TextField()                
+    notes = TextField()
 
-    def set_password(self, passwordtext):
-        self.password = generate_password_hash(passwordtext)
-        
     def works(self, course):
         query = (Work.select()
                      .where( Work.person == self,
                              Work.course == course ))
         return list(query.execute())
 
+    def _save(self):
+        """ save to database and invalidate caches """
+        Person._by_username.pop(self.username) # invalidate cache
+        Person._admins = None                  # invalidate cache
+        self.save()
+    
     def set_password(self, passwordtext):
         self.password = generate_password_hash(passwordtext)
-        self.save()
+        self._save()
         
     def check_password(self, passwordtext):
         return check_password_hash(self.password, passwordtext)
 
-    def set_status(self, logged_in=True, role=''):
-        self.logged_in = logged_in    # not in database
-        self.role = role              # not in database
+    def get_role(self, course):
+        """ Return role of this person in that course """
+        if self.username in course.username_to_role:
+            return course.username_to_role[self]
+        else:
+            return Role.by_name('visitor')
 
-    # -- Flask-Login methods --
-    
+    # -- Flask-Login methods & tools --
+
+    @staticmethod
+    def get_anonymous():
+        """ Create and return an anonymous Person """
+        # Not saved to database (i.e. save() not called).
+        # Not logged in.
+        anon = Person(name=u'anonymous', username=u'')
+        anon.anonymous = True
+        return anon
+        
     def is_authenticated(self):
-        try:
-            return self.logged_in
-        except:
-            return False
+        return not self.is_anonymous()
         
     def is_active(self):
-        return self.is_authenticated()
+        return not self.is_anonymous()
     
     def is_anonymous(self):
         try:
             return self.anonymous
         except:
             return False
-        
+
+    def is_admin(self):
+        """ return True if this user is an admin, false otherwise """
+        return self.username in Person.admins()
+
     def get_id(self):
         if self.username == None:
             return unicode('')
         else:
             return unicode(self.username)
 
-def anonymous_person():
-    # Not saved to database since .save() is not called.
-    anon = Person(name=u'anonymous', username=u'anonymous')
-    anon.set_status(logged_in=False)
-    anon.anonymous = True
-    return anon
+    _by_username = {} # cache
+        
+    @staticmethod
+    def by_username(username):
+        if username not in Person._by_username:
+            person = Person.select().where(Person.username==username).first()
+            Person._by_username[username] = person
+        return Person._by_username[username]
+        
+    @staticmethod
+    def by_rolename(rolename):
+        """ Return list of users who have a given type of registration """
+        # ... in any registration record i.e. any course
+        return list(Person.select()
+                          .join(Registration)
+                          .where(Registration.role == Role.by_name(rolename))
+                          .execute())
 
+    _admins = None  # cache - TODO reset when someone gets admin status
+    
+    @staticmethod
+    def admins():
+        """ Return list of administrators """
+        if not Person._admins:
+            Person._admins =  Person.by_rolename('admin')
+        return Person._admins
+    
 class Course(BaseModel):
     class Meta:
         db_table = 'Course'
@@ -148,38 +230,168 @@ class Course(BaseModel):
     path = TextField(unique=True)
     start_date = TextField()
 
+    def person_to_role(self, person):
+        """ Return role of person in course, or visitor """
+        return self.username_to_role.get(person.username,
+                                         Role.by_name('visitor'))
+    
     def prepared(self):
-        self.person_to_role = {reg.person : reg.role
+        self.username_to_role = {reg.person.username : reg.role
             for reg in (Registration.select(Registration.person,
                                             Registration.role)
                                     .where(Registration.course == self))}
-        #persons_query = (Person.select()
-        #                       .join(Registration)
-        #                       .where(Registration.course == self))
-        #self.persons = list(persons_query.execute())
-        #self.username_to_person = {p.username : p for p in self.persons}
-        #self.rolename_to_persons = \
-        #  {role.name : list(Person.select()
-        #                          .join(Registration)
-        #                          .where((Registration.course == self) &
-        #                                 (Registration.role == role))
-        #                          .execute()) \
-        #   for role in Role.all()}
+        self.semester = Time(self.start_date).semester()
+
+    def os_path(self):
+        return os.path.join(os_base, self.path)
+
+    def nav_os_path(self):
+        return os.path.join(self.os_path(), 'navigation.markdown')
 
 class Page(BaseModel):
+
+    #  --- path, filename, url definitions ---
+    #  With settings on my laptop development machine as
+    #    os_base    /Users/mahoney/academics/umber/courses
+    #    url_base                            umber
+    #  then for the 'notes/week1' file within a course at 'fall/math' ,
+    #  the parts are
+    #    url:  http://localhost:8090/  umber    /  fall/math / notes/week1
+    #                 host             url_base    path...................
+    #    file: /Users/mahoney/academics/umber/courses / fall/math / notes/week1
+    #          os_base                                  path...................
+    #  Following python's os.path phrasing, other terms used here are
+    #    basename     last word in address (same as os.path.basename)
+    #    abspath      e.g. /Users/mahoney/.../fall/math/notes/week1
+    #    dirname      e.g. /Users/mahoney/.../fall/math/notes
+    #  This url would have in its flask request object the attributes
+    #    request.url_root        'http://localhost:8090/'
+    #    request.path            '/umber/fall/math/notes/week1'
+    #
+    # Note that Page.path (e.g. fall/math/notes/week1)
+    # does not have a leading slash or contain the url_base,
+    # while request.path (e.g. /umber/fall/math/notes/week1) does.
+    #
+    # The Page object will also contain various extra data 
+    # that isn't stored in the sql database but is instead
+    # pulled from the filesystem.
+
     class Meta:
         db_table = 'Page'
-
+        
     page_id = PrimaryKeyField(db_column='page_id')
-                                
+
     as_html = TextField()
     content_hash = IntegerField()
     notes = TextField()
     path = TextField(unique=True)
-
+    
     course = ForeignKeyField(rel_model=Course,
                              db_column='course_id',
                              to_field='course_id')
+    
+    def set_course(self):
+        """ set the course for this page in self.course """
+        # currently done from the url self.path (e.g. demo/home)
+        # TODO : cache in database ?
+        #
+        # extract path pieces e.g. ['demo', 'home']
+        path_parts = self.path.split('/')
+        # build partial paths e.g. ['demo', 'demo/home']
+        # (stackoverflow.com/questions/13221896/python-partial-sum-of-numbers)
+        paths = reduce(lambda x,y: x + [x[-1]+'/'+y],
+                       path_parts[1:], path_parts[0:1])
+        # build peewee where condition
+        condition = Course.path % ''   # '' is Umber default course
+        for c in paths:
+            condition = condition | Course.path % c
+        # get list of matching courses from database
+        query = Course.select().where(condition)
+        courses = list(query.execute())
+        # choose the one with the longest path
+        self.course = max(courses, key=lambda c: len(c.path))
+
+    def _setup_access(self):
+        """ Define .access dict from .access.yaml in an enclosing folder """
+        self.access = {'read':'', 'write':''}
+        #try:
+        if self.isdir:
+            abspath = self.abspath
+        else:
+            abspath = os.path.dirname(self.abspath)
+        # print ' _setup_access : abspath = {}'.format(abspath)
+        # print ' _setup_access : os_base = {}'.format(os_base)
+        while len(abspath) >= len(os_base):
+            accesspath = abspath + '/.access.yaml'
+            # print ' _setup_access : accesspath = {}'.format(accesspath)
+            if os.path.exists(accesspath):
+                accessfile = open(accesspath)
+                self.access = yaml.load(accessfile)
+                accessfile.close()
+                break
+            abspath = os.path.dirname(abspath) # i.e. "cd .."
+        #except:
+        #    pass
+        # ... TODO: finish this & use user
+        return None
+
+    def set_user_permissions(self, user):
+        """ Set page.access, page.can['read'], page.can['write'],
+                page.user, page.user_role, page.user_rank """
+        # Note that admins who are faculty in a given course
+        # will have a displayed role of 'faculty' in that course
+        # but will have admin access to nav menus etc.
+        assert self.course != None  # call self.set_course() first.
+        self.user = user
+        self._setup_access()
+        self.can = {'read':False, 'write':False}
+        # print ' person.get_permissions: user = {}'.format(
+        #    user)
+        # print ' person.get_permissions: course usernames = {}'.format(
+        #    self.course.username_to_role.keys())
+        self.user_role = self.course.person_to_role(user)
+        self.user_rank = self.user_role.rank
+        # print ' person.get_permissions: self.user_rank = {}'.format(
+        #    self.user_rank)
+        for permission in ('read', 'write'):
+            access_needed = Role.by_name('faculty').rank
+            self.can[permission] = False
+            for who in self.access[permission].split(','):
+                if who == user.username:
+                    self.can[permission] = True
+                    break
+                elif who in Role.name_alias:
+                    access_needed = min(Role.by_name(who).rank,
+                                        access_needed)
+            if self.user_rank >= access_needed:
+                self.can[permission] = True
+        if user.is_admin():
+            # print ' user is admin - setting permissions accordingly '
+            (self.can['read'], self.can['write']) = (True, True)
+            self.user_rank = Role.by_name('admin').rank
+            if self.user_role.name != 'faculty':
+                    self.user_role = Role.by_name('admin')
+
+    def _setup_file_properties(self):
+        """ given self.path,
+            set self.absfilename, self.exists, self.isfile, self.isdir,
+         """
+        self.abspath = os.path.join(os_base, self.path)
+        if not os.path.exists(self.abspath):
+            for ext in ('.markdown', '.wiki', '.txt'):
+                if os.path.exists(self.abspath + ext):
+                    self.abspath = self.abspath + ext
+        (ignore, self.ext) = os.path.splitext(self.abspath)
+        self.exists = os.path.exists(self.abspath)
+        self.isfile = os.path.isfile(self.abspath)
+        self.isdir = os.path.isdir(self.abspath)
+        
+    @classmethod
+    def get_from_path(cls, path):
+        """ Get or create Page, set its course, init file parameters """
+        (page, created) = Page.get_or_create(path=path)
+        page._setup_file_properties()
+        return page
 
 class Assignment(BaseModel):
     class Meta:
@@ -225,6 +437,20 @@ class Role(BaseModel):
                   'any':             'visitor',
                   'visitor':         'visitor'
                   }
+
+    _cache = {}
+
+    @staticmethod
+    def by_name(name):
+        if not name in Role.name_rank:
+            if name in Role.name_alias:
+                name = Role.name_alias[name]
+            else:
+                name = 'visitor'
+        if not name in Role._cache:
+            Role._cache[name] = Role.get(name=name)
+        return Role._cache[name]
+
     @staticmethod
     def unalias(alias):
         """ Convert alias to its standard role name. """
@@ -235,7 +461,7 @@ class Role(BaseModel):
         with db.transaction():
             for (name, rank) in Role.name_rank.items():
                 Role.get_or_create(name=name, rank=rank)
-
+                
 class Registration(BaseModel):
     class Meta:
         db_table = 'Registration'
@@ -314,7 +540,13 @@ def populate_database():
                 name_as_title = 'Demo<br>Course',
                 path = 'demo',
                 start_date = '2013-01-01')
-        
+
+        (umbercourse, created) = Course.get_or_create(
+                name = 'Umber',
+                name_as_title = 'Umber',
+                path = '',
+                start_date = '2013-01-01')
+                 
         (jane, created) = Person.get_or_create(
             username = 'janedoe',
             name = 'Jane Q. Doe',

@@ -17,30 +17,30 @@
  URLs have the form
      host url_base path
  e.g.
-     http://localhost:8080/  umber    /  demo/home
-            host             url_base    path
+     http://localhost:8080/  umber    /  demo       / home
+            host             url_base    course_path  page_path
 
  os paths to files files are
      os_base path
  e.g.
-     /Users/mahoney/academics/umber/courses  /  demo/home
-     os_base                                    path
+     /Users/mahoney/academics/umber/courses  / demo        /   home
+     os_base                                   course_path     page_path
 
  where (os_base = os_root os_basename)
-         
+
+ See the Page class in model.py for more details.
+ 
 """
 import sys, os
 
-# TODO: generate this randomly for production deployment.
-secret_key = "umber - SEEKRIT"
-
-url_base = 'umber'       # URL prefix for umber courses
+url_basename = 'umber'   # URL prefix for umber courses
 os_basename = 'courses'  # course folder within project folder os_root
 
 http_port = 8080
 https_port = 8433
 
 timezone = 'US/Eastern'
+timezoneoffset = '-05:00'  # for ISO GMT strings
 
 def _get_os_root():
     """ Return absolute path to project folder, without trailing slash."""
@@ -54,7 +54,10 @@ def _get_os_root():
 os_root = _get_os_root()
 os_base = os.path.join(os_root, os_basename)
 os_src = os.path.join(os_root, 'src')
+os_template = os.path.join(os_root, 'templates')
+os_static = os.path.join(os_root, 'static')
 
-# sqlite3 version, used in sqlalchemy's create_engine() function
-db_path = os_root + '/database/umber.db'
+os_config = os.path.join(os_src, 'config.py')
+
+db_path = os_root + '/database/umber.db'   # absolute sqlite3 file path
 

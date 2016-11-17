@@ -14,40 +14,14 @@
 --   To create the database :          ./init_db
 --   To create & populate it:          ./reset_db
 --   To create an ERD diagram of it:   ./erd/make_png
---
--- Authentication of users can be from an LDAP database, 
--- which is the default on the Marlboro College campus.
--- In that case, password here is left blank, and the rest 
--- is mostly a duplicate of the info there.
---    here       ldap
---    ----       ----
---    ldap_id    uidNumber
---    username   uid
--- Otherwise, this password provides an alternate authentication
--- mechanism, via a mechanism specified in the 'crypto' filed.
--- If crypto is null, then the password is simply stored in plaintext.
--- If its value is 'crypt', then its encrypted with the
--- standard unix/perl 'crypt' function.
--- The (name, firstname, lastname) are redundant, but I've left all of
--- 'em here for some flexibility, and to allow sorting by last name
--- even while allowing for nicknames in the "name" field, e.g.
---    username   csmith
---    firstname  Christopher
---    lastname   Smith
---    name       Topher Smith
--- Keeping 'em is also consistent with the ldap, which has
--- (cn sn displayname) as (firstname lastname name).
--- My intention is to use "lastname, firstname" as the more
--- formal name and something more casual as "name".
--- If not provided, the email is assumed to be username@domain, 
--- e.g. csmith@marlboro.edu
+
+-- In the previous wikiacademia system, authentication
+-- was by either password or ldap_id. Here it's just password.
 --
 CREATE TABLE Person (
   person_id INTEGER PRIMARY KEY NOT NULL,
-  ldap_id INTEGER NOT NULL DEFAULT 0,
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL DEFAULT '',
-  crypto TEXT NOT NULL DEFAULT '',
   name TEXT NOT NULL DEFAULT '',
   email TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT ''
@@ -55,7 +29,6 @@ CREATE TABLE Person (
 
 -- Speed select statements at the cost of slowing table modifications.
 CREATE UNIQUE INDEX person_username_index ON Person (username);
-CREATE INDEX person_ldap_index ON Person (ldap_id);
 
 --
 -- The status roles are (in order of ascending privileges)
@@ -98,24 +71,23 @@ CREATE TABLE Course (
 CREATE UNIQUE INDEX course_path_index ON Course(path);
 
 --
--- A Page is one file or directory with a given url
---   * Its 'path' column gives the location of its 
---     top folder within the courses_os_base folder (e.g. 'courses')
---     for example 'demo' for the demo course 
---     which is at /<os_root>/<courses_os_base>/demo
---     e.g. /Users/mahoney/academics/umber/courses/demo
+-- A Page is one file or directory
+--   * 'path' is its file & url , after host/url_base or os_base
+--     for example http://localhost/umber/democourse/home
+--     at /Users/mahoney/academics/umber/courses/democourse/home
+--     would have as its path 'democourse/home'
 --   * The content_hash is an md5 hash of the file contents,
 --     used to see whether or not the corresponding file has changed.
 --   * as_html is a cache of the processed file contents
 --
 CREATE TABLE Page (
   page_id INTEGER PRIMARY KEY NOT NULL,
-  course_id INTEGER NOT NULL DEFAULT 0
+  path TEXT UNIQUE NOT NULL,
+  course_id INTEGER DEFAULT NULL
     CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
-  path TEXT UNIQUE NOT NULL,    
-  content_hash INTEGER NOT NULL DEFAULT 1,
-  as_html TEXT NOT NULL DEFAULT '',
-  notes TEXT NOT NULL DEFAULT ''
+  content_hash INTEGER DEFAULT 0,
+  as_html TEXT DEFAULT '',
+  notes TEXT DEFAULT ''
 );
 
 CREATE UNIQUE INDEX page_path_index ON Page(path);

@@ -682,3 +682,17 @@ Includes emacs compatability. Used many places - very cool.
 
 ipython connectivity might also be something to consider.
 
+---------
+2016 markdown converters :
+
+ I'm trying this one :
+
+ https://github.com/trentm/python-markdown2/wiki/Extras
+ extras that look good :
+   code-friendly, fenced-code-blocks, footnotes, metadata, pyshell, tables, cuddled-lists
+
+ For syntax highlighting,
+ stackoverflow.com/questions/25828453/markdown2-how-to-get-extras-working :
+ (a) language hint after ``` 
+ (b) pygments installed
+ (c) a CSS style : https://github.com/richleland/pygments-css

@@ -1,4 +1,5 @@
 <!doctype html>
+{% autoescape false %} {# i.e. don't turn < into &lt; #}
 <html>
 <head>
     <title>{{ page.title }}</title>
@@ -31,9 +32,10 @@
 
 {% if true %}
 <div id="column-one">                      <!-- start column-one -->
- <h1><a href="#"> {{page.course.name_title}} </a></h1>
- <div><div id="semester"> {{page.course.semester}} </div></div>
- {% include 'umber/navigation.html' %}
+ <h1><a href="#"> {{course.name_as_title}} </a></h1>
+ <div><div id="semester"> {{course.semester}} </div></div>
+% include 'umber/navigation.html' %} 
+ <div>{{   }}</div>
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
      src="{{static_url('images/deadtree_logo.png')}}"/></a>
@@ -69,3 +71,4 @@
 
 </body>
 </html>
+{% endautoescape %}

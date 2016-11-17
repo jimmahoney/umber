@@ -142,7 +142,7 @@ def get_course(pagepath):
                             ).params(pagepath=pagepath).all()
     if not courses:
         raise Exception('OOPS - no Course for pagepath "{}"'.format(pagepath))
-    return max(courses, key = lambda c: len(c.path))
+c = reduce(lambda x,y: x + [x[-1]+'/'+y], b[1:], b[0:1])    return max(courses, key = lambda c: len(c.path))
 
 def csv_to_list(csv_string):
     """ Return list of strings given string of comma-seperated-values

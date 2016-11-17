@@ -28,3 +28,13 @@ cd $UMBER_ROOT   # Set the working folder to the project root.
 cd database/erd
 ./sqlt-graph --from=SQLite ../umber.sql > umber.png
 echo "OK, database/erd/umber.png has been created."
+
+#
+# The perl packages needed for this aren't specified
+# in the environment files; the sqlt-graph
+# lists the dependencies where are 
+#    perl             (installed on MacOS by default)
+#    graphviz         (manual install or homebrew)
+#    GraphViz         (install via cpan)
+#    SQL::Translator  (install cpan)
+

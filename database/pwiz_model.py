@@ -39,10 +39,10 @@ class Assignment(BaseModel):
         db_table = 'Assignment'
 
 class Page(BaseModel):
-    as_html = TextField()
-    content_hash = IntegerField()
-    course = ForeignKeyField(db_column='course_id', rel_model=Course, to_field='course')
-    notes = TextField()
+    as_html = TextField(null=True)
+    content_hash = IntegerField(null=True)
+    course = ForeignKeyField(db_column='course_id', null=True, rel_model=Course, to_field='course')
+    notes = TextField(null=True)
     page = PrimaryKeyField(db_column='page_id')
     path = TextField(unique=True)
 
@@ -90,6 +90,7 @@ class Work(BaseModel):
     facultylastseen = TextField(db_column='facultyLastSeen')
     grade = TextField()
     notes = TextField()
+    page = ForeignKeyField(db_column='page_id', rel_model=Page, to_field='page')
     person = ForeignKeyField(db_column='person_id', rel_model=Person, to_field='person')
     studentlastmodified = TextField(db_column='studentLastModified')
     studentlastseen = TextField(db_column='studentLastSeen')

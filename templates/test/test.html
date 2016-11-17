@@ -49,7 +49,7 @@
     <hr>
 
     <h3>config</h3>
-    <div> config = {{config}} </div>
+    <div> config = {{config }} </div>
     <div> dir(config) = {{dir(config)}}</div>
     <hr>
 
@@ -89,18 +89,8 @@
 
     <hr>
 
-    {#   no 'context' variable in jinja2 environment
-    <h3>context</h3>
-    <div> 
-          context = {{context }<br>
-          dir(context) = {{dir(context) }}<br>
-          context.keys() = {{context.keys() }}<br>
-          context.kwargs = {{context.kwargs }}
-    </div>
-    #}
-
-    <!-- path is relative to template_jinja2, not this file #} -->
-    {% include "test/include.html" %}   <!-- args="**context.kwargs" -->
+    <!-- path is relative to templates folder, not this file #} -->
+    {% include "test/include.html" %}
 
     <hr>
 

@@ -5,10 +5,12 @@
 cd $UMBER_ROOT   # Set the working folder to the project root.
 
 # stop old background servers
-pkill -f umber.py
+pkill -f flask
 
-# start new background http and https development servers
-cd src
-./env/bin/python umber.py     &
-./env/bin/python umber.py ssl &
-cd ..
+# start new background (http? https?) web server
+flask run
+
+# cd src
+# python umber.py     &
+# python umber.py ssl &
+# cd ..

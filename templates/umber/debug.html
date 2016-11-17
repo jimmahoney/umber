@@ -1,63 +1,59 @@
-{% macro show(variable) -%}
-  <h4>{{variable}}</h4>
-  {% if variable == 'request' %}
-    &nbsp; request.url = {{request.url }} <br>
-    &nbsp; request.host = {{request.host }} <br>
-    &nbsp; request.url_root = {{request.url_root }} <br>
-    &nbsp; request.base_url = {{request.base_url }} <br>
-    &nbsp; request.path = {{request.path }} <br>
-    {# &nbsp; request.full_path = {{request.full_path }} <br> #}
-    &nbsp; request.endpoint = {{request.endpoint }} <br>
-    &nbsp; request.is_secure = {{request.is_secure }} <br>
-    {# &nbsp; request.cookies = {{request.cookies }} <br> #}
-  {% elif variable == 'page' %}
-    &nbsp; page.path = {{page.path }} <br>
-    &nbsp; page.name = {{page.basename }} <br>
-    &nbsp; page.basename = {{page.basename }} <br>
-    &nbsp; page.abspath = {{page.abspath }} <br>
-    &nbsp; page.dirabspath = {{page.abspath }} <br>
-    &nbsp; page.isfile = {{page.isfile }} <br>
-    &nbsp; page.isdir = {{page.isdir }} <br>
-    &nbsp; page.exists = {{page.exists }} <br>
-    &nbsp; page.url = {{page.url }} <br>
-    &nbsp; page.secure_url = {{page.secure_url }} <br>
-    &nbsp; page.lastmodified = {{page.lastmodified }} <br>
-    &nbsp; page.permissions = {{page.permissions }} <br>
-    &nbsp; page.can_read = {{page.can_read }} <br>
-    &nbsp; page.can_write = {{page.can_write }} <br>
-  {% elif variable == 'user' %}
-    &nbsp; page.user = {{page.user }} <br>
-    &nbsp; user.username = {{user.username }} <br>
-    &nbsp; user.person_id = {{user.person_id }} <br>
-    &nbsp; user.name = {{user.name }} <br>
-    &nbsp; user.role = {{user.role }} <br>
-    &nbsp; user.password = {{user.password }} <br>
-    &nbsp; user.is_authenticated() = {{user.is_authenticated() }} <br>
-    &nbsp; user.is_anonymous() = {{user.is_anonymous() }} <br>
-  {% elif variable == 'page.course' %}
-    &nbsp; page.course = {{page.course }} <br>
-    &nbsp; page.course.name = '{{page.course.name }}' <br>
-    &nbsp; page.course.name_as_title = '{{page.course.name_as_title }}' <br>
-    &nbsp; page.course.url = '{{page.course.url }}' <br>
-    &nbsp; page.course.semester = '{{page.course.semester }}' <br>
-    &nbsp; page.course.os_fullpath = '{{page.course.os_fullpath }}' <br>
-    &nbsp; page.course.userdict = '{{page.course.userdict }}' <br>
-    &nbsp; page.course.roledict = '{{page.course.roledict }}' <br>
-  {% endif %}
-{%- endmacro %}
-
 <div style='background-color:AliceBlue; 
             border:1px solid black; 
             float:right; padding: 0.2em 2em'>
   <h2>debug</h2>
   <hr>
 
-  {# {{ show('session') }} #}
-  {{ show('request') }}
-  {{ show('page') }}
-  {{ show('user') }}
-  {{ show('page.course') }}
+  <h4>environment</h4>
+    &nbsp; os.getcwd = {{ pwd() }}<br>
+  
+  <h4>request</h4>
+    &nbsp; request.url = {{request.url }} <br>
+    &nbsp; request.host = {{request.host }} <br>
+    &nbsp; request.url_root = {{request.url_root }} <br>
+    &nbsp; request.base_url = {{request.base_url }} <br>
+    &nbsp; request.path = {{request.path }} <br>
+    &nbsp; request.endpoint = {{request.endpoint }} <br>
+    &nbsp; request.is_secure = {{request.is_secure }} <br>
+    {# &nbsp; request.cookies = {{request.cookies }} <br> #}
 
+  <h4>page</h4>
+    &nbsp; page.path = {{page.path }} <br>
+    &nbsp; page.abspath = {{page.abspath }} <br>
+    &nbsp; page.ext = '{{page.ext }}' <br>  
+    &nbsp; page.isfile = {{page.isfile }} <br>
+    &nbsp; page.isdir = {{page.isdir }} <br>
+    &nbsp; page.exists = {{page.exists }} <br>
+    {# &nbsp; page.lastmodified = {{page.lastmodified }} <br> #}
+    <br>
+    &nbsp; page.access = {{page.access }} <br>
+    &nbsp; page.can['read'] = {{page.can['read'] }} <br>
+    &nbsp; page.can['write'] = {{page.can['write'] }} <br>
+    &nbsp; page.user_rank = {{page.user_rank }}
+    <small><small>
+	(1-5 : visitor,guest,student,facultyadmin)
+    </small></small> <br>
+    &nbsp; page.user_role = {{page.user_role.name }} <br>
+    <br>
+    &nbsp; page.user.username = {{page.user.username }} <br>
+    &nbsp; page.course.name = {{page.course.name }} <br>        
+
+  <h4>user</h4>
+    &nbsp; user.username = '{{user.username }}' <br>
+    &nbsp; user.name = '{{user.name }}' <br>
+    &nbsp; user.is_authenticated() = {{user.is_authenticated() }} <br>
+    &nbsp; user.is_anonymous() = {{user.is_anonymous() }} <br>
+    {# &nbsp; user.person_id = {{user.person_id }} <br> #}
+
+  <h4>course</h4>
+    &nbsp; course.name = '{{course.name }}' <br>
+    &nbsp; course.username_to_role.items() : <br>
+    {% for (username, role) in course.username_to_role.items() %}
+    &nbsp; &nbsp; &nbsp; {{username}} : {{role.name}} <br>
+    {% endfor %}
+
+  <p></p>
   <hr>
   get_flashed_messages() = {{ get_flashed_messages() }}
+
 </div>
