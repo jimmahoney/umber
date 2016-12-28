@@ -6,7 +6,8 @@ cd $UMBER_ROOT   # Set the working folder to the project root.
 
 # PYTHONSTARTUP=$UMBER_ROOT/src/console.py flask shell
 # same; may allow other python options (I wanted -q for 'quiet')
-PYTHONSTARTUP=$UMBER_ROOT/src/console.py python -m flask shell
+#  -B : don't generate .pyc files
+PYTHONSTARTUP=$UMBER_ROOT/src/console.py python -B -m flask shell
 
 
 

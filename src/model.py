@@ -50,12 +50,14 @@ import os, yaml, arrow
 db = SqliteDatabase(db_path)
 
 class Time(object):
-    """ Time in an ISO GMT form, as typically stored in the sqlite database.
-        including a timezone-aware offset.
+    """ Time in an ISO GMT form, as typically stored in the sqlite database,
+        including a timezone-aware (as specified in settings.py) offset.
         >>> print Time('2013-01-01T12:24:52.3327-05:00')
         2013-01-01T12:24:52-05:00
-        >>> print Time('2013-05-09')
-        2013-05-09T12:00:00-05:00        
+        >>> print Time('2013-05-09') # daylight savings => -4 from GMT
+        2013-05-09T13:00:00-04:00
+        >>> print Time('2013-01-09') # not daylight savings => -5 from GMT
+        2013-01-09T12:00:00-05:00
     """
     # Uses the python Arrow library; see http://crsmithdev.com/arrow/  .
     # For time differences, subtract two of these (given a datetime.timedelta)
@@ -136,8 +138,11 @@ class Person(BaseModel):
 
     def _save(self):
         """ save to database and invalidate caches """
-        Person._by_username.pop(self.username) # invalidate cache
-        Person._admins = None                  # invalidate cache
+        try:
+            del Person._by_username[self.username]
+        except KeyError:
+            pass
+        Person._admins = None
         self.save()
     
     def set_password(self, passwordtext):

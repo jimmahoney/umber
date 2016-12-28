@@ -46,57 +46,20 @@
 # Jim Mahoney | cs.marlboro.edu | April 2016
 ###############################################
 
-# syntax notes:  version wildcards e.g. 2.6.* are allowed;
-#                see https://github.com/conda/conda-env
-#
-# June 16 - updated to flask 11 with this command :
-#   $ conda install -c anaconda flask=0.11.1
-#   which installed   openssl01.0.2d , click-6.6-py27 ,  flask-0.11.1-py27
-# July  8 - added markdown2
-# July 29 - added beautifulsoup4 
-# 
-
 name: umber
 dependencies:
-- beautifulsoup4=4.4.1=py27_0
-- cffi=1.6.0=py27_0
-- click=6.6=py27_0
-- cryptography=1.3.1=py27_0
-- curl=7.45.0=0
-- enum34=1.1.6=py27_0
-- expat=2.1.0=0
-- flask=0.11.1=py27_0
-- flask-login=0.2.11=py27_0
-- git=2.6.4=0
-- idna=2.1=py27_0
-- ipaddress=1.0.14=py27_0
-- itsdangerous=0.24=py27_0
-- jinja2=2.8=py27_0
-- markdown2=2.3.1=py27_0
-- markupsafe=0.23=py27_0
-- openssl=1.0.2d=0
-- pip=8.1.1=py27_1
-- pyasn1=0.1.9=py27_0
-- pycparser=2.14=py27_0
-- pygments=2.1.3=py27_0
-- pyopenssl=0.15.1=py27_2
-- python=2.7.12=1
-- pyyaml=3.11=py27_1
-- readline=6.2=2
-- setuptools=20.7.0=py27_0
-- six=1.10.0=py27_0
-- sqlalchemy=1.0.5=py27_0
-- sqlite=3.13.0=0
-- tk=8.5.18=0
-- werkzeug=0.11.9=py27_0
-- wheel=0.29.0=py27_0
-- yaml=0.1.6=0
-- zlib=1.2.8=0
+- beautiful-soup
+- flask=0.10.1
+- git=2.6.4
+- markdown2
+- openssl=1.0.2g
+- pyopenssl=0.15.1
+- python=2.7.11
+- pyyaml
+- sqlalchemy=1.0.5
+- sqlite=3.9.2
 - pip:
   - arrow==0.7.0
-  - gdal==1.11.3
-  - gitdb==0.6.4
-  - gitpython==2.0.5
-  - peewee==2.8.1
-  - python-dateutil==2.5.3
-  - smmap==0.9.0
+  - flask-login
+
+
