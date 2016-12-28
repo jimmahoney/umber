@@ -1,5 +1,13 @@
 # umber development history #
 
+## Dec 2016
+
+Got this working again on my laptop ... but took some doing. (Still sigh.)
+The flask commands "python -m flask shell" and "-m flask run" 
+don't seem to find umber.py unless it's in the roote directory,
+in spite of several attempts to set up environment variables
+to do the right thing.
+
 ## April 2016
 
 Been away from this for a long time - trying to get things working again.
