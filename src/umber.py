@@ -104,7 +104,8 @@ def before_request():
     """ initialize database and session """
 
     # See http://docs.peewee-orm.com/en/latest/peewee/database.html
-    db.connect()
+    # FIXME : this gives "connection already open" error in console start.
+    #db.connect()
 
     # See PERMANENT_SESSION_LIFETIME in config.py
     session.permanent = True

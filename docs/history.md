@@ -1,5 +1,51 @@
 # umber development history #
 
+## April 2017
+
+ flask-peewee deprecated ?
+
+ Hmmm.
+
+ I have in model.py :
+
+ from peewee import SqliteDatabase, Model, BaseModel, \
+ TextField, IntegerField, PrimaryKeyField, ForeignKeyField
+
+ ... and peewee itself seems healthy :
+ http://docs.peewee-orm.com/en/latest/
+
+ added peewee dependency to env/environment.yml ;
+ see if anything other glue is needed.
+
+## Feb 2017
+
+Maybe I should look at
+
+ fossil-scm.org
+ https://news.ycombinator.com/item?id=13668952 - discussion
+
+which describes itself as a
+ "simple, high-reliability, distributed software configuration
+  management system with these advanced features ...
+  wiki, technotes, web interface, self contained, https/ssh,
+  version control with git, free and open source"
+
+Perhaps rather than write umber from scratch I should leverage
+this and use its git/wiki/webserver instead?
+
+But: all in a sqlite database, not a file system. Hmmm.
+And it's written in C ...
+
+So I guess not.
+
+I supposed it could be a useful API for git version control of the files.
+Hmmm. Needs more thinking.
+
+gitlab would be another way to do a similar thing.  Besides hosting
+repositories, there's a downloadable you-host-it open source code
+base. (Logan is doing this, I think.) Looks like its source code is
+in ruby, and that it too keeps everything in a database.
+
 ## Dec 2016
 
 Got this working again on my laptop ... but took some doing. (Still sigh.)

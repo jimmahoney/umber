@@ -1,0 +1,61 @@
+
+---- debugging kludge fix ---------------------
+
+I've been having trouble with the debugger.
+
+When I used Flask in 2014, it was painless.
+
+Now in June 2016 with
+ >>> import flask, werkzeug, jinja2
+ >>> flask.__version__
+ '0.11.1'
+ >>> werkzeug.__version__
+ '0.11.9'
+ >>> jinja2.__version__
+ '2.8'
+ >>> 
+
+and python 2.7 under an anaconda environment, 
+it doesn't work.
+
+Putting in an error (i.e. 0+'Hello World!') in their demo app
+prompts for a debug pin code. Providing the code does nothing;
+the same page reloads asking for the pin again.
+Exporting WERKZEUG_DEBUG_PIN=off shows startup warnings 
+that there is no pin, but the same page asking for the pin still loads.
+I have found some online discussion of this and claimed fixes,
+but have only seen it fail myself in spite of various attempts.
+
+This may be my issue - I am using anaconda's python
+stackoverflow.com/questions/21978000/flask-debug-not-working-under-anaconda
+
+ ... none of the static files provided by the debugger as 
+     part of the Werkzeug suite were being found. 
+ 
+ ... The above comment by dirn Feb 24 at 3:35 is correct. However, with
+     anaconda, uninstalling and reinstalling packages does not help. Here
+     is a hack that got mine to work...
+
+     The werkzeug/debug directory on my anaconda installation is missing a
+     directory called shared. I have a non-anaconda installation of flask
+     (using macports in my case). I simply copied that directory from my
+     macports installation to the anaconda installation. The command for
+     this with full path names that I used for my flasky conda virtual
+     environment was:
+
+        $ cp -r \
+       /opt/local/Library/Frameworks/Python.framework/
+       Versions/2.7/lib/python2.7/site-packages/werkzeug/debug/shared
+       ~/anaconda/envs/flasky/lib/python2.7/site-packages/werkzeug/debug
+
+     You need to do this separately for each conda virtual
+     environment. Your path names may vary. Also, you should probably
+     ensure that the non-anaconda installation is the same version of
+     werkzeug.
+
+So I googled "werkzeug 0.11.9", found a .tar.gz, uploaded,
+and copied it's debug/shared/ folder as above, below ~/anaconda/envs/umber
+(and yes, debug/shared/ was missing ... no idea why)
+
+... and now debugging is working. Excellent.
+
