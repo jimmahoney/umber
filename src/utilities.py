@@ -2,6 +2,7 @@
 """
  utilities.py
 """
+import os
 
 class ActionHTML(object):
     """ Return
@@ -25,4 +26,8 @@ class ActionHTML(object):
                          'history' : 'history' }
 
 
-            
+def in_console():
+    """ Return True if current environement is the flask console """
+    # See $UMBER_ROOT/bin/umber_console
+    return os.environ.has_key('UMBER_CONSOLE')
+

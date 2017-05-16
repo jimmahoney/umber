@@ -1,5 +1,29 @@
 # umber development history #
 
+## May 15 2017
+
+ Back to a working state , at least on hardmaple :
+
+   $ cd /Users/mahoney/sugar/academics/umber
+   $ source env/activate 
+   (umber)$ umber_init_db
+   (umber)$ umber_test
+   (umber)$ umber_console
+   (umber)$ umber_server
+       http://127.0.0.1:5000/test
+       http://127.0.0.1:5000/umber/demo/home
+
+ Now running with flask 0.12.1 & python 2.7.13 ;
+ see env/environment for all the specifics.
+
+ I am not sure that bin/umber_console and bin/umber_server
+ are following the flask typical recommendations - I'm setting
+ several environment variables and testing for them - but
+ at least it seems to work. In particular, the console and
+ server have different database connection schemes, and
+ my default approach was throwing errors until I explicitly
+ tested for the console.
+
 ## April 2017
 
  flask-peewee deprecated ?

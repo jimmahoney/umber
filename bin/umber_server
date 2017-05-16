@@ -10,6 +10,7 @@ pkill -f flask
 # start new background (http? https?) web server
 python -B -m flask run
 
+## ... an older version of flask
 # cd src
 # python umber.py     &
 # python umber.py ssl &

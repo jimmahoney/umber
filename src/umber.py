@@ -18,20 +18,21 @@
    $ umber_server
 
    with a browser, visit urls like
-     https://localhost:8443/test
-     http://localhost:8080/umber/demo/home
+     http://127.0.0.1:5000/test
+     http://127.0.0.1:5000/umber/demo/home
 
  Also see
    ./README.md, src/*, database/*, and docs/history.txt .
-   http://flask.pocoo.org/docs/0.11/api/ .
+   http://flask.pocoo.org/docs/0.12/api/ .
 
  For production, at least change the TEST & DEBUG tags in
    src/umber.py
    src/config.py
    env/activate
- And get SSL working, eh?
+   
+ FIXME : get https working.
  
- Jim Mahoney | mahoney@marlboro.edu | June 2013 | MIT License
+ Jim Mahoney | mahoney@marlboro.edu | May 2017 | MIT License
 """
 import sys, re, os
 
@@ -46,7 +47,7 @@ from settings import http_port, https_port, \
      os_root, os_base, os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
-from utilities import ActionHTML
+from utilities import ActionHTML, in_console
 from markup import markup, nav_content
 
 app = Flask('umber',
@@ -103,9 +104,11 @@ def template_context():
 def before_request():
     """ initialize database and session """
 
-    # See http://docs.peewee-orm.com/en/latest/peewee/database.html
-    # FIXME : this gives "connection already open" error in console start.
-    #db.connect()
+    # See http://docs.peewee-orm.com/en/latest/peewee/database.html .
+    # This gives "connection already open" error if in console.
+    # The current (kludgy) fix is to test for the console explicitly.
+    if not in_console():
+        db.connect()
 
     # See PERMANENT_SESSION_LIFETIME in config.py
     session.permanent = True

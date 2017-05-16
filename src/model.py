@@ -625,7 +625,6 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
-
 # ------------------------------------------------------
 # peewee database notes
 #
@@ -681,13 +680,18 @@ if __name__ == '__main__':
 #    And then used that pwiz_model.py code as a starting point.
 #
 # * __init__() => prepared()
+#
 #    To extend their classes, the __init__ method is problematic
 #    because it runs before the field data has been loaded.
 #    Peewee data classes have a prepared() method which
 #    is called after that data is loaded ... which is
 #    the right place to put what would otherwise go in __init__.
 #
+#    For example, in Course.prepared I construct a course.username_to_role
+#    dictionary that's is used for who's in the course and their permissions.
+#
 # * transactions
+#
 #    See http://docs.peewee-orm.com/en/latest/peewee/transactions.html :
 #    peewee has some syntax for marking blocks as atomic
 #    However, peewee's sqlite egine, based on pysql, is autocommit
@@ -706,11 +710,13 @@ if __name__ == '__main__':
 #    and doesn't require a function definition.
 #
 # * get
+#
 #    peewee spells "find" as "get".
 #    In other ORMs, get seems to often be only "get by id",
 #    whereas find() or fetch() is by select() specifications.
 #
 # * flask
+#
 #    See docs.peewee-orm.com/en/latest/peewee/playhouse.html#flask-utils .
 #    "automatically set up request ... handlers to ensure your connections
 #    are managed properly"

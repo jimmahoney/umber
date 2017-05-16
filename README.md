@@ -14,10 +14,10 @@ development testing
     $ umber_test          # run software tests
 
     $ umber_console       # interact with database from command line
-    >>> demo
+    >>> democourse
     <Course name='Demo Course' ...>
-    >>> demo.assignments
-    >>> demo.persons
+    >>> democourse.assignments
+    >>> democourse.persons
     >>> john = Person.get(username='johnsmith')
     <Person name = 'Johnny Smith' ...>
 

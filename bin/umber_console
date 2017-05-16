@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Set an environment flag to indicate that this process is in the console.
+export UMBER_CONSOLE=True
+
 # Is the project environment setup?
 : ${UMBER_ROOT:?"Setup environment with 'source env/activate' first."}
 cd $UMBER_ROOT   # Set the working folder to the project root.
