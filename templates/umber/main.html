@@ -2,39 +2,22 @@
 {% autoescape false %} {# i.e. don't turn < into &lt; #}
 <html>
 <head>
-    <title>{{ page.title }}</title>
-    <meta charset="utf-8">
-    <link rel="icon" type="image/gif" 
-          href="{{static_url('images/favicon.ico')}}">
-    <link rel="stylesheet" type="text/css" 
-          href="{{static_url('styles/umber.css')}}">
+  <title>{{ page.title }}</title>
+  <meta charset="utf-8">
+  <link rel="icon"
+	type="image/gif"
+	href="{{static_url('images/favicon.ico')}}">
+  <link rel="stylesheet"
+	type="text/css" 
+        href="{{static_url('styles/umber.css')}}">
 </head>
 <body>
-
-{% if true %}
-<div id="header">                          <!-- start header -->
-    <a id="cs-logo" href="/"><img 
-        src="{{static_url('images/cs_m_edu.png')}}" 
-	alt="computer science @ marlboro.edu" /></a>
-
-    {% include 'umber/login.html' %}
-
-{#
-    
-    {% if user.is_authenticated() %}
-        {% include 'umber/after_login.html' %}
-    {% elif request.is_secure or page.allow_insecure_login %}
-        {% include 'umber/form_login.html' %}
-    {% else %}
-        {% include 'umber/before_login.html' %}
-    {% endif %}
-
-#}
-
-
-    
-</div>                                     <!-- end header -->
-{% endif %}
+<div id="header">  <!-- start header -->  
+  <a id="cs-logo" href="/"><img 
+     src="{{static_url('images/cs_m_edu.png')}}" 
+     alt="computer science @ marlboro.edu" /></a>
+  {% include 'umber/login.html' %}
+</div>             <!-- end header -->
 
 {% if true %}
 {% include 'umber/actions.html' %} 
@@ -58,7 +41,7 @@
     {% if page.has_error %}
       {% include 'umber/error.html' %}
     {% endif %}
-  {% include 'umber/work.html' %}
+  {# {% include 'umber/work.html' %} #}
   {% include 'umber/content.html' %}
   <div id="modified">
     {{ page.uri_links }}<br />

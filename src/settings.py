@@ -42,6 +42,8 @@ https_port = 8433
 timezone = 'US/Eastern'
 timezoneoffset = '-05:00'  # for ISO GMT strings
 
+admin_email = '<a mailto:"mahoney@marlboro.edu">Jim Mahoney</a>' 
+
 def _get_os_root():
     """ Return absolute path to project folder, without trailing slash."""
     # i.e. the folder above src/ which is what this settings.py file is in.

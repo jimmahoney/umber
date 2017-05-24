@@ -1,1 +1,7 @@
-- content -
+{% if not page.can['read'] %}
+ {% include 'umber/forbidden.html' %}
+{% else %}
+ -- content --
+{% endif %}
+
+

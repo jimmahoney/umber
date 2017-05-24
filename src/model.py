@@ -46,6 +46,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 import os, yaml, arrow
+from markdown2 import markdown
 
 db = SqliteDatabase(db_path)
 

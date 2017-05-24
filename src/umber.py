@@ -43,7 +43,7 @@ from flask import Flask, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask_login import LoginManager, login_user, logout_user, current_user
 from flask import render_template
-from settings import http_port, https_port, \
+from settings import http_port, https_port, admin_email, \
      os_root, os_base, os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
@@ -113,6 +113,9 @@ def before_request():
     # See PERMANENT_SESSION_LIFETIME in config.py
     session.permanent = True
 
+    # site settings
+    g.admin_email = admin_email
+    
     # Set information to be passed to the template engine as in
     # stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask
     #

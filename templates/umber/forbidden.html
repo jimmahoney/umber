@@ -1,0 +1,27 @@
+<h1>Forbidden</h1>
+<div>
+{% if not user.is_authenticated() %}
+ <p>Try logging in first at the top right of this window.</p>
+{% else %}
+ <p>You don't have enough privileges to access this page.</p>
+{% endif %}
+<table class="layout">
+<tr>
+ <td>page</td>
+ <td><span class='emphasize'>{{ page.path }}</span></td>
+</tr>
+<tr>
+ <td>course</td>
+ <td><span class='emphasize'>{{ course.name }}</span></td>
+</tr>
+<tr>
+ <td>role</td>
+ <td><span class='emphasize'>{{ page.user_role.name }}</span></td>
+</tr>
+<tr>
+ <td>user</td>
+ <td><span class='emphasize'>{{ user.username }}</span></td>
+</tr>
+</table>
+<p>For more information contact {{ g.admin_email | safe }}.</p>
+</div>
