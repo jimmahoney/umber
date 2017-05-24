@@ -6,7 +6,7 @@
  So the "login" doesn't need to point at secure_url :
  everything will be secure.
 
- 
+ ... and login works! 
 
 ## May 19
 
