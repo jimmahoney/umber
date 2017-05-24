@@ -1,5 +1,20 @@
 # umber development history #
 
+## May 23
+
+ I think that when hosted I will have everything be ssl.
+ So the "login" doesn't need to point at secure_url :
+ everything will be secure.
+
+ 
+
+## May 19
+
+ ssl : typically in hosting setup;
+       see for example https://jslvtr.com/using-https-with-your-flask-app/
+
+ "flash" is the flask message passing system;
+
 ## May 15 2017
 
  Back to a working state , at least on hardmaple :
@@ -12,6 +27,8 @@
    (umber)$ umber_server
        http://127.0.0.1:5000/test
        http://127.0.0.1:5000/umber/demo/home
+
+   $ git commit -m "back in a working state"
 
  Now running with flask 0.12.1 & python 2.7.13 ;
  see env/environment for all the specifics.

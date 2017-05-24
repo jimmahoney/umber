@@ -3,6 +3,7 @@
  utilities.py
 """
 import os
+import urlparse
 
 class ActionHTML(object):
     """ Return
@@ -25,6 +26,13 @@ class ActionHTML(object):
             self.link = {'edit' : 'edit',
                          'history' : 'history' }
 
+
+def split_url(urlpath):
+    """ Given e.g. 'foo/bar/baz.html?this=that&color=red', 
+        return ('foo/bar/baz', '.html', '?this=that&color=red') """
+    (scheme, netloc, path, query, fragment) = urlparse.urlsplit(urlpath)
+    (base, ext) = os.path.splitext(path)
+    return (base, ext, query)
 
 def in_console():
     """ Return True if current environement is the flask console """

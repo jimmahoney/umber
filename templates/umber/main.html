@@ -16,6 +16,11 @@
     <a id="cs-logo" href="/"><img 
         src="{{static_url('images/cs_m_edu.png')}}" 
 	alt="computer science @ marlboro.edu" /></a>
+
+    {% include 'umber/login.html' %}
+
+{#
+    
     {% if user.is_authenticated() %}
         {% include 'umber/after_login.html' %}
     {% elif request.is_secure or page.allow_insecure_login %}
@@ -23,6 +28,11 @@
     {% else %}
         {% include 'umber/before_login.html' %}
     {% endif %}
+
+#}
+
+
+    
 </div>                                     <!-- end header -->
 {% endif %}
 

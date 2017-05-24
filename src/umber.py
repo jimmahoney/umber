@@ -47,7 +47,7 @@ from settings import http_port, https_port, \
      os_root, os_base, os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
-from utilities import ActionHTML, in_console
+from utilities import ActionHTML, in_console, split_url
 from markup import markup, nav_content
 
 app = Flask('umber',
@@ -118,7 +118,7 @@ def before_request():
     #
     # Test passing parameters.
     session['test'] = 'testing session'       # request thread variable
-    g.alpha = 'beta'                          # a global variable
+    g.alpha = 'beta'                          # test global variable
 
 @app.teardown_request
 def after_request(exception=None):
@@ -126,11 +126,14 @@ def after_request(exception=None):
     
 @app.route('/test')
 def testroute():
-    # The variables that Flask makes available by default within templates
-    # (See http://flask.pocoo.org/docs/templating/ )
-    #    config (jinja2), context (mako)
-    #    g, request, session, current_user (both)
-    # See @app.context_processor (above) where custom template vars can be set.
+    # The variables that Flask makes available by default within templates;
+    # see http://flask.pocoo.org/docs/templating/ .
+    # The global variables are :
+    #    config, g, request, session, current_user, get_flashed_messages()
+    # Also see @app.context_processor (above) for custom template variables.
+    # ( I've looked at two templating engines: jinja2 & mako;
+    #   The choice as of May 2017 is jinja2 due to better flask integration.
+    #   mako globlas hvae 'context' instead of 'config'; otherwise the same.)
     return render_template('test/test.html',   # template 
                            test1 = 'George',   # variables
                            test2 = 'foobar'
@@ -140,19 +143,30 @@ def testroute():
 def mainroute(pagepath):
 
     print_debug(' mainroute: pagepath = "{}"'.format(pagepath))
+    print_debug(' mainroute: request.url = "{}"'.format(request.url))
+    print_debug(' mainroute: request.args = "{}"'.format(request.args))
     print_debug(' mainroute: current_user = {}'.format(current_user))
 
     # -- testing session & cookie ---    
     #print_debug(' mainroute: session = {}'.format(session))
-    #color = raw_input(' ... session color = ')
+    #color = 'red'
     #if color != '':
-    #    session['color'] = color
+    #    session['color'] = colorrequ
     # -------------------------------
 
-    # If the url is e.g. 'foo.markdown', redirect to canonical form 'foo'.
-    if len(pagepath) > 9 and pagepath[-9:] == '.markdown':
-        print_debug('redirecting to .markdown')
-        return redirect(url_for('mainroute', pagepath=pagepath[:-9]))
+    # If the url ends in e.g. 'foo.markdown' or 'foo.md',
+    # redirect to canonical page url 'foo'.
+    # (Note that other extensions e.g. .html and .txt are also
+    # inferred if not given, but not redirected as these "built-in" ones are.)
+    (basepath, extension) = os.path.splitext(pagepath)
+    if extension in ('.md', '.markdown'):
+        (ignore1, ignore2, query) = split_url(request.url)
+        redirect_url = '/' + url_basename + '/' + basepath
+        if query:
+            redirect_url += '?' + query
+        print_debug('redirecting to "{}"'.format(redirect_url))
+        return redirect(redirect_url)
+        #return redirect(url_for('mainroute', pagepath=redirect_to))
     
     # Get the corresponding Page object and its file settings.
     #
@@ -164,8 +178,11 @@ def mainroute(pagepath):
         print_debug('redirecting directory to /')
         return redirect(url_for('mainroute', pagepath=pagepath) + '/')
 
+    # Store query action parameter (if any) in page.
+    page.action = request.args.get('action')
+    
     # Find the corresponding course.
-    # (Do this before access : even a "not found" or "no access"
+    # (Do this before access so that even a "not found" or "no access"
     #  will give an error that shows the course.)
     page.set_course()    # store in page.course
     page.course.url = request.url_root + url_basename + '/' + \
@@ -192,6 +209,7 @@ def mainroute(pagepath):
     request.page = page
     
     if request.method == 'POST':
+        print_debug(' mainroute: POST')
         reload_url = handle_post()
         if reload_url:
             return redirect(reload_url)
@@ -214,12 +232,13 @@ def handle_post():
     # Each form has an input field named 'submit_X' for some X,
     # and is handled by a corresponding function submit_X().
     # The data is in the Flask request global.
-    print_debug(' handle_post ... ')
     
     #try:
     keys_named_submit = filter(lambda s: re.match('submit', s),
                                    request.form.keys())
+    print_debug(' handle_post : keys = "{}" '.format(keys_named_submit))
     submit_what = keys_named_submit[0]
+    print_debug(' handle_post : submit_what = "{}" '.format(submit_what))
     # get function given its name & invoke it        
     return globals()[submit_what]()
     #except:
@@ -238,10 +257,9 @@ def submit_login():
                 .format(request.form['username']))
     user = Person.by_username(request.form['username'])
     print_debug(' submit_login: user = "{}"'.format(user))
-    if user == None or \
-       not user.check_password(request.form['password']):
+    if user == None or not user.check_password(request.form['password']):
         flash('Oops: wrong username or password.')
-        return None
+        return url_for('mainroute', pagepath=request.page.path, action='login')
     else:
         user.logged_in = True
         login_user(user)
@@ -250,38 +268,5 @@ def submit_login():
         # next = request.args.get('next')
         # print ' submit_login: next request = {}'.format(next)
         #
-        return request.base_url
-
-# ---- older code - delete when things are stable  ----------------
-#
-# -- config has changed in 0.11 ... see app.config at top of file
-# def app_setup():
-#    app.secret_key = secret_key
-#    app.session_cookie_name = 'umber_session'
-#    app.permanent_session_lifetime = datetime.timedelta(days=1)
-#    
-# app_setup()
-#
-# -- invocation has changed in flask 0.11 ... still exploring
-#    how things work with "flask run" and "flask shell"
-#    at the command line; see umber_server and umber_shell
-#
-#    $ cd umber
-#    $ export FLASK_APP=src/umber.py
-#    $ export FLASK_DEBUG=1
-#    $ flask run    OR       flask shell
-#
-# --- invocation was this in an earlier version of flask ---
-#  
-# if __name__ == '__main__':
-#     if len(sys.argv) > 1 and sys.argv[1] == 'ssl':
-#         app.run(host = '0.0.0.0',
-#                 port = https_port,
-#                 debug = True,
-#                 ssl_context = ssl_context)
-#     else:
-#         app.run(host = '0.0.0.0',
-#                 port = http_port,
-#                 debug = True,
-#                 )
+        return url_for('mainroute', pagepath=request.page.path)
 

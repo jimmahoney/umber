@@ -383,7 +383,7 @@ class Page(BaseModel):
          """
         self.abspath = os.path.join(os_base, self.path)
         if not os.path.exists(self.abspath):
-            for ext in ('.markdown', '.wiki', '.txt'):
+            for ext in ('.md', '.markdown', '.wiki', '.txt'):
                 if os.path.exists(self.abspath + ext):
                     self.abspath = self.abspath + ext
         (ignore, self.ext) = os.path.splitext(self.abspath)

@@ -5,7 +5,13 @@
   <li class="rest">pass <input name="password" type="password" size="16"  /></li>
   <li class="rest"><input name="submit_login" type="submit" value="log in"/></li>
  </ul>
- <div class="error">{{ message() }}</div>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+ <div class="error"> {{ messages[0] }} </div>
+    {% else %}
+ <div class="error"> &nbsp; </div>
+    {% endif %}
+  {% endwith %}
 </form>
 </div>           <!-- end login -->
 
