@@ -1,1 +1,5 @@
-- footer -
+<ul>
+<li><a href="{{ g.about_copyright_url | safe }}">about these pages and ©</a></li>
+<li><a href="{{ page.url_for_print_version() | safe }}">printable version</a>
+<li>{{ g.now.isodate() }}</li>
+</ul>

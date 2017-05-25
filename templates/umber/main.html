@@ -44,7 +44,7 @@
   {# {% include 'umber/work.html' %} #}
   {% include 'umber/content.html' %}
   <div id="modified">
-    {{ page.uri_links }}
+    {{ page.breadcrumbs | safe}}
   {% if page.lastmodified %}
     <br /> last modified {{ page.lastmodified.daydatetime() }}
   {% endif %}
@@ -52,7 +52,7 @@
  </div>                                       <!-- end component -->
  {% include 'umber/attachments.html' %}
  <div class="footer">                         <!-- start footer -->
-   {% include 'umber/footer.html' %}
+   {% include 'umber/footer.html' | safe %}
  </div>                                       <!-- end footer -->
 </div>                                      <!-- end column-two -->
 {% endif %}

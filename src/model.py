@@ -41,7 +41,8 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-from settings import db_path, timezone, timezoneoffset, os_base
+from settings import db_path, timezone, timezoneoffset, os_base, \
+              protocol, host, url_basename
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
@@ -86,8 +87,10 @@ class Time(object):
     def date(self):
         """ Return as e.g. 'May 09 2013' """
         return self.arrow.format('MMMM DD YYYY')
+    def isodate(self):
+        return self.arrow.format('YYYY-MM-DD')
     def daydatetime(self):
-        """ Return as e.g. 'Sun May 9 2013 4:10 pm' """
+        """ Return as e.g. 'Sun May 9 2013 4:10 pm EST' """
         return self.arrow.format('ddd MMMM D YYYY h:mm a')
     def slashes(self):
         """ Return as e.g. '06/09/13' """
@@ -269,7 +272,7 @@ class Page(BaseModel):
     #  then for the 'notes/week1' file within a course at 'fall/math' ,
     #  the parts are
     #    url:  http://localhost:8090/  umber    /  fall/math / notes/week1
-    #                 host             url_base    path...................
+    #          protocol  host          url_base    path...................
     #    file: /Users/mahoney/academics/umber/courses / fall/math / notes/week1
     #          os_base                                  path...................
     #  Following python's os.path phrasing, other terms used here are
@@ -385,8 +388,9 @@ class Page(BaseModel):
                     self.user_role = Role.by_name('admin')
 
     def _setup_file_properties(self):
-        """ given self.path,
-            set self.absfilename, self.exists, self.isfile, self.isdir,
+        """ given self.path, set a bunch of information about the file
+            including self.absfilename, self.exists, self.isfile, self.isdir,
+            self.lastmodified, self.breadcrumbs
          """
         self.abspath = os.path.join(os_base, self.path)
         if not os.path.exists(self.abspath):
@@ -401,8 +405,22 @@ class Page(BaseModel):
             self.lastmodified = None
         self.isfile = os.path.isfile(self.abspath)
         self.isdir = os.path.isdir(self.abspath)
-        # --- FIXME ---
-        self.uri_links = '-- breadcrumbs --'   
+        # -- build url links for page breadcrumbs --
+        ## request.base_url should have also have this page's url.
+        ## But here instead I'm building it from what's defined in settings.py,
+        ## namely (protocol, host, url_basename), along with self.path.
+        url_list = [url_basename] + self.path.split('/')
+        urlsofar = protocol + '://' + host
+        self.breadcrumbs = '<a href="{}">{}</a>'.format(urlsofar, urlsofar)
+        while url_list:
+            pathpart = '/' + url_list.pop(0)
+            urlsofar += pathpart
+            self.breadcrumbs += '&nbsp;' + '<a href="{}">{}</a>'.format(
+                urlsofar, pathpart)
+
+    def url_for_print_version(self):
+        return protocol + '://' + host + \
+          '/' + url_basename + '/' + self.path + '?print=1'
 
     def content_as_html(self):
         """ Return markdown or wiki file converted to html. """

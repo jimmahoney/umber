@@ -36,8 +36,10 @@ import sys, os
 url_basename = 'umber'   # URL prefix for umber courses
 os_basename = 'courses'  # course folder within project folder os_root
 
-http_port = 8080
-https_port = 8433
+host = '127.0.0.1:5000'  # host:port      : for constructing breadcrumb url
+protocol = 'http'        # http | https   : 
+
+about_copyright_url = 'http://FIXME'
 
 timezone = 'US/Eastern'
 timezoneoffset = '-05:00'  # for ISO GMT strings
