@@ -5,7 +5,7 @@ This is a demonstration course for the Wikiacademia web application.
 To explore you'll need to log in as either a faculty
 member, student, or guest using one of the accounts listed below.
 Check out the [assignments](~/special/assignments) page for suggestions of things
-to try, and the <a href="help page"> for assistance.
+to try, and the [help page](/help_page_url) for assistance.
 
 Regards,
 

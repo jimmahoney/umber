@@ -44,9 +44,9 @@
   {# {% include 'umber/work.html' %} #}
   {% include 'umber/content.html' %}
   <div id="modified">
-    {{ page.uri_links }}<br />
-  {% if page.has_lastmodified %}
-    last modified {{ page.lastmodified }}
+    {{ page.uri_links }}
+  {% if page.lastmodified %}
+    <br /> last modified {{ page.lastmodified.daydatetime() }}
   {% endif %}
   </div>
  </div>                                       <!-- end component -->

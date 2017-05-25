@@ -1,7 +1,7 @@
 {% if not page.can['read'] %}
  {% include 'umber/forbidden.html' %}
+{% elif page.isdir %}
+ {% include 'umber/folder.html' %}
 {% else %}
- -- content --
+ {{ page.content_as_html() | safe }}
 {% endif %}
-
-

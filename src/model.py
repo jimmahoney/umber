@@ -45,8 +45,8 @@ from settings import db_path, timezone, timezoneoffset, os_base
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
-import os, yaml, arrow
-from markdown2 import markdown
+import os, subprocess, yaml, arrow
+from markup import markdown2html
 
 db = SqliteDatabase(db_path)
 
@@ -64,6 +64,9 @@ class Time(object):
     # For time differences, subtract two of these (given a datetime.timedelta)
     # and then use .seconds, .total_seconds(), .resolution etc.
     #
+    # The string format is like that described
+    # at http://momentjs.com/docs/#/displaying/format/
+    
     def __init__(self, *args, **kwargs):
         """ With no arguments, returns the 'now' time. """
         # And if the arg is just e.g. '2015-01-02', add utc 'T12:00:00-05:00'
@@ -80,9 +83,12 @@ class Time(object):
     def human(self):
         """ Return in human friendly form, e.g. 'seconds ago'"""
         return self.arrow.humanize()
-    def month_day_year(self):
+    def date(self):
         """ Return as e.g. 'May 09 2013' """
         return self.arrow.format('MMMM DD YYYY')
+    def daydatetime(self):
+        """ Return as e.g. 'Sun May 9 2013 4:10 pm' """
+        return self.arrow.format('ddd MMMM D YYYY h:mm a')
     def slashes(self):
         """ Return as e.g. '06/09/13' """
         return self.arrow.format('MM/DD/YY')
@@ -384,13 +390,29 @@ class Page(BaseModel):
          """
         self.abspath = os.path.join(os_base, self.path)
         if not os.path.exists(self.abspath):
-            for ext in ('.md', '.markdown', '.wiki', '.txt'):
+            for ext in ('.md', '.markdown', '.wiki'):
                 if os.path.exists(self.abspath + ext):
                     self.abspath = self.abspath + ext
         (ignore, self.ext) = os.path.splitext(self.abspath)
         self.exists = os.path.exists(self.abspath)
+        if self.exists:
+            self.lastmodified = Time(os.stat(self.abspath).st_mtime)
+        else:
+            self.lastmodified = None
         self.isfile = os.path.isfile(self.abspath)
         self.isdir = os.path.isdir(self.abspath)
+        # --- FIXME ---
+        self.uri_links = '-- breadcrumbs --'   
+
+    def content_as_html(self):
+        """ Return markdown or wiki file converted to html. """
+        with open(self.abspath, 'r') as _file:
+            content = _file.read()
+        if self.ext in ('.md', '.markdown'):
+            return markdown2html(content)
+        if self.ext == '.wiki':
+            return subprocess.check_output(['wiki2html', self.abspath])
+        return '<h2> Oops : unsupported file type "{}"'.format(self.ext)
         
     @classmethod
     def get_from_path(cls, path):

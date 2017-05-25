@@ -1,0 +1,82 @@
+= Feb 9 =
+
+=== homework ===
+
+I've attached some answers to the textbook problems. 
+
+For the moby dick problem, my answers from a previous year are at
+
+* http://cs.marlboro.edu/courses/spring2014/information/code/entropy/analyze_mobydick/moby.html
+
+It would be good to discuss this, and in particular the issues with using long strings to try to estimate the entropy. In this case, the theory and the simple applications of the formulas run into some problems, since moby dick is big but no so big that the statistics of long strings are robust. In general, if we want use a model of probability based on strings of length n, and we want to estimate those probabilities by counting, then we need to a significant population of those strings. For strings of length 2, if we approximate the number of different symbols as 100, then there are 100*100 = 1e4 = 10k different 2-character strings. To put one each into a file would take 2*10k = 20k bytes. Moby dick is a lot longer than that, so counting should work to give a probability model for those 2 byte strings. But for, say, 10 byte strings, there are (100)**10 = 10**20 of those. To write each one once would take a file of length 10**21 bytes. A GB (gigabyte) is 10**9, so this is a hundred billion GB ... oops. That implies that by counting how many times each of those happens in moby dick may not give us a good enough sample to know the probabilities in (say) the English language, and so our entropy calculation is leaving out a lot of the cases. This is the same reason that if you take the whole file as one symbol, with probability 1, the entropy of that model is 0. So ... we can only use a few characters to get a probability model, and whether or not that gives the same compression factor as our various algorithms isn't obvious. Finding the "true" entropy here (whatever that means in this case) is not trivial.
+
+== coming attractions ==
+
+Midterm is coming up soon.
+
+I would like to propose that for a midterm project, you each pick one compression algorithm to implement, test, and discuss, using the entropy ideas we've been developing. I haven't set a due date for that yet, but keep it in mind.
+
+== lossy compression ==
+
+Next topic: lossy compression algorithms.
+
+General idea: through away information to get even 
+better compression.  Particularly if our senses
+(sight or hearing) can barely tell the difference anyway.
+So generally useful for pictures, sounds, and video.
+
+Exercise: estimate how much bandwidth your senses use for 
+* audio (bits/sec)
+* video (bits/sec)
+* still image (bits)
+
+Overview : https://en.wikipedia.org/wiki/Lossy_compression
+
+File details: codec vs container
+
+=== jpeg ===
+* [[wikipedia: JPEG]]
+
+ Basic idea (from wikipedia article) :
+ 1. RGB to YCbCr (brightness, 2 chroma)
+ 2. reduce resolution of chromas
+ 3. discrete cosine transform on 8x8 pixel blocks
+ 4. reduce resolution of higher spatial frequencies
+ 5. lossless coding via variation of huffman
+
+The "quality" setting effects step 4, particularly.
+
+Color :
+
+ Using constants Kb and Kr, and letting (R,G,B) range 0 to 1
+ the color transformation is :
+   Y   = Kr*R + Kb*B + (1-Kr-Kb)*G
+   Pb  = 0.5 * ( B - Y ) / (1 - Kb)
+   Pr  = 0.5 * ( R - Y ) / (1 - Kr)
+ A typical value for the constants is Kb=0.0722, Kr=0.2126
+
+30 times smaller without much loss in photo quality is typical.
+
+=== audio ===
+
+* http://en.wikipedia.org/wiki/Vorbis
+* http://en.wikipedia.org/wiki/Modified_discrete_cosine_transform
+
+50 times smaller is not unusual.
+
+=== video ===
+
+... (coming)
+
+
+JPEG images, 
+compressed another 30 times or so across time, for a total of 1000 times or so (compared to uncompressed video).
+
+Here are some readings to get you going :
+
+* http://en.wikipedia.org/wiki/Jpeg
+* http://en.wikipedia.org/wiki/Discrete_cosine_transform
+* http://en.wikipedia.org/wiki/Fourier_transform
+* http://en.wikipedia.org/wiki/Discrete_Fourier_transform
+
+There's a bunch of cool linear algebra that goes along with this stuff; we'll see how much we want to do.

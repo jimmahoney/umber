@@ -48,7 +48,7 @@ from settings import http_port, https_port, admin_email, \
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import ActionHTML, in_console, split_url
-from markup import markup, nav_content
+from markup import nav_content
 
 app = Flask('umber',
             static_folder=os_static,
@@ -96,9 +96,8 @@ def template_context():
                 # python functions imported into jinja2 template context
                 dir = dir,                # built-in python function dir()
                 pwd = os.getcwd,
-                nav_content = nav_content,
-                markup = markup
-                )
+                nav_content = nav_content
+               )
 
 @app.before_request
 def before_request():
@@ -157,12 +156,10 @@ def mainroute(pagepath):
     #    session['color'] = colorrequ
     # -------------------------------
 
-    # If the url ends in e.g. 'foo.markdown' or 'foo.md',
-    # redirect to canonical page url 'foo'.
-    # (Note that other extensions e.g. .html and .txt are also
-    # inferred if not given, but not redirected as these "built-in" ones are.)
+    # If the url is ('foo.markdown', 'foo.md', 'foo.wiki'),
+    # redirect to canonical url 'foo'.
     (basepath, extension) = os.path.splitext(pagepath)
-    if extension in ('.md', '.markdown'):
+    if extension in ('.md', '.markdown', '.wiki'):
         (ignore1, ignore2, query) = split_url(request.url)
         redirect_url = '/' + url_basename + '/' + basepath
         if query:
@@ -172,7 +169,6 @@ def mainroute(pagepath):
         #return redirect(url_for('mainroute', pagepath=redirect_to))
     
     # Get the corresponding Page object and its file settings.
-    #
     page = Page.get_from_path(pagepath)
     print_debug(' mainroute: page.abspath = {}'.format(page.abspath))
 

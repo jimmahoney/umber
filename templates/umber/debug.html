@@ -26,7 +26,11 @@
     &nbsp; page.isfile = {{page.isfile }} <br>
     &nbsp; page.isdir = {{page.isdir }} <br>
     &nbsp; page.exists = {{page.exists }} <br>
-    {# &nbsp; page.lastmodified = {{page.lastmodified }} <br> #}
+    {% if page.lastmodified %}
+      &nbsp; page.lastmodified = {{ page.lastmodified }} <br>
+    {% else %}
+      &nbsp; page.lastmodified = {{ page.lastmodified.daydatetime() }} <br>
+    {% endif %}
     <br>
     &nbsp; page.access = {{page.access }} <br>
     &nbsp; page.can['read'] = {{page.can['read'] }} <br>

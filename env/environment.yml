@@ -43,8 +43,11 @@
 #   $ conda update  <package>
 #   $ conda update --all --dry-run
 #
+# A perl compiler is also required for bin/wiki2html .
+#
 # Tested on osx-64 (MacOS 10.11.4)
-# Jim Mahoney | cs.marlboro.edu | April 2016
+#
+# Jim Mahoney | cs.marlboro.edu | May 2017
 ###############################################
 
 # syntax notes:  version wildcards e.g. 2.6.* are allowed;
@@ -109,8 +112,3 @@ dependencies:
   - python-dateutil==2.6.0
   - smmap==0.9.0
   - smmap2==2.0.1
-
-
-
-
-

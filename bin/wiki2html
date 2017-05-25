@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+###################
+#
+# wiki2html
+#
+# Convert .wiki markup to .html formatting using my wikiacademia engine.
+#
+# command line usage : 
+#
+#   $ wiki2html filename.wiki > filename.html
+#
+# within a python program usage :
+#
+#   > import subprocess
+#   > html = subprocess.check_output(['wiki2html', 'filename.wiki'])
+#
+# This file must be in the process PATH for those examples to work.
+# Tested with perl v5.18.2
+#
+# Jim Mahoney | cs.marlboro.edu | MIT License | May 2017
+######
+
+use File::Basename;         # Include this file's folder 
+use lib dirname (__FILE__); # in the module search path.
+
+use JimWiki '_wiki2html';    # Load wiki2html from JimWiki.pm in this folder.
+
+my $filename = $ARGV[0];
+
+open(my $filehandle, '<', $filename) or die;
+$/ = undef;      # No end of line => slurp whole files.
+my $input = <>;  # Slurp stdin.
+close($filehandle);
+
+my $output = _wiki2html($input);
+print $output;

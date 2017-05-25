@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from settings import url_basename, os_root
 import re, os
 
-def markup(string):
+def markdown2html(string):
     return markdown(string,
                     extras=['code-friendly', 'fenced-code-blocks',
                             'footnotes', 'pyshell', 'tables',
