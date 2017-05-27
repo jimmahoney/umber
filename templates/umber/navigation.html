@@ -1,18 +1,24 @@
+{{ course.nav_html() }}
+
+{#
 <div>
-  <h5>site</h5>
   <div>
-    <ul>
+    <h5>site</h5>
+    <div>
+      <ul>
       <li class="select"><a href="home">home</a></li>
       <li class="unselect"><a href="syllabus">syllabus</a></li>
-    </ul>
+      </ul>
+    </div>
   </div>
-</div>
-<div>
-  <h5>admin</h5>
   <div access='admin'>
-    <ul>
+  <h5>admin</h5>
+    <div>
+      <ul>
       <li class="unselect"><a href="navigation?action=edit">edit navigation</a></li>
-    </ul>
+      </ul>
+    </div>
   </div>
 </div>
+#}
 

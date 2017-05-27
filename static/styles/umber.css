@@ -506,9 +506,9 @@ form.login {
 }
 /* box with border in column-one */
 #column-one div div div  {
-  border: solid 1px #90C0C0;
+  border: solid 1px #90C0C0;    /* was #90C0C0 */
   border-left: none;
-  background-color: #FFFFFC;    /* was white */
+  background-color: #FCFCFC;    /* was FFFFFC */
   margin: 1px;
   /* padding: .1em .5em .1em 0; */
   padding: 0;

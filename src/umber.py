@@ -48,7 +48,6 @@ from settings import admin_email, about_copyright_url, \
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import ActionHTML, in_console, split_url
-from markup import nav_content
 
 app = Flask('umber',
             static_folder=os_static,
@@ -96,7 +95,6 @@ def template_context():
                 # python functions imported into jinja2 template context
                 dir = dir,                # built-in python function dir()
                 pwd = os.getcwd,
-                nav_content = nav_content
                )
 
 @app.before_request
@@ -185,9 +183,10 @@ def mainroute(pagepath):
     # Find the corresponding course.
     # (Do this before access so that even a "not found" or "no access"
     #  will give an error that shows the course.)
-    page.set_course()    # store in page.course
-    page.course.url = request.url_root + url_basename + '/' + \
-                      page.course.path + '/'
+    ## CHANGED: now called from Page.get_from_path
+    #page.set_course()    # store in page.course
+    #page.course.url = request.url_root + url_basename + '/' + \
+    #                  page.course.path + '/'
                       
     print_debug(' mainroute: course.name = "{}"'.format(page.course.name))
     print_debug(' mainroute: course.url = "{}"'.format(page.course.url))

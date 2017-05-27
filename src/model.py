@@ -41,15 +41,24 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
+import os, subprocess, yaml, arrow, re
 from settings import db_path, timezone, timezoneoffset, os_base, \
               protocol, host, url_basename
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
-import os, subprocess, yaml, arrow
-from markup import markdown2html
+from bs4 import BeautifulSoup
+from markdown2 import markdown
 
 db = SqliteDatabase(db_path)
+
+def markdown2html(string):
+    # See https://github.com/trentm/python-markdown2
+    #     https://github.com/trentm/python-markdown2/wiki/Extras
+    return markdown(string,
+                    extras=['code-friendly', 'fenced-code-blocks',
+                            'footnotes', 'pyshell', 'tables',
+                            'cuddled-lists', 'markdown-in-html'])
 
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
@@ -251,6 +260,8 @@ class Course(BaseModel):
                                          Role.by_name('visitor'))
     
     def prepared(self):
+        """ setup this instance after it's attributes are set """
+        # This is essentially __init__ for these database objects.
         self.username_to_role = {reg.person.username : reg.role
             for reg in (Registration.select(Registration.person,
                                             Registration.role)
@@ -260,8 +271,15 @@ class Course(BaseModel):
     def os_path(self):
         return os.path.join(os_base, self.path)
 
-    def nav_os_path(self):
-        return os.path.join(self.os_path(), 'navigation.markdown')
+    def nav_page(self):
+        """ return course's navigation page """
+        # TODO: should this be cached to self._nav_page ?
+        # (Need it for both displaying and editing course's navigation page.)
+        return Page.get_from_path(self.path + '/' + 'navigation.md')
+    
+    def nav_html(self, user):
+        """ Return html for course's navigation menu for a given user"""
+        return self.nav_page().nav_content_as_html(user)
 
 class Page(BaseModel):
 
@@ -325,6 +343,10 @@ class Page(BaseModel):
         courses = list(query.execute())
         # choose the one with the longest path
         self.course = max(courses, key=lambda c: len(c.path))
+        # I'm building this without using the request,
+        # thought that information is also there.
+        self.course.url = protocol + '/' + host + '/' + \
+                          url_basename + '/' + self.course.path
 
     def _setup_access(self):
         """ Define .access dict from .access.yaml in an enclosing folder """
@@ -422,21 +444,48 @@ class Page(BaseModel):
         return protocol + '://' + host + \
           '/' + url_basename + '/' + self.path + '?print=1'
 
+    def content(self):
+        """ Return data from page if it exists and is a file. """
+        # TODO: should this be cached as self._content ?
+        if self.exists and self.isfile:
+            with open(self.abspath, 'r') as _file:
+                return _file.read()
+        else:
+            return ''
+          
     def content_as_html(self):
         """ Return markdown or wiki file converted to html. """
-        with open(self.abspath, 'r') as _file:
-            content = _file.read()
         if self.ext in ('.md', '.markdown'):
-            return markdown2html(content)
+            return markdown2html(self.content())
         if self.ext == '.wiki':
             return subprocess.check_output(['wiki2html', self.abspath])
         return '<h2> Oops : unsupported file type "{}"'.format(self.ext)
-        
+
+    def nav_content_as_html(self, user):
+        """ Return authorized parts of html & markdown at html . """
+        # Each course has a menu navigation page which is a mixture of html
+        # and markdown, including access tags that look like this :
+        #    <div access='student'>
+        #    ...
+        #    </div>
+        # This method converts the content of that file to html,
+        # keeping only the parts that this user is allowed to see.
+        parser = BeautifulSoup(self.content(), 'html.parser')
+        for role in ['admin', 'student', 'faculty', 'guest']:
+            divs = parser.find_all('div', access=role)
+            for div in divs: 
+                div['markdown'] = 1  # process markdown2 within div tag.
+            if self.user_rank < Role.by_name(role).rank:
+                for div in divs:
+                    div.extract() # remove this div from its parent parser
+        return markdown2html(str(parser))
+    
     @classmethod
     def get_from_path(cls, path):
         """ Get or create Page, set its course, init file parameters """
         (page, created) = Page.get_or_create(path=path)
         page._setup_file_properties()
+        page.set_course()   # store page's course in page.course
         return page
 
 class Assignment(BaseModel):

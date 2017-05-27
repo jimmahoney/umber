@@ -1,9 +1,13 @@
 # umber development history #
 
+todo:
+- filters : nav, link_hacks, 
+- checkout http://pythonhosted.org/Flask-Uploads/
+         & https://github.com/kirsle/flask-multi-upload
+
 ## May 24 ##
 
  adapted wiki2html from wikiacademia
-
  
 
 ## May 23
