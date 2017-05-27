@@ -48,17 +48,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
-from markdown2 import markdown
+from utilities import markdown2html
 
 db = SqliteDatabase(db_path)
-
-def markdown2html(string):
-    # See https://github.com/trentm/python-markdown2
-    #     https://github.com/trentm/python-markdown2/wiki/Extras
-    return markdown(string,
-                    extras=['code-friendly', 'fenced-code-blocks',
-                            'footnotes', 'pyshell', 'tables',
-                            'cuddled-lists', 'markdown-in-html'])
 
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
@@ -470,15 +462,39 @@ class Page(BaseModel):
         #    </div>
         # This method converts the content of that file to html,
         # keeping only the parts that this user is allowed to see.
+        self.set_user_permissions(user)
         parser = BeautifulSoup(self.content(), 'html.parser')
-        for role in ['admin', 'student', 'faculty', 'guest']:
+        #print parser.prettify()
+        #print
+        # -----------
+        for role in ['admin', 'student', 'faculty', 'guest', 'all']:
             divs = parser.find_all('div', access=role)
-            for div in divs: 
-                div['markdown'] = 1  # process markdown2 within div tag.
             if self.user_rank < Role.by_name(role).rank:
                 for div in divs:
                     div.extract() # remove this div from its parent parser
-        return markdown2html(str(parser))
+        insides = []
+        marker = '.~*#!#*~.'
+        for divm in parser.find_all('div', markdown=1):
+            contents = ''.join(divm.stripped_strings)
+            #print
+            #print 'string = "{}"'.format(contents)
+            mstring = markdown2html(contents)
+            insides.append(mstring)
+            #print 'mstring = "{}"'.format(mstring)
+            divm.string = marker
+        #print parser.prettify()
+        #print
+        # ---------
+        html = str(parser)
+        while insides:
+            inside = insides.pop(0)
+            html = html.replace(marker, inside, 1)
+        return html
+        # cleaningup up markdown2html's output
+        #parser2 = BeautifulSoup(html, 'html.parser')
+        #for p in parser2.find_all('p'):
+        #    p.extract()
+        #return str(parser2)
     
     @classmethod
     def get_from_path(cls, path):

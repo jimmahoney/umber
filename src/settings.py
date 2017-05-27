@@ -29,6 +29,12 @@
  where (os_base = os_root os_basename)
 
  See the Page class in model.py for more details.
+
+ ------------
+
+ Part of this file is also acting as flask's configuration file;
+ its path is fed to the flask app. See the config.py notes below.
+
  
 """
 import sys, os
@@ -61,7 +67,26 @@ os_src = os.path.join(os_root, 'src')
 os_template = os.path.join(os_root, 'templates')
 os_static = os.path.join(os_root, 'static')
 
-os_config = os.path.join(os_src, 'config.py')
-
 db_path = os_root + '/database/umber.db'   # absolute sqlite3 file path
+
+os_config = os.path.join(os_src, 'settings.py')  # ... this file (!)
+
+# --------------
+# os_config = os.path.join(os_src, 'config.py')
+# -------------------
+# What's below here was in config.py ,
+# and may need multiple versions for different deployment situations.
+#
+# This part is the flask configuration file ;
+# see http://flask.pocoo.org/docs/0.12/config/
+
+import datetime
+
+TESTING = True                 # TEST & DEBUG 
+DEBUG = True                   # 
+
+SECRET_KEY = 'umber seekrit'   # TEST & DEBUG 
+
+SESSION_COOKIE_NAME = 'umber_session'
+PERMANENT_SESSION_LIFETIME = datetime.timedelta(days=1)
 

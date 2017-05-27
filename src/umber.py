@@ -57,7 +57,7 @@ app.config.from_pyfile(os_config)
 login_manager = LoginManager()
 login_manager.anonymous_user = Person.get_anonymous
 login_manager.init_app(app)
-     
+
 def print_debug(message):
     if app.config['DEBUG']:
         print message

@@ -27,7 +27,7 @@
 <div id="column-one">                      <!-- start column-one -->
  <h1><a href="#"> {{ course.name_as_title }} </a></h1>
  <div><div id="semester"> {{ course.semester }} </div></div>
- {{ course.nav_html(user) }}
+ <div>{{ course.nav_html(user) | safe }}</div>
  {# include 'umber/navigation.html' #} 
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 

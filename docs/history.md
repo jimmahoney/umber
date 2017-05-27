@@ -1,9 +1,17 @@
 # umber development history #
 
-todo:
-- filters : nav, link_hacks, 
-- checkout http://pythonhosted.org/Flask-Uploads/
-         & https://github.com/kirsle/flask-multi-upload
+## May 26 ##
+
+First pass on navigation page done.
+
+TODO:
+
+ - translate course links i.e. ~/home 
+
+ - look in to uploads
+     http://pythonhosted.org/Flask-Uploads/
+     https://github.com/kirsle/flask-multi-upload
+
 
 ## May 24 ##
 

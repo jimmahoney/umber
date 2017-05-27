@@ -4,6 +4,7 @@
 """
 import os
 import urlparse
+from markdown2 import markdown
 
 class ActionHTML(object):
     """ Return
@@ -26,7 +27,14 @@ class ActionHTML(object):
             self.link = {'edit' : 'edit',
                          'history' : 'history' }
 
-
+def markdown2html(string):
+    # See https://github.com/trentm/python-markdown2
+    #     https://github.com/trentm/python-markdown2/wiki/Extras
+    return markdown(string,
+                    extras=['code-friendly', 'fenced-code-blocks',
+                            'footnotes', 'pyshell', 'tables',
+                            'cuddled-lists', 'markdown-in-html'])
+            
 def split_url(urlpath):
     """ Given e.g. 'foo/bar/baz.html?this=that&color=red', 
         return ('foo/bar/baz', '.html', '?this=that&color=red') """
