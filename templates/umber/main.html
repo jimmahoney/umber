@@ -42,7 +42,7 @@
     {% if page.has_error %}
       {% include 'umber/error.html' %}
     {% endif %}
-  {# {% include 'umber/work.html' %} #}
+  {# {% include 'umber/work.html' %} if it's a work page, put grade in #}
   {% include 'umber/content.html' %}
   <div id="modified">
     {{ page.breadcrumbs | safe}}

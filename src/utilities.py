@@ -5,6 +5,7 @@
 import os
 import urlparse
 from markdown2 import markdown
+from settings import url_basename
 
 class ActionHTML(object):
     """ Return
@@ -27,6 +28,13 @@ class ActionHTML(object):
             self.link = {'edit' : 'edit',
                          'history' : 'history' }
 
+def link_hacks(course, html):
+    """ return html with ~/ and ~~/ links translated
+        into the appropriate course and site urls """
+    html = html.replace('~/', course.url + '/')
+    html = html.replace('~~/', '/' + url_basename + '/')
+    return html
+            
 def markdown2html(string):
     # See https://github.com/trentm/python-markdown2
     #     https://github.com/trentm/python-markdown2/wiki/Extras

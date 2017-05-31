@@ -26,9 +26,7 @@
     &nbsp; page.isfile = {{page.isfile }} <br>
     &nbsp; page.isdir = {{page.isdir }} <br>
     &nbsp; page.exists = {{page.exists }} <br>
-    {% if page.lastmodified %}
-      &nbsp; page.lastmodified = {{ page.lastmodified }} <br>
-    {% else %}
+    {% if page.lastmodified != None %}
       &nbsp; page.lastmodified = {{ page.lastmodified.daydatetime() }} <br>
     {% endif %}
     <br>

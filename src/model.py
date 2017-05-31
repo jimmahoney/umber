@@ -48,7 +48,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
-from utilities import markdown2html
+from utilities import markdown2html, link_hacks
 
 db = SqliteDatabase(db_path)
 
@@ -267,7 +267,7 @@ class Course(BaseModel):
         """ return course's navigation page """
         # TODO: should this be cached to self._nav_page ?
         # (Need it for both displaying and editing course's navigation page.)
-        return Page.get_from_path(self.path + '/' + 'navigation.md')
+        return Page.get_from_path(self.path + '/sys/' + 'navigation.md')
     
     def nav_html(self, user):
         """ Return html for course's navigation menu for a given user"""
@@ -419,6 +419,7 @@ class Page(BaseModel):
             self.lastmodified = None
         self.isfile = os.path.isfile(self.abspath)
         self.isdir = os.path.isdir(self.abspath)
+        self.issys = self.path[:3] == 'sys'
         # -- build url links for page breadcrumbs --
         ## request.base_url should have also have this page's url.
         ## But here instead I'm building it from what's defined in settings.py,
@@ -444,17 +445,25 @@ class Page(BaseModel):
                 return _file.read()
         else:
             return ''
-          
+
     def content_as_html(self):
         """ Return markdown or wiki file converted to html. """
-        if self.ext in ('.md', '.markdown'):
-            return markdown2html(self.content())
-        if self.ext == '.wiki':
-            return subprocess.check_output(['wiki2html', self.abspath])
-        return '<h2> Oops : unsupported file type "{}"'.format(self.ext)
+        if not self.exists:
+            return ''
+        elif self.ext in ('.md', '.markdown'):
+            html = markdown2html(self.content())
+        elif self.ext == '.wiki':
+            html = subprocess.check_output(['wiki2html', self.abspath])
+        else:
+            html = '<h2>Oops</h2> unsupported file type "{}"'.format(self.ext)
+        html = link_hacks(self.course, html)
+        return html
 
     def nav_content_as_html(self, user):
         """ Return authorized parts of html & markdown at html . """
+        #   TODO: This implementation is pretty ugly.
+        #         Perhaps just do this explicitly without BeautifulSoup?
+        #         And make some tests ...
         # Each course has a menu navigation page which is a mixture of html
         # and markdown, including access tags that look like this :
         #    <div access='student'>
@@ -464,37 +473,24 @@ class Page(BaseModel):
         # keeping only the parts that this user is allowed to see.
         self.set_user_permissions(user)
         parser = BeautifulSoup(self.content(), 'html.parser')
-        #print parser.prettify()
-        #print
-        # -----------
         for role in ['admin', 'student', 'faculty', 'guest', 'all']:
             divs = parser.find_all('div', access=role)
             if self.user_rank < Role.by_name(role).rank:
                 for div in divs:
                     div.extract() # remove this div from its parent parser
         insides = []
-        marker = '.~*#!#*~.'
+        marker = '.~*#!#*~.'  # something that won't be in the html.
         for divm in parser.find_all('div', markdown=1):
             contents = ''.join(divm.stripped_strings)
-            #print
-            #print 'string = "{}"'.format(contents)
             mstring = markdown2html(contents)
             insides.append(mstring)
-            #print 'mstring = "{}"'.format(mstring)
             divm.string = marker
-        #print parser.prettify()
-        #print
-        # ---------
         html = str(parser)
         while insides:
             inside = insides.pop(0)
             html = html.replace(marker, inside, 1)
+        html = link_hacks(self.course, html)        
         return html
-        # cleaningup up markdown2html's output
-        #parser2 = BeautifulSoup(html, 'html.parser')
-        #for p in parser2.find_all('p'):
-        #    p.extract()
-        #return str(parser2)
     
     @classmethod
     def get_from_path(cls, path):

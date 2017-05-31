@@ -1,7 +1,23 @@
-{% if not page.can['read'] %}
- {% include 'umber/forbidden.html' %}
+{% if page.issys %}
+  {% include 'umber/sys.html' %}
+{% elif not page.can['read'] %}
+  {% include 'umber/forbidden.html' %}
+{% elif not page.exists %}
+  {% if page.can['write'] %}
+    {% include 'umber/edit_file.html' %}
+  {% else %}
+    {% include 'umber/missing.html' %}
+  {% endif %}
 {% elif page.isdir %}
- {% include 'umber/folder.html' %}
+  {% if page.action == 'edit' and page.can['write'] %}
+    {% include 'umber/edit_folder.html' %}
+  {% else %}
+    {% include 'umber/folder.html' %}
+  {% endif %}
 {% else %}
- {{ page.content_as_html() | safe }}
+  {% if page.action == 'edit' and page.can['write'] %}
+    {% include 'umber/edit_file.html' %}
+  {% else %}
+    {{ page.content_as_html() | safe }}
+  {% endif %}
 {% endif %}
