@@ -47,7 +47,7 @@ from settings import admin_email, about_copyright_url, \
      os_root, os_base, os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
-from utilities import ActionHTML, in_console, split_url
+from utilities import ActionHTML, in_console, split_url, static_url, size_in_bytes
 
 app = Flask('umber',
             static_folder=os_static,
@@ -90,7 +90,7 @@ def template_context():
     #  (a) the names passed via render_template(template, name=value, ...)
     #  (b) the default Flask globals
     # Also can be more app.context_processor additions.
-    return dict(static_url = lambda f: url_for('static', filename=f),
+    return dict(static_url = static_url,
                 message = get_message,
                 # python functions imported into jinja2 template context
                 dir = dir,                # built-in python function dir()
@@ -173,7 +173,7 @@ def mainroute(pagepath):
     print_debug(' mainroute: page.abspath = {}'.format(page.abspath))
 
     # If this is a directory but doesn't end in '/', redirect to '/'.
-    if page.isdir and len(pagepath) > 0 and pagepath[-1] != '/':
+    if page.is_dir and len(pagepath) > 0 and pagepath[-1] != '/':
         print_debug('redirecting directory to /')
         return redirect(url_for('mainroute', pagepath=pagepath) + '/')
 
@@ -199,8 +199,8 @@ def mainroute(pagepath):
     print_debug(' mainroute: page can read = {}, write = {}'.format(
         page.can['read'], page.can['write']))
     print_debug((' mainroute: page exists = {},' + \
-        ' isfile = {}, isdir = {}').format(
-        page.exists, page.isfile, page.isdir))
+        ' is_file = {}, is_dir = {}').format(
+        page.exists, page.is_file, page.is_dir))
     
     page.allow_insecure_login = True           # TEST & DEBUG ONLY
 

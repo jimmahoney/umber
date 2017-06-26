@@ -1,4 +1,6 @@
-{% if page.issys %}
+{# content  #}
+{# ######## #}
+{% if page.is_sys %}
   {% include 'umber/sys.html' %}
 {% elif not page.can['read'] %}
   {% include 'umber/forbidden.html' %}
@@ -8,7 +10,7 @@
   {% else %}
     {% include 'umber/missing.html' %}
   {% endif %}
-{% elif page.isdir %}
+{% elif page.is_dir %}
   {% if page.action == 'edit' and page.can['write'] %}
     {% include 'umber/edit_folder.html' %}
   {% else %}

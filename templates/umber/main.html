@@ -12,56 +12,45 @@
         href="{{static_url('styles/umber.css')}}">
 </head>
 <body>
-<div id="header">  <!-- start header -->  
+<div id="header">
   <a id="cs-logo" href="/"><img 
      src="{{static_url('images/cs_m_edu.png')}}" 
      alt="computer science @ marlboro.edu" /></a>
   {% include 'umber/login.html' %}
-</div>             <!-- end header -->
-
-{% if true %}
+</div>
 {% include 'umber/actions.html' %} 
-{% endif %}
-
-{% if true %}
-<div id="column-one">                      <!-- start column-one -->
+<div id="column-one">
  <h1><a href="#"> {{ course.name_as_title }} </a></h1>
  <div><div id="semester"> {{ course.semester }} </div></div>
- <div>{{ course.nav_html(user) | safe }}</div>
+ <div>{{ course.nav_html(user) }}</div>
  {# include 'umber/navigation.html' #} 
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
      src="{{static_url('images/deadtree_logo.png')}}"/></a>
  </div>
-</div>                                     <!-- end column-one -->
-{% endif %}
-
-{% if true %}
-<div id="column-two">                      <!-- start column-two -->
-  <div class="component">                     <!-- start component -->
+</div>
+<div id="column-two">
+  <div class="component">
     {% if page.has_error %}
       {% include 'umber/error.html' %}
     {% endif %}
   {# {% include 'umber/work.html' %} if it's a work page, put grade in #}
   {% include 'umber/content.html' %}
   <div id="modified">
-    {{ page.breadcrumbs | safe}}
+    {{ page.breadcrumbs }}
   {% if page.lastmodified %}
     <br /> last modified {{ page.lastmodified.daydatetime() }}
   {% endif %}
   </div>
- </div>                                       <!-- end component -->
+ </div>
  {% include 'umber/attachments.html' %}
- <div class="footer">                         <!-- start footer -->
-   {% include 'umber/footer.html' | safe %}
- </div>                                       <!-- end footer -->
-</div>                                      <!-- end column-two -->
-{% endif %}
-
+ <div class="footer">
+   {% include 'umber/footer.html' %}
+ </div>
+</div>
 {% if debug %}
-    {% include 'umber/debug.html' %}
+  {% include 'umber/debug.html' %}
 {% endif %}
-
 </body>
 </html>
 {% endautoescape %}

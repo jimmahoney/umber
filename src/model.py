@@ -48,7 +48,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
-from utilities import markdown2html, link_hacks
+from utilities import markdown2html, link_hacks, static_url, \
+               ext_to_filetype, filetype_to_icon, size_in_bytes
 
 db = SqliteDatabase(db_path)
 
@@ -91,8 +92,11 @@ class Time(object):
     def isodate(self):
         return self.arrow.format('YYYY-MM-DD')
     def daydatetime(self):
-        """ Return as e.g. 'Sun May 9 2013 4:10 pm EST' """
+        """ Return as e.g. 'Sun May 9 2013 4:10 pm' """
         return self.arrow.format('ddd MMMM D YYYY h:mm a')
+    def datetime(self):
+        """ Return as fixed length e.g. 'Oct 09 2013 04:10 pm' """
+        return self.arrow.format('ddd MMM DD YYYY hh:mm a')
     def slashes(self):
         """ Return as e.g. '06/09/13' """
         return self.arrow.format('MM/DD/YY')
@@ -344,7 +348,7 @@ class Page(BaseModel):
         """ Define .access dict from .access.yaml in an enclosing folder """
         self.access = {'read':'', 'write':''}
         #try:
-        if self.isdir:
+        if self.is_dir:
             abspath = self.abspath
         else:
             abspath = os.path.dirname(self.abspath)
@@ -401,9 +405,38 @@ class Page(BaseModel):
             if self.user_role.name != 'faculty':
                     self.user_role = Role.by_name('admin')
 
+    def children(self):
+        """ return page for each file or folder below this folder """
+        result = []
+        if self.is_dir:
+            for name in os.listdir(self.abspath):
+                # loop over e.g. [u'.access.yaml', u'home.md', u'students']
+                if name[0] == '.':  # skip invisible files e.g. .access.yaml
+                    continue
+                result.append(Page.get_from_path(
+                    os.path.join(self.abspath, name)))
+        return result
+
+    def icon_url(self):
+        """ return url for icon for this file type """
+        return static_url(filetype_to_icon[self.filetype])
+
+    def formatted_name(self, width=24):
+        """ return name_with_ext string padded to width characters """
+        # This is for directory listings; see templates/umber/folder.html .
+        # If the name is too long to fit in width characters, it is just
+        # returned anyway - formatting for that line in the listing will be
+        # ugly.  Another approach would be truncate to perhaps
+        # 'very_long_name_or_som...' or 'very_lon..._end.txt' .
+        length = len(self.name_with_ext)
+        if length > width:
+            return self.name_with_ext
+        else:
+            return self.name_with_ext + ' '*(width - length)
+    
     def _setup_file_properties(self):
         """ given self.path, set a bunch of information about the file
-            including self.absfilename, self.exists, self.isfile, self.isdir,
+            including self.absfilename, self.exists, self.is_file, self.is_dir,
             self.lastmodified, self.breadcrumbs
          """
         self.abspath = os.path.join(os_base, self.path)
@@ -413,13 +446,26 @@ class Page(BaseModel):
                     self.abspath = self.abspath + ext
         (ignore, self.ext) = os.path.splitext(self.abspath)
         self.exists = os.path.exists(self.abspath)
+        self.name_with_ext = os.path.split(self.abspath)[-1]
+        self.is_file = os.path.isfile(self.abspath)
+        self.is_dir = os.path.isdir(self.abspath)
+        self.is_sys = self.path[:3] == 'sys'
         if self.exists:
-            self.lastmodified = Time(os.stat(self.abspath).st_mtime)
+            stat = os.stat(self.abspath)
+            self.lastmodified = Time(stat.st_mtime)
+            if self.is_dir:
+                self.size = None
+                self.filetype = 'directory'
+                self.name_with_ext += '/'
+            elif self.is_file:
+                self.size = stat.st_size
+                self.filetype = ext_to_filetype.get(self.ext, 'unknown')
+            else:
+                self.size = None
+                self.filetype = 'unknown'
         else:
             self.lastmodified = None
-        self.isfile = os.path.isfile(self.abspath)
-        self.isdir = os.path.isdir(self.abspath)
-        self.issys = self.path[:3] == 'sys'
+            self.size = None
         # -- build url links for page breadcrumbs --
         ## request.base_url should have also have this page's url.
         ## But here instead I'm building it from what's defined in settings.py,
@@ -437,10 +483,14 @@ class Page(BaseModel):
         return protocol + '://' + host + \
           '/' + url_basename + '/' + self.path + '?print=1'
 
+    def bytesize(self):
+        """ Return string describing size in bytes e.g. ' 13K'"""
+        return size_in_bytes(self.size)
+        
     def content(self):
         """ Return data from page if it exists and is a file. """
         # TODO: should this be cached as self._content ?
-        if self.exists and self.isfile:
+        if self.exists and self.is_file:
             with open(self.abspath, 'r') as _file:
                 return _file.read()
         else:
