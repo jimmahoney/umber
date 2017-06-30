@@ -14,8 +14,9 @@ class Git:
         self._git = sh.git.bake(_cwd=os_base)
     def add_and_commit(self, page):
         # This gets called after page is modified.
-        self._git.add(page.path)
-        self._commit('-m "user:"'.format(page.user.username), page.path)
+        self._git.add(page.abspath)
+        self._git.commit('--message=user:{}'.format(page.user.username),
+                         page.abspath)
     def log(self, page):
         # self._git.log('--date=iso', '--format=(%H,%cd,%s)', 'demo/home.md')
         pass

@@ -2,6 +2,21 @@
 
 ## June 30 ##
 
+Setting up the git repo for the course pages
+will need to done elsewhere. And if I want the
+source tree to be separate from the courses pages,
+I need to worry about what that git repo structure
+looks like later. I think that the right thing here
+will be the git submodules thingy, but I haven't
+looked into that yet. Or maybe I just put 
+the installed courses folder somewhere that isn't
+under the source code for the umber project -
+that would be simpler.
+
+Edited files are now added and committed to the git repo,
+along with a message 'user:username' that I can use
+for the web history page.
+
 basic editing of files works.
 
 Starting to think about git.
