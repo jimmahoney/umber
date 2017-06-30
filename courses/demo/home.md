@@ -1,4 +1,7 @@
-# home #
+home
+====
+
+CHANGE!
 
 This is a demonstration course for the Umber
 course management web application.  
@@ -10,7 +13,8 @@ Check out the [assignments](~/special/assignments) page for
 suggestions of things to try, and the [help page](/help_page_url)
 for more information.
 
-## demo logins ##
+demo logins
+-----------
 
     username   | passwd  | role
     ----------- ---------- -----------------------------------

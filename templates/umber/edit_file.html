@@ -1,1 +1,25 @@
-- edit file -
+<h3>editing {{page.path_no_name}}<span>{{ page.name_with_ext }}</span></h3>
+<form class="edit" name="edit" method="POST" action="{{page.url}}">
+<textarea id="edit_text" name="edit_text" cols=45 rows=20
+{% if page.exists %}
+>{{ page.content() }}</textarea>
+{% else %}
+>
+{{ page.name_underlined }}
+
+This page doesn't exist yet.
+
+To create it, replace this text with your own and click "save page."
+
+For more information check out the help blurb below.
+</textarea>
+{% endif %}
+<input type="submit" name="submit_edit" value="save page" />
+</form>
+<h2>help</h2>
+<div>
+  Format the text here with markdown and html.
+  Just plain text with blank lines between paragraphs works.
+  For examples and docs see the
+  <a href="/formatting_help.html">formatting help</a> page.
+</div>

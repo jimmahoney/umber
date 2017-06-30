@@ -166,6 +166,10 @@ select {
     vertical-align: top;
 }
 
+.thispage {
+    color: #707070;   /* current page in nav menu (others are links) */
+}
+
 /***
  * from wikimedia's monobook; not using here (yet)
  *
@@ -397,50 +401,33 @@ form.login {
 }
 #actions li {
   position: relative;
-  z-index: 2;                  /* in front of column-two */
   display: inline;
-  border: 1px solid #90C0C0;   /* green-ish */
+  border-top: 1px solid #90C0C0;   /* green-ish */
+  border-right: 1px solid #90C0C0; /* green-ish */
+  border-left: 1px solid #90C0C0;  /* green-ish */    
   border-bottom: none;
-  margin-left: 1em;            /* between tabs */
-  padding: 0 .5em 0 .5em;
+  margin-left: 1em;                /* i.e. space between tabs */
+  padding: 0 .5em 0.002em .5em;
   line-height: 1.0em;
   font-size: 100%;
   overflow: visible;
   background: #FFFFFC;    /* was white */
 }
-#actions .front-yellow {
-  border: 1px solid #F0C0C0;   /* F0C0C0 is yellowish */
-  border-bottom: none;
-}
-#actions .behind-yellow {
-  border: 1px solid #F0C0C0;   /* F0C0C0 is yellowish */
-  /* border-bottom: none; */
-  position: relative;
-  z-index: 0;
-}
+
 #actions .front { 
-  border-bottom: none;
+  z-index: 3;
 }
 #actions .behind { 
-  position: relative;
-  z-index: 0;                 /* behind column-two */
-  background-color: #F5F5F0;  /* or EAEAE1 or F1E6DA */
+  z-index: 0;
+  background-color: #F5F5F0;  
 }
-#actions .front-gap {  
-  border-bottom: none;
-  margin-left: 2em;  /* instead of 1em */
+
+#actions .front a{
+    color:black; text-decoration:none
 }
-#actions .behind-gap {  
-  position: relative;
-  margin-left: 2em;  /* instead of 1em */
-  z-index: 0;                 /* behind column-two */
+#actions .front a:hover{
+    color:black; text-decoration:none
 }
-#actions .front a{ color:black; text-decoration:none }
-#actions .front a:hover{  color:black; text-decoration:none }
-#actions .front-yellow a{ color:black; text-decoration:none }
-#actions .front-yellow a:hover{  color:black; text-decoration:none }
-#actions .front-gap a{ color:black; text-decoration:none }
-#actions .front-gap a:hover{  color:black; text-decoration:none }
 
 /* --- column 1 ------------------------------------------ */
 
@@ -705,6 +692,12 @@ form.login {
   margin: 0 0 0 1em;
   padding: 3px;
   /* border: 1px solid red; */
+}
+
+/* The "editing ... " h3 */
+.component > h3 {
+  padding-top: 0.15em;
+  padding-bottom: 0.5em;    
 }
 
 #modified {

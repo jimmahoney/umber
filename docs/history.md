@@ -1,22 +1,63 @@
 # umber development history #
 
+## June 30 ##
+
+basic editing of files works.
+
+## June 27 2017 ##
+
+Still continuing to make slow progress.
+
+The navigation page seems to working including hiding student &
+faculty parts from those not authorized.
+
+Login works and assigns roles correctly.
+
+(Though there is no ssl as of yet - I'm now thinking that this time
+all of it will be ssl through some other part of the deployment
+process.)
+
+Folder listings are also now working.
+
+The navigation page also now has the current page with an anchor link,
+as it should. (I've changed it's color to a greyish to distinguish
+better from the blue links.)
+
+However, note that the markdown urls must match the canonical form of
+those urls if the pattern matching is to do the right thing.
+
+For example links to the file demo/home.md and folder demo/notes
+should be in the nav file as
+
+ * [home](~/home)                 RIGHT
+ * [notes](~/notes/)
+
+since the cononical form of home.md is home (without the .markdown)
+and for a directory is notes/ (with the trailing slash). If
+instead the nav file is
+
+ * [home](~/home.md)              WRONG
+ * [notes](~/notes)
+
+then the links will work but redirect to "home" and "notes/"
+
+TODO : recognize these other forms.
+
 ## May 26 ##
 
 First pass on navigation page done.
 
 TODO:
 
- - translate course links i.e. ~/home 
+ - translate course links i.e. ~/home  - done.
 
- - look in to uploads
+ - look at uploads
      http://pythonhosted.org/Flask-Uploads/
      https://github.com/kirsle/flask-multi-upload
-
 
 ## May 24 ##
 
  adapted wiki2html from wikiacademia
- 
 
 ## May 23
 

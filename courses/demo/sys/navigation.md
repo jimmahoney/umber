@@ -6,6 +6,7 @@
 * [home](~/home)
 * [syllabus](~/syllabus)
 * [resources](~/resources)
+* [notes](~/notes/)
 * [class notes](~/notes/home)
 * [assignments](~/sys/assignments)
 </div>

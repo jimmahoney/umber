@@ -48,7 +48,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
-from utilities import markdown2html, link_hacks, static_url, \
+from utilities import markdown2html, link_translate, static_url, \
                ext_to_filetype, filetype_to_icon, size_in_bytes
 
 db = SqliteDatabase(db_path)
@@ -263,6 +263,9 @@ class Course(BaseModel):
                                             Registration.role)
                                     .where(Registration.course == self))}
         self.semester = Time(self.start_date).semester()
+        # url without request though that info is also in request
+        self.url = protocol + '://' + host + '/' + \
+                   url_basename + '/' + self.path
 
     def os_path(self):
         return os.path.join(os_base, self.path)
@@ -273,9 +276,10 @@ class Course(BaseModel):
         # (Need it for both displaying and editing course's navigation page.)
         return Page.get_from_path(self.path + '/sys/' + 'navigation.md')
     
-    def nav_html(self, user):
-        """ Return html for course's navigation menu for a given user"""
-        return self.nav_page().nav_content_as_html(user)
+    def nav_html(self, user, page):
+        """ Return html for course's navigation menu 
+            for a given user & a given page """
+        return self.nav_page().nav_content_as_html(user, page)
 
 class Page(BaseModel):
 
@@ -339,10 +343,6 @@ class Page(BaseModel):
         courses = list(query.execute())
         # choose the one with the longest path
         self.course = max(courses, key=lambda c: len(c.path))
-        # I'm building this without using the request,
-        # thought that information is also there.
-        self.course.url = protocol + '/' + host + '/' + \
-                          url_basename + '/' + self.course.path
 
     def _setup_access(self):
         """ Define .access dict from .access.yaml in an enclosing folder """
@@ -447,6 +447,12 @@ class Page(BaseModel):
         (ignore, self.ext) = os.path.splitext(self.abspath)
         self.exists = os.path.exists(self.abspath)
         self.name_with_ext = os.path.split(self.abspath)[-1]
+        if self.ext == '':
+            self.name = self.name_with_ext
+        else:
+            self.name = self.name_with_ext[: - len(self.ext) ]
+        self.name_underlined = self.name + '\n' + '='*len(self.name)
+        self.path_no_name = self.path[: - len(self.name) ]
         self.is_file = os.path.isfile(self.abspath)
         self.is_dir = os.path.isdir(self.abspath)
         self.is_sys = self.path[:3] == 'sys'
@@ -478,14 +484,9 @@ class Page(BaseModel):
             urlsofar += pathpart
             self.breadcrumbs += '&nbsp;' + '<a href="{}">{}</a>'.format(
                 urlsofar, pathpart)
-
-    def url_for_print_version(self):
-        return protocol + '://' + host + \
-          '/' + url_basename + '/' + self.path + '?print=1'
-
-    def bytesize(self):
-        """ Return string describing size in bytes e.g. ' 13K'"""
-        return size_in_bytes(self.size)
+        self.url = protocol+'://'+host+'/'+url_basename+'/'+self.path
+        self.url_for_print_version = self.url + '?print=1'
+        self.bytesize = size_in_bytes(self.size)
         
     def content(self):
         """ Return data from page if it exists and is a file. """
@@ -495,6 +496,13 @@ class Page(BaseModel):
                 return _file.read()
         else:
             return ''
+
+    def write_content(self, new_content):
+        """ Write new data to page's file; return number of bytes written """
+        if self.can['write']:  # shouldn't get here without this anyway
+            with open(self.abspath, 'w') as _file:
+                bytes_written = _file.write(new_content)
+        return bytes_written
 
     def content_as_html(self):
         """ Return markdown or wiki file converted to html. """
@@ -506,11 +514,13 @@ class Page(BaseModel):
             html = subprocess.check_output(['wiki2html', self.abspath])
         else:
             html = '<h2>Oops</h2> unsupported file type "{}"'.format(self.ext)
-        html = link_hacks(self.course, html)
+        html = link_translate(self.course, html)     # expand ~/ and ~~/
         return html
 
-    def nav_content_as_html(self, user):
+    def nav_content_as_html(self, user, page):
         """ Return authorized parts of html & markdown at html . """
+        # Here self is the navigation.md page.
+        #   TODO: unlinkify current page
         #   TODO: This implementation is pretty ugly.
         #         Perhaps just do this explicitly without BeautifulSoup?
         #         And make some tests ...
@@ -539,7 +549,24 @@ class Page(BaseModel):
         while insides:
             inside = insides.pop(0)
             html = html.replace(marker, inside, 1)
-        html = link_hacks(self.course, html)        
+        html = link_translate(self.course, html)
+        # If the current page is one of the links in the nav menu,
+        # that link should be unlinkified ... which I'm doing
+        # with another (ugh) pass through BeautifulSoup,
+        # now that markdown has run.
+        # -------------
+        # TODO do the right thing for file.md, file.markdown, file.html,
+        # and folder ; currently only "file" and "folder/" will work
+        # in the nav markdown; the other non-canonical with redirectrs won't.
+        # (So check other options in a loop, eh?)
+        parser = BeautifulSoup(html, 'html.parser')
+        anchor = parser.find('a', href=page.url)
+        if anchor:
+            span = parser.new_tag('span')
+            span['class'] = 'thispage'
+            span.string = anchor.string
+            parser.find('a', href=page.url).replace_with(span)
+        html = str(parser)
         return html
     
     @classmethod

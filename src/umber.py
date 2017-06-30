@@ -47,7 +47,7 @@ from settings import admin_email, about_copyright_url, \
      os_root, os_base, os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
-from utilities import ActionHTML, in_console, split_url, static_url, size_in_bytes
+from utilities import in_console, split_url, static_url, size_in_bytes
 
 app = Flask('umber',
             static_folder=os_static,
@@ -178,7 +178,8 @@ def mainroute(pagepath):
         return redirect(url_for('mainroute', pagepath=pagepath) + '/')
 
     # Store query action parameter (if any) in page.
-    page.action = request.args.get('action')
+    # The action for "no action, just show the current page" is ".".
+    page.action = request.args.get('action', '.')
     
     # Find the corresponding course.
     # (Do this before access so that even a "not found" or "no access"
@@ -219,7 +220,7 @@ def mainroute(pagepath):
                            page = page,
                            user = page.user,
                            course = page.course,
-                           actionHTML = ActionHTML(page),
+                           #actionHTML = ActionHTML(page),
                            debug = True           # TEST & DEBUG ONLY
                            )
 
@@ -236,7 +237,7 @@ def handle_post():
     #try:
     keys_named_submit = filter(lambda s: re.match('submit', s),
                                    request.form.keys())
-    print_debug(' handle_post : keys = "{}" '.format(keys_named_submit))
+    print_debug(' handle_post : submit keys = "{}" '.format(keys_named_submit))
     submit_what = keys_named_submit[0]
     print_debug(' handle_post : submit_what = "{}" '.format(submit_what))
     # get function given its name & invoke it        
@@ -244,8 +245,16 @@ def handle_post():
     #except:
     # print " OOPS: handle_post() couldn't handle request = {}".format(request)
 
+def submit_edit():
+    """ handle file edit form """
+    # invoked from handle_post()
+    # print_debug(' submit_edit: request.form : {}'.format(request.form.items()))
+    # The form text data is in the form dict key, i.e. request.form['edit_text']
+    bytes_written = request.page.write_content(request.form['edit_text'])
+    return request.base_url      # ... and reload it without ?action=edit
+    
 def submit_logout():
-    """ handle logout action """
+    """ handle logout button click"""
     # invoked from handle_post()
     logout_user()
     return request.base_url

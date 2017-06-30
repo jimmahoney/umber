@@ -2,7 +2,7 @@
 {# ######## #}
 <h2 class="directory">Index of {{ page.path }} </h2>
 <div id="dir-ls"><img src="{{static_url('icons/blank.gif')}}" alt="   "> name                     last modified               size<hr>
-{% for child in page.children() %}<img src="{{ child.icon_url() }}" alt="TXT"> <b><a href="{{ child.name_with_ext }}">{{ child.formatted_name() }}</a></b> {{ child.lastmodified.datetime() }}    {{ child.bytesize() }}
+{% for child in page.children() %}<img src="{{ child.icon_url() }}" alt="TXT"> <b><a href="{{ child.name_with_ext }}">{{ child.formatted_name() }}</a></b> {{ child.lastmodified.datetime() }}    {{ child.bytesize }}
 {% endfor %}
 <hr>
 </div>

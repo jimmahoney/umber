@@ -19,6 +19,8 @@
 {% else %}
   {% if page.action == 'edit' and page.can['write'] %}
     {% include 'umber/edit_file.html' %}
+  {% elif page.action == 'history' %}
+    {% include 'umber/history_file.html' %}
   {% else %}
     {{ page.content_as_html() | safe }}
   {% endif %}

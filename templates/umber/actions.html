@@ -1,14 +1,18 @@
-<!-- actions i.e. buttons for edit, history, ... -->
-
-{% if actionHTML.tabs %}
+<!-- action buttons for edit, history, etc -->
+{% if page.can['write'] %}
 <div id="actions">
   <ul>
-  {%   for tab in actionHTML.tabs %}
-  <li class={{actionHTML.style[tab]}}><a
-	href="{{request.url + actionHTML.uri[tab]}}"
-	>{{actionHTML.link[tab]}}</a></li>
+  {%   for tab in ('edit', 'history', '.') %}
+  {%     if page.action == tab %}
+    <li class='front'>{{tab}}</li>
+  {%     else  %}
+    {%  if tab == '.' %}
+    <li class='behind'><a href="{{page.url}}">{{tab}}</a></li>
+    {%  else %}
+    <li class='behind'><a href="{{page.url+'?action='+tab}}">{{tab}}</a></li>
+    {%  endif %}
+  {%     endif %}
   {%   endfor  %}
   </ul>
 </div>
 {% endif %}
-

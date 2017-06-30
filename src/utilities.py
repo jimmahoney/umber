@@ -79,34 +79,38 @@ def size_in_bytes(n):
     else:
         return '{:3}G'.format((n+500000000) // 1000000000)
 
-class ActionHTML(object):
-    """ Return
-            tabs        e.g.  ['edit', 'history', ...]
-            styles      e.g.  {'edit':'style', ...}
-            uris        e.g.  {'edit':'base?action=edit', ...}
-            links       e.g.  {'edit':'edit', ...
-    """
-    def __init__(self, page):
-        self.tabs = []
-        self.style = {}
-        self.uri = {}
-        self.link = {}
-        if page.can['write']:
-            self.tabs = ['edit', 'history']
-            self.style = {'edit' : 'behind',
-                          'history' : 'behind' }
-            self.uri = {'edit' : '?action=edit',
-                        'history' : '?action=history' }
-            self.link = {'edit' : 'edit',
-                         'history' : 'history' }
+#class ActionHTML(object):
+#    """ Return
+#            tabs        e.g.  ['edit', 'history', ...]
+#            styles      e.g.  {'edit':'style', ...}
+#            uris        e.g.  {'edit':'base?action=edit', ...}
+#            links       e.g.  {'edit':'edit', ...
+#    """
+#    def __init__(self, page):
+#        self.tabs = []
+#        self.style = {}
+#        self.uri = {}
+#        self.link = {}
+#        if page.can['write']:
+#            self.tabs = ['edit', 'history']
+#            self.style = {'edit' : 'behind',
+#                          'history' : 'behind' }
+#            self.uri = {'edit' : '?action=edit',
+#                        'history' : '?action=history' }
+#            self.link = {'edit' : 'edit',
+#                         'history' : 'history' }
 
-def link_hacks(course, html):
-    """ return html with ~/ and ~~/ links translated
+def link_translate(course, html):
+    """ return html string with ~/ and ~~/ links translated
         into the appropriate course and site urls """
     html = html.replace('~/', course.url + '/')
     html = html.replace('~~/', '/' + url_basename + '/')
     return html
-            
+
+def unlinkify(page, html):
+    """ Return html string with any absolute urls to page unlinkified """
+    
+
 def markdown2html(string):
     # See https://github.com/trentm/python-markdown2
     #     https://github.com/trentm/python-markdown2/wiki/Extras
