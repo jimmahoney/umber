@@ -47,7 +47,7 @@ from settings import admin_email, about_copyright_url, \
      os_root, os_base, os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
-from utilities import in_console, split_url, static_url, size_in_bytes
+from utilities import in_console, split_url, static_url, size_in_bytes, git
 
 app = Flask('umber',
             static_folder=os_static,
@@ -248,9 +248,10 @@ def handle_post():
 def submit_edit():
     """ handle file edit form """
     # invoked from handle_post()
-    # print_debug(' submit_edit: request.form : {}'.format(request.form.items()))
-    # The form text data is in the form dict key, i.e. request.form['edit_text']
+    # the form text data is in the form dict key, i.e. request.form['edit_text']
+    #print_debug(' submit_edit: request.form : {}'.format(request.form.items()))
     bytes_written = request.page.write_content(request.form['edit_text'])
+    git.add_and_commit(request.page)
     return request.base_url      # ... and reload it without ?action=edit
     
 def submit_logout():

@@ -4,6 +4,32 @@
 
 basic editing of files works.
 
+Starting to think about git.
+
+  == some git command examples ==
+
+  $ git log courses/demo/home.md
+  454b6283179be56d4dfe2143163cbf9c93985142 basic editing of files works
+  0caeb3005836936d3805484bb72f690d452a6475 minor
+  8232a255620ff7d5b6c6aab1354e0c367b3b0da1 markdown works
+
+  $ git show 0caeb3005836936d3805484bb72f690d452a6475:courses/demo/home.md
+  home
+  ====
+  etc
+
+installed python module 'sh' ; updated env/environment.yml
+ $ conda install sh
+ $ conda env export
+
+The only downside of using git through sh is that I will
+likely have to parse some of the output myself ... though
+their built in formatting should make that simple :
+  $ git log --format="(%H,%cn,%cd,%s)" --date=iso courses/demo/home.md 
+
+Got a conda warning about changing of env format changes -
+I will worry about that another time.
+
 ## June 27 2017 ##
 
 Still continuing to make slow progress.
@@ -850,3 +876,50 @@ ipython connectivity might also be something to consider.
  (a) language hint after ``` 
  (b) pygments installed
  (c) a CSS style : https://github.com/richleland/pygments-css
+
+---------------
+2017 invoking git from python thinking :
+
+ gitpython :
+   https://gitpython.readthedocs.io/en/stable/intro.html
+   "GitPython is not suited for long-running processes (like daemons)
+    as it tends to leak system resources."
+   Hmmm.
+
+ pygit2 :
+   https:www.pygit2.org
+   http://www.pygit2.org/recipes.html
+   requires compatible versions of libgit2 and pygit2
+     ... there are instructions for a virtualenv install,
+     but the custom aspects of this make me worry about maintability
+     and compatability with the conda requirements stuff i've been doing
+   google "conda pygit2" brings me to
+     https://anaconda.org/m-labs/pygit2 which says
+     $ conda install -c m-labs pygit2=0.24.0 ... which failed.
+
+ sh
+   https://stackoverflow.com/questions/1456269/python-git-module-experiences :
+   "I've switched to using the sh module for not just git but most
+    commandline utilities I need in python. To replicate the above I
+    would do this instead:"
+    >>> import sh
+    >>> git = sh.git.bake(_cwd='/home/me/repodir')
+    >>> print git.status()
+    # checkout and track a remote branch
+    >>> print git.checkout('-b', 'somebranch')
+    >>> # add a file
+    >>> print git.add('somefile')
+    >>> # commit
+    >>> print git.commit(m='my commit message')
+    # now we are one commit ahead
+    >>> print git.status()
+
+   Hmmm. That looks pretty straightforward ... and sh is in conda.
+   And they have a "from sh import git" already.
+
+
+
+
+
+
+

@@ -34,7 +34,6 @@
 
  Part of this file is also acting as flask's configuration file;
  its path is fed to the flask app. See the config.py notes below.
-
  
 """
 import sys, os
@@ -43,7 +42,7 @@ url_basename = 'umber'   # URL prefix for umber courses
 os_basename = 'courses'  # course folder within project folder os_root
 
 host = '127.0.0.1:5000'  # host:port      : for constructing breadcrumb url
-protocol = 'http'        # http | https   : 
+protocol = 'http'        # http | https
 
 about_copyright_url = 'http://FIXME'
 
@@ -62,7 +61,7 @@ def _get_os_root():
     return parent_folder
 
 os_root = _get_os_root()
-os_base = os.path.join(os_root, os_basename)
+os_base = os.path.join(os_root, os_basename)   # base of courses folder
 os_src = os.path.join(os_root, 'src')
 os_template = os.path.join(os_root, 'templates')
 os_static = os.path.join(os_root, 'static')

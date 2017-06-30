@@ -93,6 +93,7 @@ dependencies:
 - pyyaml=3.12=py27_0
 - readline=6.2=2
 - setuptools=27.2.0=py27_0
+- sh=1.11=py27_0
 - six=1.10.0=py27_0
 - sqlalchemy=1.1.9=py27_0
 - sqlite=3.13.0=0

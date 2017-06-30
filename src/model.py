@@ -42,14 +42,14 @@
 """
 
 import os, subprocess, yaml, arrow, re
-from settings import db_path, timezone, timezoneoffset, os_base, \
-              protocol, host, url_basename
+from settings import db_path, timezone, timezoneoffset, \
+              protocol, host, url_basename, os_base
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, BaseModel, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
 from utilities import markdown2html, link_translate, static_url, \
-               ext_to_filetype, filetype_to_icon, size_in_bytes
+               ext_to_filetype, filetype_to_icon, size_in_bytes, git
 
 db = SqliteDatabase(db_path)
 

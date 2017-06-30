@@ -2,11 +2,25 @@
 """
  utilities.py
 """
-import os
-import urlparse
+import os, urlparse, sh
 from markdown2 import markdown
-from settings import url_basename
+from settings import url_basename, os_base
 from flask import url_for
+
+class Git:
+    """ a wrapper around sh.git """
+    # self._git.log('--date=iso', '--format=(%H,%cd,%s)', 'demo/home.md')
+    def __init__(self):
+        self._git = sh.git.bake(_cwd=os_base)
+    def add_and_commit(self, page):
+        # This gets called after page is modified.
+        self._git.add(page.path)
+        self._commit('-m "user:"'.format(page.user.username), page.path)
+    def log(self, page):
+        # self._git.log('--date=iso', '--format=(%H,%cd,%s)', 'demo/home.md')
+        pass
+
+git = Git()
 
 # -- icons for file types and their file extensions --
 _icon_map = {'text' : ('text.gif', ('txt', 'css', 'rtf', 'html',
