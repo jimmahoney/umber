@@ -1,3 +1,3 @@
 = resources =
 
-Put links to class materials here.
+Put links to class materials here. CHANGED.
