@@ -1,7 +1,7 @@
 home
 ====
 
-CHANGE 4.
+CHANGE 8
 
 This is a demonstration course for the Umber
 course management web application.  
