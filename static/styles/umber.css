@@ -957,6 +957,9 @@ table.layout {
   vertical-align: bottom;
 }
 
+.revision {
+  color: darkred;
+}
 
  /*****
   * td {

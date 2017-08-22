@@ -2,24 +2,105 @@
 """
  utilities.py
 """
-import os, urlparse, sh
+import os, urlparse, sh, arrow
 from markdown2 import markdown
-from settings import url_basename, os_base
+from settings import url_basename, os_base, timezone, timezoneoffset
 from flask import url_for
+
+class Time(object):
+    """ Time in an ISO GMT form, as typically stored in the sqlite database,
+        including a timezone-aware (as specified in settings.py) offset.
+        >>> print Time('2013-01-01T12:24:52.3327-05:00')
+        2013-01-01T12:24:52-05:00
+        >>> print Time('2013-05-09') # daylight savings => -4 from GMT
+        2013-05-09T13:00:00-04:00
+        >>> print Time('2013-01-09') # not daylight savings => -5 from GMT
+        2013-01-09T12:00:00-05:00
+    """
+    # Uses the python Arrow library; see http://crsmithdev.com/arrow/  .
+    # For time differences, subtract two of these (given a datetime.timedelta)
+    # and then use .seconds, .total_seconds(), .resolution etc.
+    #
+    # The string format is like that described
+    # at http://momentjs.com/docs/#/displaying/format/
+    
+    def __init__(self, *args, **kwargs):
+        """ With no arguments, returns the 'now' time. """
+        # And if the arg is just e.g. '2015-01-02', add utc 'T12:00:00-05:00'
+        # (Apparently an ISO string date string like '2015-12-01' ignores
+        #  the tzinfo optional arg. However
+        #  arrow.get(datetime.date(2015,12,01), tzinfo=timezone) does work.)
+        if len(args)>=1 and isinstance(args[0], basestring) \
+                        and len(args[0])==10:
+            args = (args[0] + 'T12:00:00' + timezoneoffset,) +  args[1:]
+        self.arrow = arrow.get(*args, **kwargs).to(timezone)
+    def __str__(self):
+        """ ISO representation rounded down to the nearest second """
+        return self.arrow.floor('second').isoformat()
+    def human(self):
+        """ Return in human friendly form, e.g. 'seconds ago'"""
+        return self.arrow.humanize()
+    def date(self):
+        """ Return as e.g. 'May 09 2013' """
+        return self.arrow.format('MMMM DD YYYY')
+    def isodate(self):
+        return self.arrow.format('YYYY-MM-DD')
+    def daydatetime(self):
+        """ Return as e.g. 'Sun May 9 2013 4:10 pm' """
+        return self.arrow.format('ddd MMMM D YYYY h:mm a')
+    def datetime(self):
+        """ Return as fixed length e.g. 'Oct 09 2013 04:10 pm' """
+        return self.arrow.format('ddd MMM DD YYYY hh:mm a')
+    def daydatetimesec(self):
+        """ Return as fixed length e.g. 'ddd Oct 09 2013 04:10:32 pm' """
+        return self.arrow.format('ddd MMM DD YYYY hh:mm:ss a')
+    def slashes(self):
+        """ Return as e.g. '06/09/13' """
+        return self.arrow.format('MM/DD/YY')
+    def semester(self):
+        """ Return as e.g. 'Summer 2013' """
+        month = self.arrow.month
+        if month < 6:
+            season = 'Spring '
+        elif month < 9:
+            season = 'Summer '
+        else:
+            season = 'Fall'
+        return season + str(self.arrow.year)
+    def str(self):
+        return str(self)
 
 class Git:
     """ a wrapper around sh.git """
-    # self._git.log('--date=iso', '--format=(%H,%cd,%s)', 'demo/home.md')
+    
     def __init__(self):
-        self._git = sh.git.bake(_cwd=os_base)
+        self._git = sh.git.bake(_cwd=os_base, _tty_out=False)
+        
     def add_and_commit(self, page):
         # This gets called after page is modified.
         self._git.add(page.abspath)
         self._git.commit('--message=user:{}'.format(page.user.username),
                          page.abspath)
+        
     def log(self, page):
-        # self._git.log('--date=iso', '--format=(%H,%cd,%s)', 'demo/home.md')
-        pass
+        # _git.log gives '(revision,date,user:who)\n(revision,date,user:who)'
+        lines = self._git.log('--date=iso-strict',
+                              '--format=(%H,%cd,%s)',
+                              page.abspath).split('\n')
+        valid_lines = filter(lambda x: len(x) > 2, lines)
+        data = map(lambda line:line[1:-1].split(','), valid_lines)
+        for rev in data:
+            rev[1] = Time(rev[1]).daydatetimesec()
+            if (len(rev[2]) < 6) or rev[2][:5] != 'user:':
+                rev[2] = ''
+            else:
+                rev[2] = rev[2][5:]
+        return(data)
+    
+    def get_revision(self, page):
+        """ Return content from a git version of a page """
+        descriptor =  str(page.revision) + ':' + page.abspath
+        return self._git.show(descriptor)
 
 git = Git()
 
@@ -93,27 +174,6 @@ def size_in_bytes(n):
         return '{:3}G'.format( (((n+50000000) // 100000000) * 100000000) / 1000000000.0)
     else:
         return '{:3}G'.format((n+500000000) // 1000000000)
-
-#class ActionHTML(object):
-#    """ Return
-#            tabs        e.g.  ['edit', 'history', ...]
-#            styles      e.g.  {'edit':'style', ...}
-#            uris        e.g.  {'edit':'base?action=edit', ...}
-#            links       e.g.  {'edit':'edit', ...
-#    """
-#    def __init__(self, page):
-#        self.tabs = []
-#        self.style = {}
-#        self.uri = {}
-#        self.link = {}
-#        if page.can['write']:
-#            self.tabs = ['edit', 'history']
-#            self.style = {'edit' : 'behind',
-#                          'history' : 'behind' }
-#            self.uri = {'edit' : '?action=edit',
-#                        'history' : '?action=history' }
-#            self.link = {'edit' : 'edit',
-#                         'history' : 'history' }
 
 def link_translate(course, html):
     """ return html string with ~/ and ~~/ links translated

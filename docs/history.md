@@ -1,5 +1,19 @@
 # umber development history #
 
+to consider :
+ an in-browser quasi wysiwyg markdown editor : 
+  https://github.com/sparksuite/simplemde-markdown-editor
+ uses https://github.com/chjj/marked , a github flavored markdown
+ but ... I guess would still need to add a course/machine link syntax
+
+## July 6
+
+Decided to give up on wiki support for now -
+too much bother. Maybe later.
+
+And decided to stick with .md rather than .markdown etc,
+for simplicity.
+
 ## June 30 ##
 
 Setting up the git repo for the course pages
@@ -289,6 +303,8 @@ some perhaps related resources :
  https://news.ycombinator.com/item?id=7913176 discussion of mdwiki
  http://dynalon.github.io/mdwiki/#!index.md   markdown conversion in js
  http://pythonhosted.org/MarkWiki/            python markdown engine
+
+ https://github.com/markdown-it/markdown-it   js (node) markdown engine
 
 ## June 11
 

@@ -23,8 +23,8 @@
     &nbsp; page.abspath = {{page.abspath }} <br>
     &nbsp; page.ext = '{{page.ext }}' <br>  
     &nbsp; page.action = {{page.action }} <br>  
-    &nbsp; page.isfile = {{page.isfile }} <br>
-    &nbsp; page.isdir = {{page.isdir }} <br>
+    &nbsp; page.is_file = {{page.is_file }} <br>
+    &nbsp; page.is_dir = {{page.is_dir }} <br>
     &nbsp; page.exists = {{page.exists }} <br>
     {% if page.lastmodified != None %}
       &nbsp; page.lastmodified = {{ page.lastmodified.daydatetime() }} <br>
@@ -38,6 +38,9 @@
 	(1-5 : visitor,guest,student,facultyadmin)
     </small></small> <br>
     &nbsp; page.user_role = {{page.user_role.name }} <br>
+    <br>
+    &nbsp; page.revision = {{page.revision }} <br>
+    <!-- &nbsp; page.history = {{page.history }} <br> -->
     <br>
     &nbsp; page.user.username = {{page.user.username }} <br>
     &nbsp; page.course.name = {{page.course.name }} <br>        

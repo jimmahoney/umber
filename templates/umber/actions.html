@@ -2,15 +2,11 @@
 {% if page.can['write'] %}
 <div id="actions">
   <ul>
-  {%   for tab in ('edit', 'history', '.') %}
+  {%   for tab in ('edit', 'history') %}
   {%     if page.action == tab %}
     <li class='front'>{{tab}}</li>
   {%     else  %}
-    {%  if tab == '.' %}
-    <li class='behind'><a href="{{page.url}}">{{tab}}</a></li>
-    {%  else %}
     <li class='behind'><a href="{{page.url+'?action='+tab}}">{{tab}}</a></li>
-    {%  endif %}
   {%     endif %}
   {%   endfor  %}
   </ul>

@@ -41,78 +41,17 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-import os, subprocess, yaml, arrow, re
-from settings import db_path, timezone, timezoneoffset, \
-              protocol, host, url_basename, os_base
+import os, subprocess, yaml, re
 from werkzeug.security import generate_password_hash, check_password_hash
-from peewee import SqliteDatabase, Model, BaseModel, \
+from peewee import SqliteDatabase, Model, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
+from settings import db_path, protocol, host, url_basename, os_base
 from utilities import markdown2html, link_translate, static_url, \
-               ext_to_filetype, filetype_to_icon, size_in_bytes, git
+               ext_to_filetype, filetype_to_icon, size_in_bytes, \
+               git, Time
 
 db = SqliteDatabase(db_path)
-
-class Time(object):
-    """ Time in an ISO GMT form, as typically stored in the sqlite database,
-        including a timezone-aware (as specified in settings.py) offset.
-        >>> print Time('2013-01-01T12:24:52.3327-05:00')
-        2013-01-01T12:24:52-05:00
-        >>> print Time('2013-05-09') # daylight savings => -4 from GMT
-        2013-05-09T13:00:00-04:00
-        >>> print Time('2013-01-09') # not daylight savings => -5 from GMT
-        2013-01-09T12:00:00-05:00
-    """
-    # Uses the python Arrow library; see http://crsmithdev.com/arrow/  .
-    # For time differences, subtract two of these (given a datetime.timedelta)
-    # and then use .seconds, .total_seconds(), .resolution etc.
-    #
-    # The string format is like that described
-    # at http://momentjs.com/docs/#/displaying/format/
-    
-    def __init__(self, *args, **kwargs):
-        """ With no arguments, returns the 'now' time. """
-        # And if the arg is just e.g. '2015-01-02', add utc 'T12:00:00-05:00'
-        # (Apparently an ISO string date string like '2015-12-01' ignores
-        #  the tzinfo optional arg. However
-        #  arrow.get(datetime.date(2015,12,01), tzinfo=timezone) does work.)
-        if len(args)>=1 and isinstance(args[0], basestring) \
-                        and len(args[0])==10:
-            args = (args[0] + 'T12:00:00' + timezoneoffset,) +  args[1:]
-        self.arrow = arrow.get(*args, **kwargs).to(timezone)
-    def __str__(self):
-        """ ISO representation rounded down to the nearest second """
-        return self.arrow.floor('second').isoformat()
-    def human(self):
-        """ Return in human friendly form, e.g. 'seconds ago'"""
-        return self.arrow.humanize()
-    def date(self):
-        """ Return as e.g. 'May 09 2013' """
-        return self.arrow.format('MMMM DD YYYY')
-    def isodate(self):
-        return self.arrow.format('YYYY-MM-DD')
-    def daydatetime(self):
-        """ Return as e.g. 'Sun May 9 2013 4:10 pm' """
-        return self.arrow.format('ddd MMMM D YYYY h:mm a')
-    def datetime(self):
-        """ Return as fixed length e.g. 'Oct 09 2013 04:10 pm' """
-        return self.arrow.format('ddd MMM DD YYYY hh:mm a')
-    def slashes(self):
-        """ Return as e.g. '06/09/13' """
-        return self.arrow.format('MM/DD/YY')
-    def semester(self):
-        """ Return as e.g. 'Summer 2013' """
-        month = self.arrow.month
-        if month < 6:
-            season = 'Spring '
-        elif month < 9:
-            season = 'Summer '
-        else:
-            season = 'Fall'
-        return season + str(self.arrow.year)
-        
-    def str(self):
-        return str(self)
 
 class BaseModel(Model):
     class Meta:
@@ -270,16 +209,17 @@ class Course(BaseModel):
     def os_path(self):
         return os.path.join(os_base, self.path)
 
-    def nav_page(self):
+    def nav_page(self, user):
         """ return course's navigation page """
         # TODO: should this be cached to self._nav_page ?
         # (Need it for both displaying and editing course's navigation page.)
-        return Page.get_from_path(self.path + '/sys/' + 'navigation.md')
+        return Page.get_from_path(self.path + '/sys/' + 'navigation.md',
+                                  user=user)
     
     def nav_html(self, user, page):
         """ Return html for course's navigation menu 
             for a given user & a given page """
-        return self.nav_page().nav_content_as_html(user, page)
+        return self.nav_page(user).nav_content_as_html(page)
 
 class Page(BaseModel):
 
@@ -322,75 +262,80 @@ class Page(BaseModel):
     course = ForeignKeyField(rel_model=Course,
                              db_column='course_id',
                              to_field='course_id')
-    
-    def set_course(self):
-        """ set the course for this page in self.course """
-        # currently done from the url self.path (e.g. demo/home)
-        # TODO : cache in database ?
-        #
+
+    @classmethod
+    def get_from_path(cls, path, revision=None, action=None, user=None):
+        """ Get or create a Page and set up all its internal data 
+            i.e. course, file info, user permissions, etc """
+        (page, iscreated) = Page.get_or_create(path=path)
+        page.user = user
+        page.action = action
+        page.revision = revision
+        page.allow_insecure_login = True  # TODO : figure out https stuff
+        page._setup_file_properties()       # sets page.isfile etc
+        page.course = page.get_course()
+        if user:
+            page._setup_user_permissions()  # sets page.can['read'] etc
+        if revision or action=='history':
+            page._setup_revision_data()     # sets page.history etc
+        return page
+
+    def get_course(self):
+        """ return this page's course """  # TODO : cache in sql database ??
         # extract path pieces e.g. ['demo', 'home']
         path_parts = self.path.split('/')
         # build partial paths e.g. ['demo', 'demo/home']
         # (stackoverflow.com/questions/13221896/python-partial-sum-of-numbers)
         paths = reduce(lambda x,y: x + [x[-1]+'/'+y],
                        path_parts[1:], path_parts[0:1])
-        # build peewee where condition
-        condition = Course.path % ''   # '' is Umber default course
+        # build peewee's "where condition" to find matching courses.
+        condition = Course.path % ''     # Note: '' is Umber's default course
         for c in paths:
             condition = condition | Course.path % c
         # get list of matching courses from database
         query = Course.select().where(condition)
         courses = list(query.execute())
         # choose the one with the longest path
-        self.course = max(courses, key=lambda c: len(c.path))
+        return max(courses, key=lambda c: len(c.path))
 
-    def _setup_access(self):
-        """ Define .access dict from .access.yaml in an enclosing folder """
+    def get_access(self):
+        """ Return .access dict from .access.yaml in an enclosing folder """
         self.access = {'read':'', 'write':''}
-        #try:
         if self.is_dir:
             abspath = self.abspath
         else:
             abspath = os.path.dirname(self.abspath)
-        # print ' _setup_access : abspath = {}'.format(abspath)
-        # print ' _setup_access : os_base = {}'.format(os_base)
         while len(abspath) >= len(os_base):
             accesspath = abspath + '/.access.yaml'
-            # print ' _setup_access : accesspath = {}'.format(accesspath)
             if os.path.exists(accesspath):
                 accessfile = open(accesspath)
-                self.access = yaml.load(accessfile)
+                access_dict = yaml.load(accessfile)
                 accessfile.close()
                 break
             abspath = os.path.dirname(abspath) # i.e. "cd .."
-        #except:
-        #    pass
-        # ... TODO: finish this & use user
-        return None
+        return access_dict
 
-    def set_user_permissions(self, user):
+    def _setup_user_permissions(self):
         """ Set page.access, page.can['read'], page.can['write'],
                 page.user, page.user_role, page.user_rank """
         # Note that admins who are faculty in a given course
         # will have a displayed role of 'faculty' in that course
         # but will have admin access to nav menus etc.
         assert self.course != None  # call self.set_course() first.
-        self.user = user
-        self._setup_access()
-        self.can = {'read':False, 'write':False}
-        # print ' person.get_permissions: user = {}'.format(
-        #    user)
-        # print ' person.get_permissions: course usernames = {}'.format(
-        #    self.course.username_to_role.keys())
-        self.user_role = self.course.person_to_role(user)
+        self.access = self.get_access()
+        self.user_role = self.course.person_to_role(self.user)
         self.user_rank = self.user_role.rank
-        # print ' person.get_permissions: self.user_rank = {}'.format(
-        #    self.user_rank)
+        if self.user.is_admin():
+            self.can = {'read':True, 'write':True}
+            self.user_rank = Role.by_name('admin').rank
+            if self.user_role.name != 'faculty':
+                    self.user_role = Role.by_name('admin')
+        else:
+            self.can = {'read':False, 'write':False} # initial default
         for permission in ('read', 'write'):
             access_needed = Role.by_name('faculty').rank
-            self.can[permission] = False
             for who in self.access[permission].split(','):
-                if who == user.username:
+                if who == self.user.username:
                     self.can[permission] = True
                     break
                 elif who in Role.name_alias:
@@ -398,12 +343,6 @@ class Page(BaseModel):
                                         access_needed)
             if self.user_rank >= access_needed:
                 self.can[permission] = True
-        if user.is_admin():
-            # print ' user is admin - setting permissions accordingly '
-            (self.can['read'], self.can['write']) = (True, True)
-            self.user_rank = Role.by_name('admin').rank
-            if self.user_role.name != 'faculty':
-                    self.user_role = Role.by_name('admin')
 
     def children(self):
         """ return page for each file or folder below this folder """
@@ -433,7 +372,24 @@ class Page(BaseModel):
             return self.name_with_ext
         else:
             return self.name_with_ext + ' '*(width - length)
-    
+
+    def _setup_revision_data(self):
+        """ read and store within page the git file revision data """
+        log = git.log(self)        # All revisions : [(revision, date, author)]
+        if  len(log) == 0:
+            link = self.url
+            date = self.lastmodified.daydatetimesec()
+            author = ''
+            self.revisions = ()
+            self.history = ((link, date, author, True),)
+            self.revision_date = date
+        else:
+            self.revisions = tuple(revision for (revision, date, author) in log)
+            self.history = tuple((self.url + '?revision={}'.format(revision),
+                                  date, author, revision == self.revisions[0])
+                                 for (revision, date, author) in log)
+            self.revision_date = self.history[0][1]
+        
     def _setup_file_properties(self):
         """ given self.path, set a bunch of information about the file
             including self.absfilename, self.exists, self.is_file, self.is_dir,
@@ -441,8 +397,8 @@ class Page(BaseModel):
          """
         self.abspath = os.path.join(os_base, self.path)
         if not os.path.exists(self.abspath):
-            for ext in ('.md', '.markdown', '.wiki'):
-                if os.path.exists(self.abspath + ext):
+            for ext in ['.md', '.html']:
+                if ext == '.md' and os.path.exists(self.abspath + ext):
                     self.abspath = self.abspath + ext
         (ignore, self.ext) = os.path.splitext(self.abspath)
         self.exists = os.path.exists(self.abspath)
@@ -487,7 +443,10 @@ class Page(BaseModel):
         self.url = protocol+'://'+host+'/'+url_basename+'/'+self.path
         self.url_for_print_version = self.url + '?print=1'
         self.bytesize = size_in_bytes(self.size)
-        
+
+    def revision_content_as_html(self):
+        return git.get_revision(self)
+
     def content(self):
         """ Return data from page if it exists and is a file. """
         # TODO: should this be cached as self._content ?
@@ -505,19 +464,19 @@ class Page(BaseModel):
         return bytes_written
 
     def content_as_html(self):
-        """ Return markdown or wiki file converted to html. """
+        """ Return markdown file converted to html. """
         if not self.exists:
             return ''
-        elif self.ext in ('.md', '.markdown'):
+        elif self.ext == '.md':
             html = markdown2html(self.content())
-        elif self.ext == '.wiki':
-            html = subprocess.check_output(['wiki2html', self.abspath])
+        # elif self.ext == '.wiki':
+        #    html = subprocess.check_output(['wiki2html', self.abspath])
         else:
             html = '<h2>Oops</h2> unsupported file type "{}"'.format(self.ext)
         html = link_translate(self.course, html)     # expand ~/ and ~~/
         return html
 
-    def nav_content_as_html(self, user, page):
+    def nav_content_as_html(self, page):
         """ Return authorized parts of html & markdown at html . """
         # Here self is the navigation.md page.
         #   TODO: unlinkify current page
@@ -531,7 +490,6 @@ class Page(BaseModel):
         #    </div>
         # This method converts the content of that file to html,
         # keeping only the parts that this user is allowed to see.
-        self.set_user_permissions(user)
         parser = BeautifulSoup(self.content(), 'html.parser')
         for role in ['admin', 'student', 'faculty', 'guest', 'all']:
             divs = parser.find_all('div', access=role)
@@ -555,7 +513,7 @@ class Page(BaseModel):
         # with another (ugh) pass through BeautifulSoup,
         # now that markdown has run.
         # -------------
-        # TODO do the right thing for file.md, file.markdown, file.html,
+        # TODO do the right thing for file.md, file.html,
         # and folder ; currently only "file" and "folder/" will work
         # in the nav markdown; the other non-canonical with redirectrs won't.
         # (So check other options in a loop, eh?)
@@ -569,14 +527,6 @@ class Page(BaseModel):
         html = str(parser)
         return html
     
-    @classmethod
-    def get_from_path(cls, path):
-        """ Get or create Page, set its course, init file parameters """
-        (page, created) = Page.get_or_create(path=path)
-        page._setup_file_properties()
-        page.set_course()   # store page's course in page.course
-        return page
-
 class Assignment(BaseModel):
     class Meta:
         db_table = 'Assignment'

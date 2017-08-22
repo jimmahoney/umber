@@ -1,1 +1,22 @@
-- file history -
+<h3>history of {{ page.path_no_name }}
+<span class="filename">{{ page.name_with_ext }}</span></h3>
+<div>
+  <table class="layout">
+    <tr class="heading">
+     <td class="borderless">&nbsp;</td>
+     <td>date</td>
+     <td>author</td>
+    </tr>
+    {% for (url, date, author, is_current) in page.history %}
+    <tr>
+      {% if is_current %}
+      <td class="borderless"><a href="{{ page.url }}">current</a> &rArr; </td>
+      {% else %}
+      <td class="borderless">&nbsp;</td>
+      {% endif %}
+      <td><a href="{{url}}">{{date}}</></td>
+      <td>{{author}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>

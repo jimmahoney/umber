@@ -135,7 +135,7 @@ def testroute():
     # Also see @app.context_processor (above) for custom template variables.
     # ( I've looked at two templating engines: jinja2 & mako;
     #   The choice as of May 2017 is jinja2 due to better flask integration.
-    #   mako globlas hvae 'context' instead of 'config'; otherwise the same.)
+    #   mako globlas have 'context' instead of 'config'; otherwise the same.)
     return render_template('test/test.html',   # template 
                            test1 = 'George',   # variables
                            test2 = 'foobar'
@@ -153,60 +153,42 @@ def mainroute(pagepath):
     #print_debug(' mainroute: session = {}'.format(session))
     #color = 'red'
     #if color != '':
-    #    session['color'] = colorrequ
+    #    session['color'] = color
     # -------------------------------
 
-    # If the url is ('foo.markdown', 'foo.md', 'foo.wiki'),
-    # redirect to canonical url 'foo'.
+    # If the url is 'foo.md' then redirect to canonical url 'foo'.
     (basepath, extension) = os.path.splitext(pagepath)
-    if extension in ('.md', '.markdown', '.wiki'):
+    if extension ==  '.md':
         (ignore1, ignore2, query) = split_url(request.url)
         redirect_url = '/' + url_basename + '/' + basepath
         if query:
             redirect_url += '?' + query
         print_debug('redirecting to "{}"'.format(redirect_url))
         return redirect(redirect_url)
-        #return redirect(url_for('mainroute', pagepath=redirect_to))
     
     # Get the corresponding Page object and its file settings.
-    page = Page.get_from_path(pagepath)
+    page = Page.get_from_path(pagepath,
+                              revision=request.args.get('revision', None),
+                              action=request.args.get('action', None),
+                              user=current_user)
+
     print_debug(' mainroute: page.abspath = {}'.format(page.abspath))
-
-    # If this is a directory but doesn't end in '/', redirect to '/'.
-    if page.is_dir and len(pagepath) > 0 and pagepath[-1] != '/':
-        print_debug('redirecting directory to /')
-        return redirect(url_for('mainroute', pagepath=pagepath) + '/')
-
-    # Store query action parameter (if any) in page.
-    # The action for "no action, just show the current page" is ".".
-    page.action = request.args.get('action', '.')
-    
-    # Find the corresponding course.
-    # (Do this before access so that even a "not found" or "no access"
-    #  will give an error that shows the course.)
-    ## CHANGED: now called from Page.get_from_path
-    #page.set_course()    # store in page.course
-    #page.course.url = request.url_root + url_basename + '/' + \
-    #                  page.course.path + '/'
-                      
     print_debug(' mainroute: course.name = "{}"'.format(page.course.name))
     print_debug(' mainroute: course.url = "{}"'.format(page.course.url))
-
-    # Given page.course and current_user,
-    # store into the page object the access permissions and roles.
-    page.set_user_permissions(current_user)
-    
     print_debug(' mainroute: page.access = {}'.format(page.access))
     print_debug(' mainroute: page can read = {}, write = {}'.format(
         page.can['read'], page.can['write']))
     print_debug((' mainroute: page exists = {},' + \
         ' is_file = {}, is_dir = {}').format(
         page.exists, page.is_file, page.is_dir))
-    
-    page.allow_insecure_login = True           # TEST & DEBUG ONLY
 
+    # Redirect directories which don't end in '/' to '/'.
+    if page.is_dir and len(pagepath) > 0 and pagepath[-1] != '/':
+        print_debug('redirecting directory to /')
+        return redirect(url_for('mainroute', pagepath=pagepath) + '/')
+    
     # Store the page object (and therefore page.course and page.user)
-    # in the request, so that the request is all the action handler needs.
+    # in the request, so that the request action handler doesn't need args.
     request.page = page
     
     if request.method == 'POST':
@@ -220,8 +202,7 @@ def mainroute(pagepath):
                            page = page,
                            user = page.user,
                            course = page.course,
-                           #actionHTML = ActionHTML(page),
-                           debug = True           # TEST & DEBUG ONLY
+                           debug = True
                            )
 
 @app.route('/' + url_basename + '/', methods=['GET', 'POST'])
