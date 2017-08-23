@@ -16,9 +16,6 @@
   {% else %}
     {% include 'umber/folder.html' %}
   {% endif %}
-{% elif page.revision %}
-  <h3 class='revision'>version from {{ page.revision_date }}</h3>
-  {{ page.revision_content_as_html() }}
 {% else %}
   {% if page.action == 'edit' and page.can['write'] %}
     {% include 'umber/edit_file.html' %}

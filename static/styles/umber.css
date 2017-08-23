@@ -957,8 +957,9 @@ table.layout {
   vertical-align: bottom;
 }
 
-.revision {
+.actionversion {
   color: darkred;
+  font-size: 70%;
 }
 
  /*****

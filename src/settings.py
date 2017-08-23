@@ -41,6 +41,8 @@ import sys, os
 url_basename = 'umber'   # URL prefix for umber courses
 os_basename = 'courses'  # course folder within project folder os_root
 
+git_base = 'courses'     # root of git repo; append page.path for its git path
+
 host = '127.0.0.1:5000'  # host:port      : for constructing breadcrumb url
 protocol = 'http'        # http | https
 

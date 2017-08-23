@@ -79,6 +79,7 @@ class Git:
     def add_and_commit(self, page):
         # This gets called after page is modified.
         self._git.add(page.abspath)
+        # Seems weird that abspath is needed here but gitpath is needed in show
         self._git.commit('--message=user:{}'.format(page.user.username),
                          page.abspath)
         
@@ -99,8 +100,11 @@ class Git:
     
     def get_revision(self, page):
         """ Return content from a git version of a page """
-        descriptor =  str(page.revision) + ':' + page.abspath
-        return self._git.show(descriptor)
+        # nth:           (new) current 4 3 2 1 (old) page.revision
+        # page.revisions (new) 0       1 2 3 4 (old) if 5 revisions
+        index = len(page.revisions) - page.revision
+        descriptor =  str(page.githashes[index]) + ':' + page.gitpath
+        return str(self._git.show(descriptor))
 
 git = Git()
 
@@ -189,11 +193,12 @@ def unlinkify(page, html):
 def markdown2html(string):
     # See https://github.com/trentm/python-markdown2
     #     https://github.com/trentm/python-markdown2/wiki/Extras
-    return markdown(string,
+    output = markdown(string,
                     extras=['code-friendly', 'fenced-code-blocks',
                             'footnotes', 'pyshell', 'tables',
                             'cuddled-lists', 'markdown-in-html'])
-            
+    return output
+
 def split_url(urlpath):
     """ Given e.g. 'foo/bar/baz.html?this=that&color=red', 
         return ('foo/bar/baz', '.html', '?this=that&color=red') """

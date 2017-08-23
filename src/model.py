@@ -46,7 +46,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
-from settings import db_path, protocol, host, url_basename, os_base
+from settings import db_path, protocol, host, url_basename, os_base, git_base
 from utilities import markdown2html, link_translate, static_url, \
                ext_to_filetype, filetype_to_icon, size_in_bytes, \
                git, Time
@@ -273,6 +273,7 @@ class Page(BaseModel):
         page.revision = revision
         page.allow_insecure_login = True  # TODO : figure out https stuff
         page._setup_file_properties()       # sets page.isfile etc
+        page.gitpath = os.path.join(git_base, page.path_with_ext)
         page.course = page.get_course()
         if user:
             page._setup_user_permissions()  # sets page.can['read'] etc
@@ -375,31 +376,53 @@ class Page(BaseModel):
 
     def _setup_revision_data(self):
         """ read and store within page the git file revision data """
-        log = git.log(self)        # All revisions : [(revision, date, author)]
-        if  len(log) == 0:
+        log = git.log(self)  # has the form [(githash, date, author)]
+        if len(log) == 0:
             link = self.url
             date = self.lastmodified.daydatetimesec()
             author = ''
-            self.revisions = ()
-            self.history = ((link, date, author, True),)
+            self.githashes = tuple()
+            self.history = ((link, 'current', date, author),)
             self.revision_date = date
+            self.revision_prev_url = ''
+            self.revision_next_url = ''
+            self.revision_nth = 1
+            self.revision_count = 1
         else:
-            self.revisions = tuple(revision for (revision, date, author) in log)
-            self.history = tuple((self.url + '?revision={}'.format(revision),
-                                  date, author, revision == self.revisions[0])
-                                 for (revision, date, author) in log)
-            self.revision_date = self.history[0][1]
-        
+            self.githashes = tuple(githash for (githash, date, author) in log)
+            self.history = [None] * len(log)
+            for i in range(len(log)):
+                #   say len(log) == 4 
+                #     nth =>  (new) current 3 2 1 (old)
+                #     i   =>        0       1 2 3 (old)
+                if i == 0:
+                    nth = 'current'
+                    url = self.url
+                else:
+                    nth = range(len(log)) - i
+                    url = self.url + '?revision={}'.format(nth)
+                #  history =>           0:url  1:nth  2:date     3:author
+                self.history[i] = tuple(url,   nth,   log[i][1], log[i][2])
+            self.revision_count = len(log)
+            self.revision_date = self.history[0][2]
+            if self.revision:
+                self.revision_next_url = self.url + '?revision={}'.format(
+                    min(self.revision + 1, len(log)))
+                self.revision_prev_url = self.url + '?revision={}'.format(
+                    max(self.revision - 1 1))
+                
     def _setup_file_properties(self):
         """ given self.path, set a bunch of information about the file
             including self.absfilename, self.exists, self.is_file, self.is_dir,
             self.lastmodified, self.breadcrumbs
          """
         self.abspath = os.path.join(os_base, self.path)
+        self.path_with_ext = self.path  # default, unless modified below
         if not os.path.exists(self.abspath):
             for ext in ['.md', '.html']:
                 if ext == '.md' and os.path.exists(self.abspath + ext):
                     self.abspath = self.abspath + ext
+                    self.path_with_ext = self.path + ext
         (ignore, self.ext) = os.path.splitext(self.abspath)
         self.exists = os.path.exists(self.abspath)
         self.name_with_ext = os.path.split(self.abspath)[-1]
@@ -445,14 +468,20 @@ class Page(BaseModel):
         self.bytesize = size_in_bytes(self.size)
 
     def revision_content_as_html(self):
-        return git.get_revision(self)
+        content = git.get_revision(self)
+        html = markdown2html(content)
+        html_with_links = link_translate(self.course, html)
+        return html_with_links
 
     def content(self):
-        """ Return data from page if it exists and is a file. """
+        """ Return data from page or revision of page """
         # TODO: should this be cached as self._content ?
         if self.exists and self.is_file:
-            with open(self.abspath, 'r') as _file:
-                return _file.read()
+            if self.revision:
+                return git.get_revision(self)
+            else:
+                with open(self.abspath, 'r') as _file:
+                    return _file.read()
         else:
             return ''
 
@@ -465,10 +494,12 @@ class Page(BaseModel):
 
     def content_as_html(self):
         """ Return markdown file converted to html. """
+        # This also handles revisions since self.content() does.
         if not self.exists:
             return ''
         elif self.ext == '.md':
-            html = markdown2html(self.content())
+            content = self.content()
+            html = markdown2html(content)
         # elif self.ext == '.wiki':
         #    html = subprocess.check_output(['wiki2html', self.abspath])
         else:
