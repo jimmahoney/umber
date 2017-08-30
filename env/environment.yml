@@ -49,59 +49,66 @@
 #
 # Jim Mahoney | cs.marlboro.edu | May 2017
 ###############################################
-
 # syntax notes:  version wildcards e.g. 2.6.* are allowed;
 #                see https://github.com/conda/conda-env
 #
-# June 16 - updated to flask 11 with this command :
-#   $ conda install -c anaconda flask=0.11.1
-#   which installed   openssl01.0.2d , click-6.6-py27 ,  flask-0.11.1-py27
-# July  8 - added markdown2
-# July 29 - added beautifulsoup4 
 # May 15 2017 - Starting work again on project; need to reinit environment.
 #               Decided to stick with python 2.7* .
 #               $ conda env create --file environment.yml
 #               $ conda update --all    ( did --dry-run first)
 #               $ conda env export   ... and replaced this file with that.
+# June 16 - updated to flask 11 with this command :
+#   $ conda install -c anaconda flask=0.11.1
+#   which installed   openssl01.0.2d , click-6.6-py27 ,  flask-0.11.1-py27
+# July  8 - added markdown2
+# July 29 - added beautifulsoup4
+# Aug  29 - conda update --all ; conda env export; copied that here.
 
 name: umber
 channels:
 - defaults
 dependencies:
+- asn1crypto=0.22.0=py27_0
 - beautifulsoup4=4.6.0=py27_0
-- cffi=1.9.1=py27_0
+- cffi=1.10.0=py27_0
 - click=6.7=py27_0
-- cryptography=1.7.1=py27_0
-- curl=7.52.1=0
+- cryptography=1.8.1=py27_0
+- curl=7.54.1=0
 - enum34=1.1.6=py27_0
 - expat=2.1.0=0
-- flask=0.12.1=py27_0
+- flask=0.12.2=py27_0
 - git=2.11.1=0
-- idna=2.2=py27_0
+- idna=2.6=py27_0
 - ipaddress=1.0.18=py27_0
 - itsdangerous=0.24=py27_0
 - jinja2=2.9.6=py27_0
+- krb5=1.13.2=0
+- libssh2=1.8.0=0
 - markdown2=2.3.4=py27_0
-- markupsafe=0.23=py27_2
-- openssl=1.0.2k=2
+- markupsafe=1.0=py27_0
+- mkl=2017.0.3=0
+- numpy=1.13.1=py27_0
+- openssl=1.0.2l=0
+- packaging=16.8=py27_0
 - pip=9.0.1=py27_1
 - pyasn1=0.2.3=py27_0
-- pycparser=2.17=py27_0
+- pycparser=2.18=py27_0
 - pygments=2.2.0=py27_0
-- pyopenssl=16.2.0=py27_0
+- pyopenssl=17.0.0=py27_0
+- pyparsing=2.2.0=py27_0
 - python=2.7.13=0
 - pyyaml=3.12=py27_0
 - readline=6.2=2
 - setuptools=27.2.0=py27_0
 - sh=1.11=py27_0
 - six=1.10.0=py27_0
-- sqlalchemy=1.1.9=py27_0
+- sqlalchemy=1.1.13=py27_0
 - sqlite=3.13.0=0
 - tk=8.5.18=0
-- werkzeug=0.12.1=py27_0
+- werkzeug=0.12.2=py27_0
 - wheel=0.29.0=py27_0
 - yaml=0.1.6=0
-- zlib=1.2.8=3
+- zlib=1.2.11=0
 - pip:
   - arrow==0.10.0
   - flask-login==0.4.0
@@ -113,3 +120,4 @@ dependencies:
   - python-dateutil==2.6.0
   - smmap==0.9.0
   - smmap2==2.0.1
+prefix: /Users/mahoney/anaconda/envs/umber

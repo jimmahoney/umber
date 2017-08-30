@@ -382,14 +382,14 @@ class Page(BaseModel):
             date = self.lastmodified.daydatetimesec()
             author = ''
             self.githashes = tuple()
-            self.history = ((link, 'current', date, author),)
+            self.history = [link, 'current', date, author]
             self.revision_date = date
             self.revision_prev_url = ''
             self.revision_next_url = ''
             self.revision_nth = 1
             self.revision_count = 1
         else:
-            self.githashes = tuple(githash for (githash, date, author) in log)
+            self.githashes = tuple((githash for (githash, date, author) in log))
             self.history = [None] * len(log)
             for i in range(len(log)):
                 #   say len(log) == 4 
@@ -399,17 +399,18 @@ class Page(BaseModel):
                     nth = 'current'
                     url = self.url
                 else:
-                    nth = range(len(log)) - i
+                    nth = len(log) - i
                     url = self.url + '?revision={}'.format(nth)
                 #  history =>           0:url  1:nth  2:date     3:author
-                self.history[i] = tuple(url,   nth,   log[i][1], log[i][2])
+                self.history[i] = tuple((url,   nth,   log[i][1], log[i][2]))
             self.revision_count = len(log)
             self.revision_date = self.history[0][2]
             if self.revision:
+                revision = int(self.revision)
                 self.revision_next_url = self.url + '?revision={}'.format(
-                    min(self.revision + 1, len(log)))
+                    min(revision + 1, len(log)))
                 self.revision_prev_url = self.url + '?revision={}'.format(
-                    max(self.revision - 1 1))
+                    max(revision - 1, 1))
                 
     def _setup_file_properties(self):
         """ given self.path, set a bunch of information about the file
@@ -425,6 +426,10 @@ class Page(BaseModel):
                     self.path_with_ext = self.path + ext
         (ignore, self.ext) = os.path.splitext(self.abspath)
         self.exists = os.path.exists(self.abspath)
+        if not self.exists and self.ext == '':
+            # creating a new file, so make it a .md markdown file
+            self.ext = '.md'
+            self.abspath += '.md'
         self.name_with_ext = os.path.split(self.abspath)[-1]
         if self.ext == '':
             self.name = self.name_with_ext
