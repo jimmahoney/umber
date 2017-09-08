@@ -361,18 +361,18 @@ class Page(BaseModel):
         """ return url for icon for this file type """
         return static_url(filetype_to_icon[self.filetype])
 
-    def formatted_name(self, width=24):
-        """ return name_with_ext string padded to width characters """
-        # This is for directory listings; see templates/umber/folder.html .
-        # If the name is too long to fit in width characters, it is just
-        # returned anyway - formatting for that line in the listing will be
-        # ugly.  Another approach would be truncate to perhaps
-        # 'very_long_name_or_som...' or 'very_lon..._end.txt' .
+    def name_padding(self, width=24):
+        """ return whitespace string to pad out name_with_ext to given width """
+         # This is for directory listings; see templates/umber/folder.html .
+         # If the name is too long to fit in width characters, it is just
+         # returned anyway - formatting for that line in the listing will be
+         # ugly.  Another approach would be truncate to perhaps
+         # 'very_long_name_or_som...' or 'very_lon..._end.txt' .
         length = len(self.name_with_ext)
         if length > width:
-            return self.name_with_ext
+            return 0
         else:
-            return self.name_with_ext + ' '*(width - length)
+            return ' '*(width - length)
 
     def _setup_revision_data(self):
         """ read and store within page the git file revision data """
@@ -386,8 +386,8 @@ class Page(BaseModel):
             self.revision_date = date
             self.revision_prev_url = ''
             self.revision_next_url = ''
-            self.revision_nth = 1
             self.revision_count = 1
+            self.revision = None  # No git revision stored.
         else:
             self.githashes = tuple((githash for (githash, date, author) in log))
             self.history = [None] * len(log)
@@ -406,12 +406,14 @@ class Page(BaseModel):
             self.revision_count = len(log)
             self.revision_date = self.history[0][2]
             if self.revision:
-                revision = int(self.revision)
+                self.revision = int(self.revision)
+                index = self.revision_count - self.revision
+                self.revision_date = self.history[index][2]
                 self.revision_next_url = self.url + '?revision={}'.format(
-                    min(revision + 1, len(log)))
+                    min(self.revision + 1, len(log)))
                 self.revision_prev_url = self.url + '?revision={}'.format(
-                    max(revision - 1, 1))
-                
+                    max(self.revision - 1, 1))
+
     def _setup_file_properties(self):
         """ given self.path, set a bunch of information about the file
             including self.absfilename, self.exists, self.is_file, self.is_dir,

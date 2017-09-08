@@ -4,33 +4,33 @@
   <ul>
   {#  #}
   {# --- edit tab --- #}
-  {% if page.action == 'edit' %}
+  {% if page.action == 'edit' or not page.exists %}
     <li class='front'>edit</li>
   {% elif page.action == 'history' %}
     <li class='behind'><span style='color:grey'>edit</span></li>
   {% elif page.revision %}
     <li class='behind'><a
-        href="{{page.url+'?action=edit&revision='+page.revision}}">edit</a></li>
+        href="{{page.url}}?action=edit&revision={{page.revision}}">edit</a></li>
   {% else %}
     <li class='behind'><a
-        href="{{page.url+'?action=edit'}}">edit</a></li>
-  {% endif %}  
+        href="{{page.url}}?action=edit">edit</a></li>
+  {% endif %}
   {#  #}
   {# --- history tab --- #}    
   {% if page.action == 'history' %}
     <li class='front'>history</li>
-  {% else %}
-    <li class='behind'><a href="{{page.url+'?action=history'}}">history</a></li>
+  {% elif page.is_file %}
+    <li class='behind'><a href="{{page.url}}?action=history">history</a></li>
   {% endif %}  
   {# --- revision prev|info|next|current tab --- #}
   {#  #}    
   {% if page.revision %}
+  <li class='behind'><a href="{{page.url}}">current</a></li>
   <li class='behind'><span class='actionversion'>
-     <a href="{{page.revision_prev_url}}">⏪</a> &nbsp; 
-     <b>revision {{page.revision}} of {{page.revision_count}}</b>
-     as of {{ page.revision_date }}
+     <a href="{{page.revision_prev_url}}">⏪</a> 
      &nbsp; <a href="{{page.revision_next_url}}">⏩</a>
-     &nbsp; <a href="{{page.url}}">current</a>
+     &nbsp; <b>revision {{page.revision}} of {{page.revision_count}}</b>
+     &nbsp; {{ page.revision_date }}
   </span></li>
   {% endif %}
   </ul>

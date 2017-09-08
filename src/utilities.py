@@ -100,9 +100,9 @@ class Git:
     
     def get_revision(self, page):
         """ Return content from a git version of a page """
-        # nth:           (new) current 4 3 2 1 (old) page.revision
-        # page.revisions (new) 0       1 2 3 4 (old) if 5 revisions
-        index = len(page.revisions) - page.revision
+        # page.revision:     (new) current 4 3 2 1 (old) page.revision
+        # page.githashes     (new) 0       1 2 3 4 (old) if 5 revisions
+        index = len(page.githashes) - page.revision
         descriptor =  str(page.githashes[index]) + ':' + page.gitpath
         return str(self._git.show(descriptor))
 
