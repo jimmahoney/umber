@@ -1,7 +1,5 @@
 <h1>syllabus</h1>
 
-CHANGE 5.
-
 Yes, you've found the <b>Demo Course</b> syllabus.
 
  If this where a real course, you'd likely find textbook information,
