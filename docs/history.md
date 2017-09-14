@@ -1,10 +1,21 @@
 # umber development history #
 
-to consider :
- an in-browser quasi wysiwyg markdown editor : 
-  https://github.com/sparksuite/simplemde-markdown-editor
- uses https://github.com/chjj/marked , a github flavored markdown
- but ... I guess would still need to add a course/machine link syntax
+## Aug 7
+
+history for .md files works.
+
+folder view works
+
+Set up a development environment on the laptop ...
+still not very painless; see the notes in the env/ folder.
+
+TODO:
+ - folder edit
+ - assignments
+ - mirror of existing site
+ - deployment strategy
+ - authorization mechanism
+ - special pages
 
 ## July 6
 
@@ -13,6 +24,12 @@ too much bother. Maybe later.
 
 And decided to stick with .md rather than .markdown etc,
 for simplicity.
+
+to consider :
+ an in-browser quasi wysiwyg markdown editor : 
+  https://github.com/sparksuite/simplemde-markdown-editor
+ uses https://github.com/chjj/marked , a github flavored markdown
+ but ... I guess would still need to add a course/machine link syntax
 
 ## June 30 ##
 

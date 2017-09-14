@@ -10,7 +10,7 @@
     <li class='behind'><span style='color:grey'>edit</span></li>
   {% elif page.revision %}
     <li class='behind'><a
-        href="{{page.url}}?action=edit&revision={{page.revision}}">edit</a></li>
+        href="{{page.url}}?revision={{page.revision}}&action=edit">edit</a></li>
   {% else %}
     <li class='behind'><a
         href="{{page.url}}?action=edit">edit</a></li>
@@ -27,8 +27,8 @@
   {% if page.revision %}
   <li class='behind'><a href="{{page.url}}">current</a></li>
   <li class='behind'><span class='actionversion'>
-     <a href="{{page.revision_prev_url}}">⏪</a> 
-     &nbsp; <a href="{{page.revision_next_url}}">⏩</a>
+     <a href="{{page.revision_prev_url}}{{page.action_query()}}">⏪</a> 
+     &nbsp; <a href="{{page.revision_next_url}}{{page.action_query()}}">⏩</a>
      &nbsp; <b>revision {{page.revision}} of {{page.revision_count}}</b>
      &nbsp; {{ page.revision_date }}
   </span></li>

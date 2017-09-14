@@ -361,18 +361,18 @@ class Page(BaseModel):
         """ return url for icon for this file type """
         return static_url(filetype_to_icon[self.filetype])
 
-    def name_padding(self, width=24):
-        """ return whitespace string to pad out name_with_ext to given width """
-         # This is for directory listings; see templates/umber/folder.html .
-         # If the name is too long to fit in width characters, it is just
-         # returned anyway - formatting for that line in the listing will be
-         # ugly.  Another approach would be truncate to perhaps
-         # 'very_long_name_or_som...' or 'very_lon..._end.txt' .
-        length = len(self.name_with_ext)
-        if length > width:
-            return 0
-        else:
-            return ' '*(width - length)
+    #def name_padding(self, width=24):
+    #    """ return whitespace string to pad out name_with_ext to given width """
+    #     # This is for directory listings; see templates/umber/folder.html .
+    #     # If the name is too long to fit in width characters, it is just
+    #     # returned anyway - formatting for that line in the listing will be
+    #     # ugly.  Another approach would be truncate to perhaps
+    #     # 'very_long_name_or_som...' or 'very_lon..._end.txt' .
+    #    length = len(self.name_with_ext)
+    #    if length > width:
+    #        return 0
+    #    else:
+    #        return ' '*(width - length)
 
     def _setup_revision_data(self):
         """ read and store within page the git file revision data """
@@ -514,6 +514,13 @@ class Page(BaseModel):
         html = link_translate(self.course, html)     # expand ~/ and ~~/
         return html
 
+    def action_query(self):
+        """ Return empty string or '&action=edit' if editing """
+        if self.action == 'edit':
+            return '&action=edit'
+        else:
+            return ''
+    
     def nav_content_as_html(self, page):
         """ Return authorized parts of html & markdown at html . """
         # Here self is the navigation.md page.

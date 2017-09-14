@@ -794,6 +794,21 @@ form.login {
   background-color: #999999;
 }
 
+#dir-ls table {
+    /* border: solid 1px red; */
+    width: 40em;
+}
+
+#dir-ls td {
+    /* border: solid 1px red; */
+    padding: 0;
+    vertical-align: text-bottom;
+}
+
+#dir-ls td:last-child {
+    text-align: right;
+}
+
 #dir-ls img {
   border: none; 
   vertical-align: bottom;
@@ -866,6 +881,19 @@ form.login {
 }
 .grey {  
   color: grey;
+}
+
+/* submit edit button */
+.edit input[type="submit"] {
+    /* font-weight: bold; */
+    font-family: serif;
+    font-size: 0.85em;
+    background-color: #eee;
+    color: #002bb8;
+    padding: 0.1em 0.4em;
+    margin: 0.1em;
+    -webkit-border-radius: 0.3em;
+    border-radius: 0.3em; 
 }
 
 /* single grade on a student work submission page */
