@@ -23,12 +23,3 @@
     <tr><td colspan=5><hr></td></tr>
   </table>
 </div>    
-
-{# --- without tables ; old version --- #}
-{#  
-<div id="dir-ls"><img src="{{static_url('icons/blank.gif')}}" alt="   "> name                     last modified               size<hr>
-{% for child in page.children() %}<img src="{{ child.icon_url() }}" alt="TXT"> <b><a href="{{ child.name_with_ext }}">{{ child.name_with_ext }}</a></b>{{ child.name_padding() }} {{ child.lastmodified.datetime() }}    {{ child.bytesize }}
-{% endfor %}
-<hr>
-</div>
-#}
