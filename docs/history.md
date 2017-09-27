@@ -1,5 +1,12 @@
 # umber development history #
 
+## Sep 25
+
+ starting to look at file upload.
+ Check out :
+  https://github.com/kirsle/flask-multi-upload
+  https://plainjs.com/javascript/ajax/
+ 
 ## Aug 7
 
 history for .md files works.
