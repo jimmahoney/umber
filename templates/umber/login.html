@@ -1,7 +1,6 @@
 <!-- start login -->
 <div id="login">
-<form class="login" name="login" method="POST"
-      action="{{ url_for('mainroute', pagepath=page.path) }}" >
+<form class="login" name="login" method="POST" action="{{ page.url }}" >
   <ul>
   {% if user.is_authenticated() %}
     <li class="first {{ page.user_role.name }}">{{ user.username }}</li>

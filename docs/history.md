@@ -6,7 +6,10 @@
  Check out :
   https://github.com/kirsle/flask-multi-upload
   https://plainjs.com/javascript/ajax/
+
+ https://www.w3.org/wiki/JavaScript_best_practices#Avoid_globals
  
+
 ## Aug 7
 
 history for .md files works.

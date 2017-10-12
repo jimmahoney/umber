@@ -10,11 +10,20 @@
   <link rel="stylesheet"
 	type="text/css" 
         href="{{static_url('styles/umber.css')}}">
+  <script type="text/javascript"
+	  src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"
+          defer></script>
+  <script type="text/javascript"
+	  src="{{ url_for('static', filename='js/underscore-min.js') }}"
+          defer></script>
+  <script type="text/javascript"
+	  src="{{ url_for('static', filename='js/umber.js') }}"
+	  defer></script>
 </head>
 <body>
 <div id="header">
   <a id="cs-logo" href="/"><img 
-     src="{{static_url('images/cs_m_edu.png')}}" 
+     src="{{ static_url('images/cs_m_edu.png') }}" 
      alt="computer science @ marlboro.edu" /></a>
   {% include 'umber/login.html' %}
 </div>

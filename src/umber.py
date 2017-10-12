@@ -215,22 +215,51 @@ def handle_post():
     # and is handled by a corresponding function submit_X().
     # The data is in the Flask request global.
     
-    #try:
     keys_named_submit = filter(lambda s: re.match('submit', s),
                                    request.form.keys())
     print_debug(' handle_post : submit keys = "{}" '.format(keys_named_submit))
     submit_what = keys_named_submit[0]
     print_debug(' handle_post : submit_what = "{}" '.format(submit_what))
-    # get function given its name & invoke it        
-    return globals()[submit_what]()
-    #except:
-    # print " OOPS: handle_post() couldn't handle request = {}".format(request)
 
+    if submit_what not in ('submit_delete', 'submit_edit',
+                           'submit_login', 'submit_logout'):
+        print_debug(' handle_post: OOPS - illegal submit_what ');
+        
+    # invoke submit_X handler
+    result = globals()[submit_what]()
+    
+    print_debug(' handle_post : result = "{}" '.format(result))
+    return result
+
+def submit_createfolder():
+    """ handle folder creation """
+    print_debug(' submit_createfolder : ... coming ... ')
+    a = 1/0; # debug exception
+    return request.base_url
+
+def submit_access():
+    """ handle setting folder access rights """
+    print_debug(' submit_access : ... coming ... ')
+    a = 1/0; # debug exception
+    return request.base_url
+
+def submit_delete():
+    """ handle folder delete form """
+    print_debug(' submit_delete : ... coming ... ')
+    a = 1/0; # debug exception
+    return request.base_url
+    
 def submit_edit():
     """ handle file edit form """
     # invoked from handle_post()
     # the form text data is in the form dict key, i.e. request.form['edit_text']
     #print_debug(' submit_edit: request.form : {}'.format(request.form.items()))
+    #
+    # request.form will look something like
+    #  { 'submit_edit' : u'save page',                     # submit button
+    #    'edit_text'   : u'page content\r\n===\r\n etc'    # textarea
+    #  }
+    #
     bytes_written = request.page.write_content(request.form['edit_text'])
     git.add_and_commit(request.page)
     return request.base_url      # ... and reload it without ?action=edit

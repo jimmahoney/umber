@@ -781,8 +781,8 @@ form.login {
   z-index: 2;
 }
 #dir-ls { 
-  font-family: monospace;              /* default for 'pre' */
-  white-space: pre;                    /* ditto; show spaces as-is */
+  /*font-family: monospace; */              /* default for 'pre' */
+  /* white-space: pre; */                   /* ditto; show spaces as-is */
   padding: 0 1em 0.5em 1em;
   margin: 0 0 0.5em 0;
   border: solid 1px #e0f0f0;           /* #90C0C0; */
@@ -797,11 +797,16 @@ form.login {
 #dir-ls table {
     /* border: solid 1px red; */
     width: 40em;
+    padding: 0;
+    margin: 0;
 }
 
 #dir-ls td {
     /* border: solid 1px red; */
+    font-family: monospace;   /* align preformatted text within table */
+    white-space: pre;
     padding: 0;
+    margin: 0;
     vertical-align: text-bottom;
 }
 
@@ -885,15 +890,42 @@ form.login {
 
 /* submit edit button */
 .edit input[type="submit"] {
-    /* font-weight: bold; */
     font-family: serif;
     font-size: 0.85em;
-    background-color: #eee;
-    color: #002bb8;
     padding: 0.1em 0.4em;
-    margin: 0.1em;
+    margin: 0.4em 0.2em;
     -webkit-border-radius: 0.3em;
     border-radius: 0.3em; 
+}
+
+/* folder delete button */
+.folder input[type="submit"] {
+    font-family: serif;
+    font-size: 0.85em;
+    padding: 0.1em 0.4em;
+    margin: 0.4em 0.2em;
+    background-color: eee;
+    -webkit-border-radius: 0.3em;
+    border-radius: 0.3em;
+}
+
+.disableddelete {
+    color: grey;  
+    border-color: #ededed;     /* lightgrey is #d3d3de */
+}
+
+.enableddelete {
+    color: #002bb8;
+    border-color: darkgrey;   /* darkgrey is #d9d9d9 */
+}
+
+.folder hr {
+    height: 1px;
+}
+
+/* folder edit checkbox */
+.folder input[type="checkbox"] {
+    vertical-align: text-bottom;
 }
 
 /* single grade on a student work submission page */

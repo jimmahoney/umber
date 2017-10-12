@@ -1,11 +1,12 @@
 {# edit folder  #}
 {# ######## #}
-<h2 class="directory">Index of {{ page.path }} </h2>
-<div id="dir-ls">
-<form>
+<h2 class='directory'>Index of {{ page.path }} </h2>
+<div id='dir-ls'>
+
+<form class='folder' name='folder' method='POST' action='{{ page.url }}'>
   <table>
     <tr>
-      <td></td> {# edit checkbox #}
+      <td></td> {# checkbox column placeholder #}
       <td></td> {# icon #}
       <td>name</td>
       <td>last modified</td>
@@ -14,15 +15,56 @@
     <tr><td colspan=5><hr></td></tr>
     {% for child in page.children() %}
     <tr>
-      <td></td> {# edit checkbox #}      
-      <td><img src="{{ child.icon_url() }}" alt="TXT"></td>
-      <td><b><a href="{{ child.name_with_ext }}">{{ child.name_with_ext }}</a></b></td>
+      <td><input type='checkbox' class='foldereditcheckbox'
+		 name='{{ child.path_with_ext }}' value='checkboxdelete' }}'></td>
+      <td><img src='{{ child.icon_url() }}' alt='TXT'></td>
+      <td><b><a href='{{ child.name_with_ext }}'>{{ child.name_with_ext }}</a></b></td>
       <td>{{ child.lastmodified.datetime() }}</td>
       <td>{{ child.bytesize }}</td>
     </tr>
     {% endfor %}
-    <tr><td colspan=5><hr></td></tr>
+    <tr><td colspan=5><input type='submit'
+			     name='submit_delete'
+			     id='folderdeletebutton'
+			     class='disableddelete' 
+			     value='delete'
+			     disabled><td></tr>
+    <tr><td colspan=5><hr></td></tr>    
   </table>
+  <div>Drag and drop files or folders here to upload them.</div>
 </form>
-</div>
 
+<form class='folder' id='new_folder_form' method='POST' action='{{ page.url }}'>
+  <div>
+  New folder <input type='input' name='foldername' id='foldername' size='24'  />
+  <input  type='submit' name='submit_createfolder' value='create'/>
+  </div>
+</form>
+
+<form class='folder' id='privileges_form' method='POST' action='{{ page.url }}'>
+  <div>
+  Access privileges <small>(usernames or roles i.e. all, guest, students, faculty, or admin)</small><br>
+  read: <input type='input' name='read_access' value='all' size='16' />
+  &nbsp;
+  write: <input type='input' name='write_access' value='faculty' size='16'/>
+  &nbsp; 
+  <input type='submit' name='submit_access' value='access'/>
+</form>
+
+{#
+<!-- old file upload form -->
+<form name='upload_form' id='upload_form' method='POST' enctype='multipart/form-data' action="/courses/spring2017/info/notes/?action=edit" onsubmit="save_edit_text(this)"> New file   <input type='file' 
+name='submit_upload' /> <input type='submit' value='Upload' /><input type="hidden" name="saved_edit_text" value="" /></form>
+#}
+
+{#
+<!-- old "new folder" form -->
+<form name='folder_form' id='folder_form' method='POST' action="/courses/spring2017/info/notes/?action=edit" onsubmit="save_edit_text(this)"> New folder <input  type='input' name='folder_name' /> <input  type='submit' name='submit_folder' value='Create'/><input type="hidden" name="saved_edit_text" value="" /></form>
+#}
+
+{#
+<!-- old "access rights" form -->
+<form name='access_form' id='access_form' method='POST' action="/courses/spring2017/info/notes/?action=edit" onsubmit="save_edit_text(this)" > Access privileges   <small>(all guest students faculty admin) or usernames</small> read: <input type="input" name='read_access' value='all' size="16" />   write: <input type="input" name='write_access' value='faculty' size="16"/>   <input type='submit' name='submit_access' value='Change'/><input type="hidden" name="saved_edit_text" value="" /></form>
+#}
+
+</div>

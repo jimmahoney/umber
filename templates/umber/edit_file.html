@@ -1,5 +1,5 @@
 <h3>editing {{page.path_no_name}}<span>{{ page.name_with_ext }}</span></h3>
-<form class="edit" name="edit" method="POST" action="{{page.url}}">
+<form class="edit" name="edit" method="POST" action="{{ page.url }}">
 <textarea id="edit_text" name="edit_text" cols=45 rows=20
 {% if page.exists %}
 >{{ page.content() }}</textarea>
