@@ -16,7 +16,7 @@
     {% for child in page.children() %}
     <tr>
       <td><input type='checkbox' class='foldereditcheckbox'
-		 name='{{ child.path_with_ext }}' value='checkboxdelete' }}'></td>
+		 name='{{ child.abs_with_ext }}' value='checkboxdelete' }}'></td>
       <td><img src='{{ child.icon_url() }}' alt='TXT'></td>
       <td><b><a href='{{ child.name_with_ext }}'>{{ child.name_with_ext }}</a></b></td>
       <td>{{ child.lastmodified.datetime() }}</td>

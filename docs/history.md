@@ -1,5 +1,15 @@
 # umber development history #
 
+## Oct 19
+
+ folder edit :
+   - delete works , including git commit
+   - new folder works , including git commit
+
+ next: privileges
+
+ then: file upload
+
 ## Sep 25
 
  starting to look at file upload.
@@ -8,7 +18,6 @@
   https://plainjs.com/javascript/ajax/
 
  https://www.w3.org/wiki/JavaScript_best_practices#Avoid_globals
- 
 
 ## Aug 7
 

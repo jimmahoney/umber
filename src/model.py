@@ -41,7 +41,7 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-import os, subprocess, yaml, re
+import os, subprocess, yaml, re, mimetypes
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
@@ -345,6 +345,31 @@ class Page(BaseModel):
             if self.user_rank >= access_needed:
                 self.can[permission] = True
 
+    def mimetype(self):
+        """ Return e.g. 'image/jpeg' for '.jpg' file """
+        if not mimetypes.init:
+            mimetypes.init()
+        return mimetypes.types_map.get(self.ext, 'application/octet-stream')
+
+    def keep(self):
+        """ for folders, essentially 'touch .keep' at the command line """
+        # This is a workaround for git's ignorance of folders.  Since git
+        # tracks only files, it is not good at noticing new empty
+        # folders. Worse, git seems to sometimes delete empty parent folders
+        # when "git rm" removes all its contents.  The workaround is to add an
+        # empty '.keep' file to a folder so that git can essentially see the
+        # folder by the presence of the .keep file.  This method creates a
+        # '.keep' file if the page is a folder.
+        if self.is_dir:
+            self.keepabspath = os.path.join(self.abspath, '.keep')
+            keepfile = open(self.keepabspath, 'w')
+            keepfile.close()
+        else:
+            # For consistency between files and folder, 
+            # I'll set this to the page's path. 
+            # That way both folders & files can use this for git commits.
+            self.keepabspath = self.abspath
+
     def children(self):
         """ return page for each file or folder below this folder """
         result = []
@@ -424,7 +449,7 @@ class Page(BaseModel):
             self.name = self.name_with_ext
         else:
             self.name = self.name_with_ext[: - len(self.ext) ]
-        self.name_underlined = self.name + '\n' + '='*len(self.name)
+        # self.name_underlined = self.name + '\n' + '='*len(self.name)
         self.path_no_name = self.path[: - len(self.name) ]
         self.is_file = os.path.isfile(self.abspath)
         self.is_dir = os.path.isdir(self.abspath)
@@ -436,12 +461,15 @@ class Page(BaseModel):
                 self.size = None
                 self.filetype = 'directory'
                 self.name_with_ext += '/'
+                self.abs_with_ext = self.abspath + '/'
             elif self.is_file:
                 self.size = stat.st_size
                 self.filetype = ext_to_filetype.get(self.ext, 'unknown')
+                self.abs_with_ext = self.abspath
             else:
                 self.size = None
                 self.filetype = 'unknown'
+                self.abs_with_ext = self.abspath
         else:
             self.lastmodified = None
             self.size = None
@@ -487,7 +515,7 @@ class Page(BaseModel):
         return bytes_written
 
     def content_as_html(self):
-        """ Return markdown file converted to html. """
+        """ Return file contents as html. """
         # This also handles revisions since self.content() does.
         if not self.exists:
             return ''
@@ -497,7 +525,9 @@ class Page(BaseModel):
         # elif self.ext == '.wiki':
         #    html = subprocess.check_output(['wiki2html', self.abspath])
         else:
-            html = '<h2>Oops</h2> unsupported file type "{}"'.format(self.ext)
+            # Just send the file as-is : txt, html, img, .... 
+            html = self.content()
+            # html = '<h2>Oops</h2> unsupported file type "{}"'.format(self.ext)
         html = link_translate(self.course, html)     # expand ~/ and ~~/
         return html
 

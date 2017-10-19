@@ -39,7 +39,7 @@ import sys, re, os
 ## TEST & DEBUG only
 # from OpenSSL import SSL
 
-from flask import Flask, request, session, g, \
+from flask import Flask, Response, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask_login import LoginManager, login_user, logout_user, current_user
 from flask import render_template
@@ -144,6 +144,7 @@ def testroute():
 @app.route('/' + url_basename + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
 
+    print_debug('- '*30)
     print_debug(' mainroute: pagepath = "{}"'.format(pagepath))
     print_debug(' mainroute: request.url = "{}"'.format(request.url))
     print_debug(' mainroute: request.args = "{}"'.format(request.args))
@@ -197,13 +198,29 @@ def mainroute(pagepath):
         if reload_url:
             return redirect(reload_url)
 
-    return render_template('umber/main.html',
-                           name = 'main',
-                           page = page,
-                           user = page.user,
-                           course = page.course,
-                           debug = True
-                           )
+    if (not page.is_dir and
+        not page.ext in ('.md') and
+        page.can['read'] and
+        page.exists):
+        # readable pages that shouldn't be in umber's window pane :
+        # just serve up their content.
+        # (If the page isn't readable, then render_template(main.html) below
+        # will show the error page within the umber setting.)
+        # TODO: Do the right thing for actions like ?version=xxx or ?history ?
+        # TODO: Handle what was _html for .py and .html
+        #       with ?something (?html , ?source, ?pretty) ?
+        # TODO: forward these sorts of requests to apache or other server??
+        # TODO: handle unknown mimetype better, perhaps don't send file at all? 
+        return Response(page.content(), mimetype=page.mimetype()) 
+    else:
+        #
+        return render_template('umber/main.html',
+                               name = 'main',
+                               page = page,
+                               user = page.user,
+                               course = page.course,
+                               debug = True
+                               )
 
 @app.route('/' + url_basename + '/', methods=['GET', 'POST'])
 def mainroute_blank():
@@ -222,7 +239,8 @@ def handle_post():
     print_debug(' handle_post : submit_what = "{}" '.format(submit_what))
 
     if submit_what not in ('submit_delete', 'submit_edit',
-                           'submit_login', 'submit_logout'):
+                           'submit_login', 'submit_logout',
+                           'submit_createfolder'):
         print_debug(' handle_post: OOPS - illegal submit_what ');
         
     # invoke submit_X handler
@@ -233,8 +251,24 @@ def handle_post():
 
 def submit_createfolder():
     """ handle folder creation """
-    print_debug(' submit_createfolder : ... coming ... ')
-    a = 1/0; # debug exception
+    # example request.form is {'submit_createfolder': 'create',
+    #                          'foldername': 'testfolder'}
+    # page.abs path is current directory i.e. /User/mahoney/.../folder1/
+    foldername = request.form['foldername']
+    print_debug(' submit_createfolder : foldername="{}" '.format(foldername))
+    folderpath = os.path.join(request.page.path, foldername)
+    folderabspath = os.path.join(request.page.abspath, foldername)
+    print_debug(' submit_createfolder : newfolderabspath="{}" '.format(
+        folderabspath))
+    #try:
+    
+    os.mkdir(folderabspath)
+    
+    #except:
+    #    print_debug(' submit_createfolder: os.makedir failed')
+    #    return request.base_url
+    newfolder = Page.get_from_path(folderpath, user=request.page.user)
+    git.add_and_commit(newfolder)
     return request.base_url
 
 def submit_access():
@@ -245,8 +279,13 @@ def submit_access():
 
 def submit_delete():
     """ handle folder delete form """
-    print_debug(' submit_delete : ... coming ... ')
-    a = 1/0; # debug exception
+    # example request.form would be {'submit_delete':'delete',
+    #                                '/full/path/file1.md':'checkboxdelete',
+    #                                '/full/path/folder2/':'checkboxdelete'}
+    abspaths = list(filter(lambda path: request.form[path]=='checkboxdelete',
+                           request.form.keys()))
+    print_debug(' submit_delete : {}'.format(abspaths))
+    git.rm_and_commit(abspaths, request.page)
     return request.base_url
     
 def submit_edit():

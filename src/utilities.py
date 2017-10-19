@@ -75,11 +75,19 @@ class Git:
     
     def __init__(self):
         self._git = sh.git.bake(_cwd=os_base, _tty_out=False)
+
+    def rm_and_commit(self, abspaths, page):
+        """ remove files and folders (absolute paths) & commit changes """
+        # -- page is the folder from which the delete form was submitted.
+        page.keep()
+        self._git.rm('-r', *abspaths)
+        self._git.commit('--message=user:{}'.format(page.user.username),
+                         *abspaths)
         
     def add_and_commit(self, page):
-        # This gets called after page is modified.
-        self._git.add(page.abspath)
-        # Seems weird that abspath is needed here but gitpath is needed in show
+        """ commit modified page or new folder to git repo """
+        page.keep()
+        self._git.add(page.keepabspath)
         self._git.commit('--message=user:{}'.format(page.user.username),
                          page.abspath)
         

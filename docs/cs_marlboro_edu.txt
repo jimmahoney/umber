@@ -1,0 +1,66 @@
+
+replication of course database from cs.marlboro.edu
+public content as static site
+
+ csmarlboro.org running at linode
+   / is 47G with 30G available
+   /home has 3.6G
+
+ The current linode is 4GB Ram / 48GB SSD / 2 cores @ $240/yr
+
+ Could upgrade to 8GB / 96 GB SSD / 4 cores for $480/yr
+
+ Or add "block storage" : 1 to 1024G , $0.10/G/mo
+ So 32GB would cost $ 3.20 * 12 = $38/yr
+ Created volume "umber".
+ Followed instructions at linode manager to set it up
+
+   $ mkfs.ext4 /dev/disk/by-id/scsi-0Linode_Volume_umber
+   $ mkdir /var/www/umber
+   $ mount /dev/disk/by-id/scsi-0Linode_Volume_umber /var/www/umber
+   --- /etc/fstab ---
+   /dev/disk/by-id/scsi-0Linode_Volume_umber /var/www/umber ext4 defaults 0 2
+
+
+ I want to replicate this web tree :
+    http://cs.marlboro.edu/courses/
+    which is 45G (according to "du -sh .")
+    ... but not the student work which
+    I think is a big chunk of that.
+
+ with I think this tool 
+    wget
+      --timestamping
+      --wait=1         1sec delay between requests
+      --recursive
+      --no-parent
+      --level=inf      (which is what they have for --mirror)
+      --quota=inf
+      --append-file=...    set log file
+ 
+ $ at -f scriptfilename now
+
+ which I think will get me a static set of html files
+ that can be used as an archive of those past courses
+ with most of the content without the wikiacademia software.
+
+ --------
+
+ 1st attempt completed after only a few hours,
+ not sure where (if) log was written.
+ 
+ About 1G was downloaded - some of it looks OK,
+ some (for example notes/* files in at least one course).
+ Edited the script a bit & tried again, with a log file ...
+ will at it after this one finieshes too.
+
+ The files (and links I'm afraid) are going to
+ need some cleanup in any case, it looks like.
+
+--------------------------------------------
+
+ 2nd attempt looks like it may have gone further -
+ need to look at what's here more closely and
+ do some pruning and/or adjustments.
+
+
