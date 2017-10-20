@@ -2,7 +2,7 @@
 """
  utilities.py
 """
-import os, urlparse, sh, arrow
+import os, urlparse, sh, arrow, string, re
 from markdown2 import markdown
 from settings import url_basename, os_base, timezone, timezoneoffset
 from flask import url_for
@@ -76,7 +76,7 @@ class Git:
     def __init__(self):
         self._git = sh.git.bake(_cwd=os_base, _tty_out=False)
 
-    def rm_and_commit(self, abspaths, page):
+    def rm_and_commit(self, page, abspaths):
         """ remove files and folders (absolute paths) & commit changes """
         # -- page is the folder from which the delete form was submitted.
         page.keep()
@@ -84,12 +84,13 @@ class Git:
         self._git.commit('--message=user:{}'.format(page.user.username),
                          *abspaths)
         
-    def add_and_commit(self, page):
-        """ commit modified page or new folder to git repo """
-        page.keep()
-        self._git.add(page.keepabspath)
-        self._git.commit('--message=user:{}'.format(page.user.username),
-                         page.abspath)
+    def add_and_commit(self, page, abspath=None):
+        """ commit abspath or this page or this folder to git repo """
+        if not abspath:
+            page.keep()                 # if folder, create ./.keep file
+            apspath = page.keepabspath  # page.abspath or folder's .keep
+        self._git.add(abspath)
+        self._git.commit('--message=user:{}'.format(page.user.username), abspath)
         
     def log(self, page):
         # _git.log gives '(revision,date,user:who)\n(revision,date,user:who)'
@@ -144,6 +145,14 @@ for (filetype, (icon, extensions)) in _icon_map.items():
     for ext in extensions:
         ext_to_filetype['.' + ext] = filetype
 
+allowed_chars = set(string.ascii_lowercase + string.digits + '_')
+def is_clean_folder_name(name):
+    """ Return true if string has only chars (1-9, a-z, _) """
+    # TODO: speed this up ?
+    # from stackoverflow.com/questions/1323364/
+    # in-python-how-to-check-if-a-string-only-contains-certain-characters
+    return set(name) <= allowed_chars
+
 def static_url(filename):
     return url_for('static', filename=filename)
 
@@ -194,10 +203,32 @@ def link_translate(course, html):
     html = html.replace('~~/', '/' + url_basename + '/')
     return html
 
-def unlinkify(page, html):
-    """ Return html string with any absolute urls to page unlinkified """
-    
+def whitestrip(x):
+    """ strip whitespace """
+    # translate() fails when x is unicode.
+    # return string.translate(x, None, deletions=string.whitespace)
+    return re.sub(r'\s+', '', x)
 
+def stringify_access(rights):
+    """ convert list or string to list with commas """
+    # [u'frank', u'bob'] => 'frank, bob'
+    # u'joe'  => 'joe'
+    if type(rights) == type('') or type(rights) == type(u''):
+        return str(rights)
+    else:
+        return str(', '.join(rights))
+
+def parse_access_string(access):
+    """ Convert a string of roles and/or usernames to a string or list """
+    # 'frank' => 'frank'
+    # 'frank, faculty' => ['frank', 'faculty']
+    names = re.split(r'[ ,\t]', access) # split on commas or spaces
+    names = map(whitestrip, names)
+    names = filter(lambda x: len(x)>0, names)
+    if len(names) == 1:
+        names = names[0]
+    return names
+    
 def markdown2html(string):
     # See https://github.com/trentm/python-markdown2
     #     https://github.com/trentm/python-markdown2/wiki/Extras

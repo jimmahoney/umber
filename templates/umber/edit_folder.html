@@ -36,19 +36,29 @@
 
 <form class='folder' id='new_folder_form' method='POST' action='{{ page.url }}'>
   <div>
-  New folder <input type='input' name='foldername' id='foldername' size='24'  />
-  <input  type='submit' name='submit_createfolder' value='create'/>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages and messages[0][0] == 'folder' %}
+    New folder <input type='input' name='foldername' id='foldername' size='24'
+ 		      value='{{ messages[1][1] |e }}' />
+    <input  type='submit' name='submit_createfolder' value='create' />  
+    <div class="error"> {{ messages[0][1] |e }} </div>
+    {# possible message here is 'Oops: folder names can only contain ...' #}
+  {% else %}
+    New folder <input type='input' name='foldername' id='foldername' size='24'/>
+   <input  type='submit' name='submit_createfolder' value='create' />    
+  {% endif %}
+  {% endwith %}
   </div>
 </form>
 
 <form class='folder' id='privileges_form' method='POST' action='{{ page.url }}'>
   <div>
-  Access privileges <small>(usernames or roles i.e. all, guest, students, faculty, or admin)</small><br>
-  read: <input type='input' name='read_access' value='all' size='16' />
+  Access rights <small>(one of [all, guest, students, faculty, admin] or usernames)</small><br>
+  read: <input type='input' name='read_access' value='{{ page.read_access |e}}' size='16' />
   &nbsp;
-  write: <input type='input' name='write_access' value='faculty' size='16'/>
+  write: <input type='input' name='write_access' value='{{ page.write_access |e}}' size='16'/>
   &nbsp; 
-  <input type='submit' name='submit_access' value='access'/>
+  <input type='submit' name='submit_permissions' value='set permissions'/>
 </form>
 
 {#

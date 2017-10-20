@@ -49,7 +49,7 @@ from bs4 import BeautifulSoup
 from settings import db_path, protocol, host, url_basename, os_base, git_base
 from utilities import markdown2html, link_translate, static_url, \
                ext_to_filetype, filetype_to_icon, size_in_bytes, \
-               git, Time
+               git, Time, stringify_access
 
 db = SqliteDatabase(db_path)
 
@@ -275,6 +275,7 @@ class Page(BaseModel):
         page._setup_file_properties()       # sets page.isfile etc
         page.gitpath = os.path.join(git_base, page.path_with_ext)
         page.course = page.get_course()
+        page.access = page.get_access()
         if user:
             page._setup_user_permissions()  # sets page.can['read'] etc
         if revision or action=='history':
@@ -299,49 +300,76 @@ class Page(BaseModel):
         # choose the one with the longest path
         return max(courses, key=lambda c: len(c.path))
 
+    def write_access_file(self, accessdict):
+        """ Given an access dict from user input e.g. 
+            {'read':'students', 'write':['faculty','bob']} ,
+            write it to a .access.yaml file, and return its abspath. """
+        assert self.is_dir  # this page should be a folder
+        accesspath = os.path.join(self.abspath, '.access.yaml')
+        accessfile = open(accesspath, 'w')     # open or create
+        accessfile.write(yaml.dump(accessdict)) # replace yaml permissions
+        accessfile.close()
+        return accesspath
+    
     def get_access(self):
         """ Return .access dict from .access.yaml in an enclosing folder """
-        self.access = {'read':'', 'write':''}
+        # e.g. {'read': ['janedoe', 'johnsmith'], 'write': 'faculty'}
         if self.is_dir:
             abspath = self.abspath
         else:
             abspath = os.path.dirname(self.abspath)
         while len(abspath) >= len(os_base):
-            accesspath = abspath + '/.access.yaml'
+            accesspath = os.path.join(abspath, '.access.yaml')
             if os.path.exists(accesspath):
                 accessfile = open(accesspath)
                 access_dict = yaml.load(accessfile)
                 accessfile.close()
-                break
+                if type(access_dict) == type({}):
+                    # OK, we found an access dict, so stop here.
+                    break
             abspath = os.path.dirname(abspath) # i.e. "cd .."
+        # clean up for display :
+        self.read_access = stringify_access(access_dict['read'])
+        self.write_access = stringify_access(access_dict['write'])
         return access_dict
 
     def _setup_user_permissions(self):
-        """ Set page.access, page.can['read'], page.can['write'],
-                page.user, page.user_role, page.user_rank """
+        """ Set page.can['read'], page.can['write'],
+                page.user_role, page.user_rank 
+                from page.user, page.access, and page.course """
         # Note that admins who are faculty in a given course
         # will have a displayed role of 'faculty' in that course
         # but will have admin access to nav menus etc.
         assert self.course != None  # call self.set_course() first.
-        self.access = self.get_access()
+        assert self.access != None  # call self.set_access() first.
+        assert self.user != None    #
         self.user_role = self.course.person_to_role(self.user)
         self.user_rank = self.user_role.rank
+        #
+        if self.user_role.name == 'faculty':
+            self.can = {'read': True, 'write': True}
+            return
+        #
         if self.user.is_admin():
-            self.can = {'read':True, 'write':True}
+            self.can = {'read': True, 'write': True}
+            self.user_role = Role.by_name('admin')
             self.user_rank = Role.by_name('admin').rank
-            if self.user_role.name != 'faculty':
-                    self.user_role = Role.by_name('admin')
-        else:
-            self.can = {'read':False, 'write':False} # initial default
+            return
+        #
+        self.can = {'read':False, 'write':False} # default is deny access
         for permission in ('read', 'write'):
-            access_needed = Role.by_name('faculty').rank
-            for who in self.access[permission].split(','):
-                if who == self.user.username:
+            access_needed = Role.by_name('faculty').rank  # faculty can 
+            yaml_rights = self.access[permission]
+            # can be list e.g. ['faculty', 'bob'] or string 'students'
+            if type(yaml_rights) == type(''):
+                yaml_rights = [ yaml_rights ]
+            for name_or_role in yaml_rights:
+                if name_or_role == self.user.username:
                     self.can[permission] = True
                     break
-                elif who in Role.name_alias:
-                    access_needed = min(Role.by_name(who).rank,
-                                        access_needed)
+                elif name_or_role in Role.name_alias:
+                    access_needed = min(access_needed,
+                                        Role.by_name(name_or_role).rank)
             if self.user_rank >= access_needed:
                 self.can[permission] = True
 

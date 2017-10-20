@@ -19,12 +19,16 @@
   {% endif %}
   </ul>
 </form>
-{% with messages = get_flashed_messages() %}
+{% with messages = get_flashed_messages(with_categories=true) %}
   {# possible message here is 'Oops: wrong username or password' #}
   {% if page.action == 'login' and messages %}
-    <div class="error"> {{ messages[0] }} </div>
+    {% if messages[0][0] == 'login' %}
+      <div class="error"> {{ messages[0][1] }} </div>
+    {% else %}
+      <div class="error"> &nbsp; </div>
+    {% endif %}
   {% else %}
-    <div class="error"> &nbsp; </div>
+  <div class="error"> &nbsp; </div>
   {% endif %}
 {% endwith %}
 </div>

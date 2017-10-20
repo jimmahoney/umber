@@ -47,7 +47,8 @@ from settings import admin_email, about_copyright_url, \
      os_root, os_base, os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
-from utilities import in_console, split_url, static_url, size_in_bytes, git
+from utilities import in_console, split_url, static_url, size_in_bytes, \
+     git, is_clean_folder_name, parse_access_string
 
 app = Flask('umber',
             static_folder=os_static,
@@ -187,6 +188,18 @@ def mainroute(pagepath):
     if page.is_dir and len(pagepath) > 0 and pagepath[-1] != '/':
         print_debug('redirecting directory to /')
         return redirect(url_for('mainroute', pagepath=pagepath) + '/')
+
+    # Don't serve up any invisible "dot" files - reload enclosing folder.
+    # This includes (.access.yaml, .keep) among possible others.
+    if len(page.name) > 0 and page.name[0] == '.':
+        url = page.url
+        while page.url[-1] != '/' and len(page.url) > 0:
+            url = url[:-1]
+
+        if len(page.url) > 12 and page.url[-12:] == '.access.yaml':
+            return redirect(page.url[:-12])
+        else:
+            return redirect(page.course.url)
     
     # Store the page object (and therefore page.course and page.user)
     # in the request, so that the request action handler doesn't need args.
@@ -197,7 +210,6 @@ def mainroute(pagepath):
         reload_url = handle_post()
         if reload_url:
             return redirect(reload_url)
-
     if (not page.is_dir and
         not page.ext in ('.md') and
         page.can['read'] and
@@ -233,7 +245,7 @@ def handle_post():
     # The data is in the Flask request global.
     
     keys_named_submit = filter(lambda s: re.match('submit', s),
-                                   request.form.keys())
+                               request.form.keys())
     print_debug(' handle_post : submit keys = "{}" '.format(keys_named_submit))
     submit_what = keys_named_submit[0]
     print_debug(' handle_post : submit_what = "{}" '.format(submit_what))
@@ -256,26 +268,33 @@ def submit_createfolder():
     # page.abs path is current directory i.e. /User/mahoney/.../folder1/
     foldername = request.form['foldername']
     print_debug(' submit_createfolder : foldername="{}" '.format(foldername))
+    if not is_clean_folder_name(foldername):
+        print_debug(' submit_createfolder: illegal chars in foldername')
+        flash('Oops: folder names may only contain ' + \
+              'lowercase letters, numbers, or underbar.', 'folder')
+        flash(foldername)
+        return url_for('mainroute', pagepath=request.page.path, action='edit')
     folderpath = os.path.join(request.page.path, foldername)
     folderabspath = os.path.join(request.page.abspath, foldername)
     print_debug(' submit_createfolder : newfolderabspath="{}" '.format(
         folderabspath))
-    #try:
-    
-    os.mkdir(folderabspath)
-    
-    #except:
-    #    print_debug(' submit_createfolder: os.makedir failed')
-    #    return request.base_url
+    try:
+        os.mkdir(folderabspath)
+    except:
+        print_debug(' submit_createfolder: os.makedir failed')
+        return request.base_url
     newfolder = Page.get_from_path(folderpath, user=request.page.user)
     git.add_and_commit(newfolder)
-    return request.base_url
+    return url_for('mainroute', pagepath=request.page.path, action='edit')    
 
-def submit_access():
-    """ handle setting folder access rights """
-    print_debug(' submit_access : ... coming ... ')
-    a = 1/0; # debug exception
-    return request.base_url
+def submit_permissions():
+    """ handle setting folder permissions - .access.yaml stuff """
+    rights = {'read':  parse_access_string( request.form['read_access'] ),
+              'write': parse_access_string( request.form['write_access'] )}
+    access_abspath = request.page.write_access_file(rights)
+    print_debug(' submit_permissions : access path {} '.format(access_abspath))
+    git.add_and_commit(request.page, access_abspath)
+    return url_for('mainroute', pagepath=request.page.path, action='edit')    
 
 def submit_delete():
     """ handle folder delete form """
@@ -285,8 +304,8 @@ def submit_delete():
     abspaths = list(filter(lambda path: request.form[path]=='checkboxdelete',
                            request.form.keys()))
     print_debug(' submit_delete : {}'.format(abspaths))
-    git.rm_and_commit(abspaths, request.page)
-    return request.base_url
+    git.rm_and_commit(request.page, abspaths)
+    return url_for('mainroute', pagepath=request.page.path, action='edit')
     
 def submit_edit():
     """ handle file edit form """
@@ -301,7 +320,7 @@ def submit_edit():
     #
     bytes_written = request.page.write_content(request.form['edit_text'])
     git.add_and_commit(request.page)
-    return request.base_url      # ... and reload it without ?action=edit
+    return request.base_url  # ... and reload it without ?action=edit
     
 def submit_logout():
     """ handle logout button click"""
@@ -317,7 +336,7 @@ def submit_login():
     user = Person.by_username(request.form['username'])
     print_debug(' submit_login: user = "{}"'.format(user))
     if user == None or not user.check_password(request.form['password']):
-        flash('Oops: wrong username or password.')
+        flash('Oops: wrong username or password.', 'login')
         return url_for('mainroute', pagepath=request.page.path, action='login')
     else:
         user.logged_in = True

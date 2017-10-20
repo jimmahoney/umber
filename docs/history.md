@@ -10,6 +10,13 @@
 
  then: file upload
 
+ aside:
+  https://bitbucket.org/cse-assemblyline/assemblyline
+  a canadian made security tool for scanning files
+  for malicious content ... could perhaps be part
+  of the upload workflow to check for bad things ...
+  though for my situation it is almost certainly overkill.
+
 ## Sep 25
 
  starting to look at file upload.
