@@ -1,5 +1,20 @@
 # umber development history #
 
+## Oct 27
+
+ first pass on file upload via drag'n'drop is done - needs more tests.
+
+ ---
+
+ drag'n'drop for folders doesn't seem to have robust support
+ so I guess I'll just skip it - too bad.
+ Folder upload does lead to recursive folder-within-folder
+ complications which I guess for now it's just better to skip.
+
+ https://stackoverflow.com/questions/3590058/does-html5-allow-drag-drop-upload-of-folders-or-a-folder-tree
+ https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/webkitGetAsEntry#Browser_compatibility
+ DataTransferItem.webkitGetAsEntry()
+
 ## Oct 19
 
  folder edit :

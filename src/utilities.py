@@ -88,7 +88,7 @@ class Git:
         """ commit abspath or this page or this folder to git repo """
         if not abspath:
             page.keep()                 # if folder, create ./.keep file
-            apspath = page.keepabspath  # page.abspath or folder's .keep
+            abspath = page.keepabspath  # page.abspath or folder's .keep
         self._git.add(abspath)
         self._git.commit('--message=user:{}'.format(page.user.username), abspath)
         

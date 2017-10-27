@@ -4,6 +4,7 @@
 <div id='dir-ls'>
 
 <form class='folder' name='folder' method='POST' action='{{ page.url }}'>
+  <div id='dragndrop'>
   <table>
     <tr>
       <td></td> {# checkbox column placeholder #}
@@ -26,12 +27,17 @@
     <tr><td colspan=5><input type='submit'
 			     name='submit_delete'
 			     id='folderdeletebutton'
-			     class='disableddelete' 
+			     class='disabledbutton' 
 			     value='delete'
 			     disabled><td></tr>
     <tr><td colspan=5><hr></td></tr>    
   </table>
-  <div>Drag and drop files or folders here to upload them.</div>
+  <div>
+    Drag and drop files here to upload them.
+    <div id="progresstrough"><div id="progressbar"><div>0%</div></div></div>
+    <!-- <span id="progressblurb">upload progress &nbsp;</span> -->
+  </div>
+  </div> <!-- dragndrop -->
 </form>
 
 <form class='folder' id='new_folder_form' method='POST' action='{{ page.url }}'>
@@ -44,8 +50,9 @@
     <div class="error"> {{ messages[0][1] |e }} </div>
     {# possible message here is 'Oops: folder names can only contain ...' #}
   {% else %}
-    New folder <input type='input' name='foldername' id='foldername' size='24'/>
-   <input  type='submit' name='submit_createfolder' value='create' />    
+    New folder <input type='input' name='foldername' id='foldername' size='24' />
+    <input  type='submit' name='submit_createfolder' value='create' 
+	    id='foldercreatebutton' class='disabledbutton' disabled />    
   {% endif %}
   {% endwith %}
   </div>
@@ -60,21 +67,5 @@
   &nbsp; 
   <input type='submit' name='submit_permissions' value='set permissions'/>
 </form>
-
-{#
-<!-- old file upload form -->
-<form name='upload_form' id='upload_form' method='POST' enctype='multipart/form-data' action="/courses/spring2017/info/notes/?action=edit" onsubmit="save_edit_text(this)"> New file   <input type='file' 
-name='submit_upload' /> <input type='submit' value='Upload' /><input type="hidden" name="saved_edit_text" value="" /></form>
-#}
-
-{#
-<!-- old "new folder" form -->
-<form name='folder_form' id='folder_form' method='POST' action="/courses/spring2017/info/notes/?action=edit" onsubmit="save_edit_text(this)"> New folder <input  type='input' name='folder_name' /> <input  type='submit' name='submit_folder' value='Create'/><input type="hidden" name="saved_edit_text" value="" /></form>
-#}
-
-{#
-<!-- old "access rights" form -->
-<form name='access_form' id='access_form' method='POST' action="/courses/spring2017/info/notes/?action=edit" onsubmit="save_edit_text(this)" > Access privileges   <small>(all guest students faculty admin) or usernames</small> read: <input type="input" name='read_access' value='all' size="16" />   write: <input type="input" name='write_access' value='faculty' size="16"/>   <input type='submit' name='submit_access' value='Change'/><input type="hidden" name="saved_edit_text" value="" /></form>
-#}
 
 </div>

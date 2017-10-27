@@ -34,7 +34,7 @@
  
  Jim Mahoney | mahoney@marlboro.edu | May 2017 | MIT License
 """
-import sys, re, os
+import sys, re, os, json
 
 ## TEST & DEBUG only
 # from OpenSSL import SSL
@@ -49,6 +49,7 @@ from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
      git, is_clean_folder_name, parse_access_string
+from werkzeug import secure_filename
 
 app = Flask('umber',
             static_folder=os_static,
@@ -204,12 +205,16 @@ def mainroute(pagepath):
     # Store the page object (and therefore page.course and page.user)
     # in the request, so that the request action handler doesn't need args.
     request.page = page
+
+    if request.method == 'POST' and '__ajax__' in request.form:
+        return ajax_upload()
     
     if request.method == 'POST':
         print_debug(' mainroute: POST')
-        reload_url = handle_post()
+        reload_url = form_post()
         if reload_url:
             return redirect(reload_url)
+        
     if (not page.is_dir and
         not page.ext in ('.md') and
         page.can['read'] and
@@ -237,13 +242,43 @@ def mainroute(pagepath):
 @app.route('/' + url_basename + '/', methods=['GET', 'POST'])
 def mainroute_blank():
     mainroute('')
-
-def handle_post():
-    """ Process a form submission (login, edit, upload, ...) """
-    # Each form has an input field named 'submit_X' for some X,
-    # and is handled by a corresponding function submit_X().
-    # The data is in the Flask request global.
     
+def ajax_upload():
+    """ handle ajax file upload """
+    page = request.page
+    print_debug(' ajax_upload ')    
+    print_debug('   request.form.keys() : {}'.format(request.form.keys()))
+    print_debug('   destination : "{}"'.format(page.abspath))
+    print_debug('   page.url : {}'.format(page.url))
+
+    # Make sure that this user is authorized to put files here.
+    if not (page.is_dir and page.can['write']):
+        # TODO bail out in a better way
+        return ajax_response(False, 'Oops - invalid permissions.') 
+        
+    for upload in request.files.getlist("file"):
+        filename = secure_filename(upload.filename)
+        print_debug('   file : "{}"'.format(filename))
+        destination = os.path.join(page.abspath, filename)
+        upload.save(destination)
+        git.add_and_commit(page, abspath=destination)
+
+    # Rather than return a bare ajax respose,
+    # reload the edit folder page to see the new uploaded files.
+    # return ajax_response(True, 'upload success') 
+    return redirect(page.url + '?action=edit')
+
+def ajax_response(status, msg):
+    """ Return json data for an ajax request """
+    status_code = "ok" if status else "error"
+    return json.dumps(dict(status=status_code, msg=msg))
+
+def form_post():
+    """ Process a form submission (login, edit, etc) or ajax request."""
+    # The input is stored in the Flask request global.
+    # Each submitted form has an input field named 'submit_X' for some X,
+    # and is handled by a corresponding function submit_X().
+
     keys_named_submit = filter(lambda s: re.match('submit', s),
                                request.form.keys())
     print_debug(' handle_post : submit keys = "{}" '.format(keys_named_submit))
@@ -258,7 +293,7 @@ def handle_post():
     # invoke submit_X handler
     result = globals()[submit_what]()
     
-    print_debug(' handle_post : result = "{}" '.format(result))
+    print_debug(' handle_post : submit result = "{}" '.format(result))
     return result
 
 def submit_createfolder():

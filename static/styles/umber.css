@@ -796,7 +796,7 @@ form.login {
 
 #dir-ls table {
     /* border: solid 1px red; */
-    width: 40em;
+    width: 36em;   /* width of folder directory listing table */
     padding: 0;
     margin: 0;
 }
@@ -898,7 +898,7 @@ form.login {
     border-radius: 0.3em; 
 }
 
-/* folder delete button */
+/* folder delete & create buttons */
 .folder input[type="submit"] {
     font-family: serif;
     font-size: 0.85em;
@@ -909,12 +909,12 @@ form.login {
     border-radius: 0.3em;
 }
 
-.disableddelete {
+.disabledbutton {
     color: grey;  
     border-color: #ededed;     /* lightgrey is #d3d3de */
 }
 
-.enableddelete {
+.enabledbutton {
     color: #002bb8;
     border-color: darkgrey;   /* darkgrey is #d9d9d9 */
 }
@@ -923,9 +923,49 @@ form.login {
     height: 1px;
 }
 
+#dragndrop {
+    border: 3px solid transparent;
+    /* in umber.js : while files dragged over this element,
+          border     => 3px dashed #606000
+          background => url(../images/file_add.png) no-repeat center
+    */
+}
+
+/* #progressblurb {
+    float:right;
+    color:green;
+ }
+*/
+
+#progresstrough {
+    display:none;    /* becomes visible during file upload  */
+    float: right;
+    margin: 0;
+    padding: 0;
+    border: 1px solid grey;
+    height: 1em;
+    width: 7em;      /* width of progress bar indicator */
+}
+#progressbar {
+    color: darkgreen;
+    margin: 2px;
+    padding: 0;
+    vertical-align: middle;
+    border: 0;
+    background-color: #ddddee;
+    width: 50%;
+    height: 0.8em;
+}
+#progressbar div {
+    display:inline;
+    position:relative;
+    bottom: 2px;
+    font-size: 0.8em;
+}
+
 /* folder edit checkbox */
 .folder input[type="checkbox"] {
-    vertical-align: text-bottom;
+    vertical-align: middle;
 }
 
 /* single grade on a student work submission page */
