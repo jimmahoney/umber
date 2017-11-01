@@ -1,3 +1,9 @@
-= resources =
+# resources 
 
-Put links to class materials here. CHANGED.
+## editors
+* [emacs](https://www.gnu.org/software/emacs/)
+* [vim](http://www.vim.org/)
+
+
+
+
