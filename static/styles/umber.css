@@ -1081,27 +1081,49 @@ table.layout {
  *    }
  ****************/
 
-.assign-date-future { 
-  font-size: 88%;
+.assign-date-past {
+  /* floats are always placed with vertical-align top,
+     so I'm using the margin-top to match the font-size
+     to bring it down into alignment.
+   */
+  font-size: 80%;
   padding: 0;
-  margin: 0;
-  margin-right: 1em;
+  margin: 0.2em 1em 0 0; /* top right bottom left */
+  color: grey;
+  float: right;
+ }
+
+.component .edit-assignment {
+    background-color: #EEEEEE;
+    margin: 1em;
+    padding: 0.1em 1em 0.5em 1em;
 }
 
-.assign-date-past { 
-  font-size: 88%;
-  padding: 0;
-  margin: 0;
-  margin-right: 1em;
-  color: grey;
+/* edit assignments submit button */
+.assignments input[type="submit"] {
+    font-family: serif;
+    font-size: 0.85em;
+    padding: 0.1em 0.4em;
+    margin: 0.2em 1.5em;
+    background-color: eee;
+    -webkit-border-radius: 0.3em;
+    border-radius: 0.3em;
+}
+
+.assign-title {
+    font-size: 0.6em;
+}
+
+.assign-id {
+    font-size: 80%;
+    color: grey;
 }
 
 .assign-date { 
-  font-size: 88%;
+  font-size: 80%;
   padding: 0;
-  margin: 0;
-  margin-right: 1em;
-  overflow: visible;
+  margin: 0.2em 1em 0 0; /* top right bottom left */  
+  float:right;
 }
 
 .component .assign-right { 
@@ -1111,6 +1133,10 @@ table.layout {
   font-size: 150%;  /* same as component h2 to get alignment to work OK */
   margin: 1em 0 0 0;
   padding: 0;
+}
+
+.another-assignment {
+    margin-left: 1.5em;
 }
 
 .component .title-right { 

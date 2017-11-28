@@ -1,0 +1,39 @@
+<h1>edit assignments</h1>
+<form class="assignments" id="edit_assignments_form" method="POST" action='{{ page.url }}'>
+{% for assmt in page.course.get_assignments_with_extras()  %}
+{# <a name="assignment_id"></a>   #}
+  <div class="edit-assignment">
+  <h2>
+    <span class="assign-id">{{ assmt.nth }}.</span>
+    <input class="assign-title" type="input" name="assignment_name_{{ assmt.nth }}" size="24" value="{{ assmt.name }}">
+    <span class="assign-date">
+     due <input type="input" name="assignment_due_{{ assmt.nth }}" size="12" value="{{ assmt.ISOdate }}">
+    </span>
+  </h2>
+  <textarea cols=45 rows=5 name="assignment_blurb_{{ assmt.nth }}">{{ assmt.blurb }}</textarea>
+  </div>
+{% endfor %}
+{% if 'extras' in request.args %}
+{%    set extras = request.args['extras'] | int %}
+{% else %}
+{%    set extras = 1 %}
+{% endif %}
+{% for nth_extra in range(page.course.assignment_nth_plus1,
+                          page.course.assignment_nth_plus1 + extras ) %}  
+  <div class="edit-assignment">
+  <h2>
+    <span class="assign-id">{{ nth_extra }}.</span>
+    <input class="assign-title" type="input" name="assignment_name_{{ nth_extra }}"
+           size="24" value="">
+    <span class="assign-date">
+     due <input type="input" name="assignment_due_{{ nth_extra }}"
+                size="12" value="">
+    </span>
+  </h2>
+  <textarea cols=45 rows=5 name="assignment_blurb_{{ nth_extra }}"> </textarea>
+  </div>
+{% endfor %}
+<a href="{{ request.base_url }}?action=edit&extras={{ extras + 1 }}">
+<p class="another-assignment">add another blank assignment</a><p>
+<input type="submit" name="submit_assignments" value="set assignments" />
+</form>

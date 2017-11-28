@@ -19,7 +19,7 @@
   {# --- history tab --- #}    
   {% if page.action == 'history' %}
     <li class='front'>history</li>
-  {% elif page.is_file %}
+  {% elif page.is_file and not page.is_sys %}
     <li class='behind'><a href="{{page.url}}?action=history">history</a></li>
   {% endif %}  
   {# --- revision prev|info|next|current tab --- #}

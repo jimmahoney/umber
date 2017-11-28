@@ -209,6 +209,50 @@ class Course(BaseModel):
     def os_path(self):
         return os.path.join(os_base, self.path)
 
+    def get_assignments(self):
+        """ Return list of assignments for this course """
+        return list(Assignment.select() \
+                              .where(Assignment.course == self) \
+                              .order_by(Assignment.nth))
+                              
+    def update_assignments(self, assignments_data):
+        """ Update course assignments from 
+            a dict of assignments_data[nth][name, due, blurb] """
+        # Note: passed argument is *not* made up of Assignment objects.
+        db_assignments = {a.nth : a for a in self.get_assignments()}
+        with db.transaction():
+            for nth in assignments_data:
+                if nth not in db_assignments:
+                    (db_assignments[nth], status) = Assignment.get_or_create(
+                        course=self, nth=nth)
+                db_assignments[nth].name = assignments_data[nth]['name']
+                db_assignments[nth].due = str(Time.parse(assignments_data[nth]['due']))
+                db_assignments[nth].blurb = assignments_data[nth]['blurb']
+                db_assignments[nth].save()
+
+    def get_assignments_with_extras(self):
+        """ Return list of assignments in this course with extra info """
+        # ... i.e. prepare the data for html display
+        now = Time()
+        # print(" now = " + str(now))
+        assignments = self.get_assignments()
+        if len(assignments) == 0:
+            self.assignment_nth_plus1 = 1
+        else:
+            self.assignment_nth_plus1 = assignments[-1].nth + 1
+        for assmt in assignments:
+            duedate = Time(assmt.due)
+            if duedate < now:
+                print(" PAST : duedate = " + str(duedate))
+                assmt.dateclass = 'assign-date-past'
+            else:
+                print(" FUTURE : duedate = " + str(duedate))
+                assmt.dateclass = 'assign-date'
+            assmt.date = duedate.assigndate()         # for assignment list display
+            assmt.ISOdate = duedate.assignISOdate()   # for assignment list editing
+            assmt.blurb_html = markdown2html(assmt.blurb)
+        return assignments
+    
     def nav_page(self, user):
         """ return course's navigation page """
         # TODO: should this be cached to self._nav_page ?
@@ -251,6 +295,19 @@ class Page(BaseModel):
 
     class Meta:
         db_table = 'Page'
+
+
+    # Each course has some sys/* pages which get special treatment.
+    system_pages = {'assignments' : True,
+                    'courses' : True,
+                    'error' : True,
+                    'folder': True,
+                    'grades': True,
+                    'roster': True,
+                    'settings': True,
+                    'users' : True}
+    editable_system_pages = {'navigation': True,
+                             'assignments': True}
         
     page_id = PrimaryKeyField(db_column='page_id')
 
@@ -280,8 +337,35 @@ class Page(BaseModel):
             page._setup_user_permissions()  # sets page.can['read'] etc
         if revision or action=='history':
             page._setup_revision_data()     # sets page.history etc
+        page._setup_sys()         # sets .is_sys etc    
         return page
 
+    def _setup_sys(self):
+        """ define .relpath , .is_sys, .sys_template """
+        # relpath is path relative to course's path,
+        # which is '' for the course's home folder.
+        # If relpath is 'sys/assignments', then is_sys will be true,
+        # the template will be 'umber/sys/assignments.html'
+        # and the edit template will be 'umber/sys/edit_assignments.html'
+        assert self.course != None
+        self.relpath = self.path[len(self.course.path):]
+        if len(self.relpath)>0 and self.relpath[0] == '/':
+            self.relpath = self.relpath[1:]
+        self.is_sys = self.relpath[:4] == 'sys/'
+        if self.is_sys:
+            template = self.relpath[4:]
+        else:
+            template = 'error'
+        if template == '':
+            template = 'folder'
+        if template not in Page.system_pages:
+            template = 'error'
+        self.sys_template = 'umber/sys/' + template + '.html'
+        if template in Page.editable_system_pages:
+            self.sys_edit_template = 'umber/sys/edit_' + template + '.html'
+        else:
+            self.sys_edit_template = 'umber/sys/edit_error.html'
+    
     def get_course(self):
         """ return this page's course """  # TODO : cache in sql database ??
         # extract path pieces e.g. ['demo', 'home']
@@ -481,7 +565,6 @@ class Page(BaseModel):
         self.path_no_name = self.path[: - len(self.name) ]
         self.is_file = os.path.isfile(self.abspath)
         self.is_dir = os.path.isdir(self.abspath)
-        self.is_sys = self.path[:3] == 'sys'
         if self.exists:
             stat = os.stat(self.abspath)
             self.lastmodified = Time(stat.st_mtime)
@@ -489,15 +572,12 @@ class Page(BaseModel):
                 self.size = None
                 self.filetype = 'directory'
                 self.name_with_ext += '/'
-                self.abs_with_ext = self.abspath + '/'
             elif self.is_file:
                 self.size = stat.st_size
                 self.filetype = ext_to_filetype.get(self.ext, 'unknown')
-                self.abs_with_ext = self.abspath
             else:
                 self.size = None
                 self.filetype = 'unknown'
-                self.abs_with_ext = self.abspath
         else:
             self.lastmodified = None
             self.size = None
@@ -634,7 +714,7 @@ class Assignment(BaseModel):
     course = ForeignKeyField(rel_model=Course,
                              db_column='course_id',
                              to_field='course_id')
-    
+        
 class Role(BaseModel):
     class Meta:
         db_table = 'Role'
@@ -821,7 +901,7 @@ def populate_database():
         
         (assign2, created) = Assignment.get_or_create(
             course_id = democourse,
-            nth = 1,
+            nth = 2,
             name = 'week 2',
             uriname = 'week_2',
             due = '2013-01-27',

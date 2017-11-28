@@ -29,7 +29,7 @@
 </div>
 {% include 'umber/actions.html' %} 
 <div id="column-one">
- <h1><a href="#"> {{ course.name_as_title }} </a></h1>
+ <h1><a href="{{ course.url }}"> {{ course.name_as_title }} </a></h1>
  <div><div id="semester"> {{ course.semester }} </div></div>
  <div>{{ course.nav_html(user, page) }}</div>
  {# include 'umber/navigation.html' #} 

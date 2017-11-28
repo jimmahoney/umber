@@ -1,0 +1,14 @@
+<h1>assignments</h1>
+{% for assmt in page.course.get_assignments_with_extras()  %}
+  {# <a name="assignment_id"></a>   #}
+  <h2><span class="assign-id">{{assmt.nth}}.</span> {{ assmt.name }}
+    <span class="{{ assmt.dateclass }}">due {{ assmt.date }}
+      {% if page.user_role.name == 'student' %}
+      &nbsp;&nbsp; <a href="{{ course.url }}/students/{{ user.username }}/work/{{ assmt.nth }}">your work</a>
+      {% endif %}
+    </span>
+  </h2>
+  {{ assmt.blurb_html | safe }}
+{% endfor %}
+
+

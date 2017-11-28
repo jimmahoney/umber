@@ -20,12 +20,19 @@
 
   <h4>page</h4>
     &nbsp; page.path = {{page.path }} <br>
-    &nbsp; page.abspath = {{page.abspath }} <br>
     &nbsp; page.ext = '{{page.ext }}' <br>  
+    &nbsp; page.path_with_ext = {{page.path_with_ext }} <br>  
     &nbsp; page.action = {{page.action }} <br>  
+    &nbsp; page.revision = {{page.revision }} <br>  
+    &nbsp; page.url = {{page.path }} <br>
     &nbsp; page.is_file = {{page.is_file }} <br>
     &nbsp; page.is_dir = {{page.is_dir }} <br>
+    &nbsp; page.is_sys = {{page.is_sys }} <br>
     &nbsp; page.exists = {{page.exists }} <br>
+    &nbsp; page.filetype = {{page.filetype }} <br>
+    &nbsp; page.size = {{page.size }} <br>
+    &nbsp; page.bytesize = '{{page.bytesize }}' <br>  
+    &nbsp; page.abspath = {{page.abspath }} <br>
     {% if page.lastmodified != None %}
       &nbsp; page.lastmodified = {{ page.lastmodified.daydatetime() }} <br>
     {% endif %}

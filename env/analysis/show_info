@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#
+# show_info
+
+conda info asn1crypto=0.22.0=py27_0
+conda info beautifulsoup4=4.6.0=py27_0
+conda info cffi=1.10.0=py27_0
+conda info click=6.7=py27_0
+conda info cryptography=1.8.1=py27_0
+conda info curl=7.54.1=0
+conda info enum34=1.1.6=py27_0
+conda info expat=2.1.0=0
+conda info flask=0.12.2=py27_0
+conda info git=2.11.1=0
+conda info idna=2.6=py27_0
+conda info ipaddress=1.0.18=py27_0
+conda info itsdangerous=0.24=py27_0
+conda info jinja2=2.9.6=py27_0
+conda info krb5=1.13.2=0
+conda info libssh2=1.8.0=0
+conda info markdown2=2.3.4=py27_0
+conda info markupsafe=1.0=py27_0
+conda info mkl=2017.0.3=0
+conda info numpy=1.13.1=py27_0
+conda info openssl=1.0.2l=0
+conda info packaging=16.8=py27_0
+conda info pip=9.0.1=py27_1
+conda info pyasn1=0.2.3=py27_0
+conda info pycparser=2.18=py27_0
+conda info pygments=2.2.0=py27_0
+conda info pyopenssl=17.0.0=py27_0
+conda info pyparsing=2.2.0=py27_0
+conda info python=2.7.13=0
+conda info pyyaml=3.12=py27_0
+conda info readline=6.2=2
+conda info setuptools=27.2.0=py27_0
+conda info sh=1.11=py27_0
+conda info six=1.10.0=py27_0
+conda info sqlalchemy=1.1.13=py27_0
+conda info sqlite=3.13.0=0
+conda info tk=8.5.18=0
+conda info werkzeug=0.12.2=py27_0
+conda info wheel=0.29.0=py27_0
+conda info yaml=0.1.6=0
+conda info zlib=1.2.11=0

@@ -48,8 +48,8 @@ protocol = 'http'        # http | https
 
 about_copyright_url = 'http://FIXME'
 
-timezone = 'US/Eastern'
-timezoneoffset = '-05:00'  # for ISO GMT strings
+localtimezone = 'US/Eastern'
+localtimezoneoffset = '-05:00'  # for ISO GMT strings
 
 admin_email = '<a mailto:"mahoney@marlboro.edu">Jim Mahoney</a>' 
 

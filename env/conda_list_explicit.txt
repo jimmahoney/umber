@@ -1,8 +1,12 @@
-# This file may be used to create an environment using:
+# It may be used to create an environment like this :
 # $ conda create --name <env> --file <this file>
 #
-# However, you will still need to manually install (with "pip install xxx")
-# the pip dependences listed in environment.yml.  - Jim
+# This was created with "conda list --explicit --name umber > conda_list_explicit.txt"
+# and then edited to add these extra lines.
+#
+# However, the pip installs aren't listed or installed here -
+# you'll still need to manually install (with "pip install xxx")
+# the pip dependences listed in environment.yml, as given with "conda env export".
 #
 # platform: osx-64
 @EXPLICIT

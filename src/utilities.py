@@ -4,36 +4,86 @@
 """
 import os, urlparse, sh, arrow, string, re
 from markdown2 import markdown
-from settings import url_basename, os_base, timezone, timezoneoffset
+from settings import url_basename, os_base, localtimezone, localtimezoneoffset
 from flask import url_for
+import parsedatetime, pytz
 
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
         including a timezone-aware (as specified in settings.py) offset.
         >>> print Time('2013-01-01T12:24:52.3327-05:00')
         2013-01-01T12:24:52-05:00
-        >>> print Time('2013-05-09') # daylight savings => -4 from GMT
-        2013-05-09T13:00:00-04:00
-        >>> print Time('2013-01-09') # not daylight savings => -5 from GMT
-        2013-01-09T12:00:00-05:00
     """
     # Uses the python Arrow library; see http://crsmithdev.com/arrow/  .
     # For time differences, subtract two of these (given a datetime.timedelta)
     # and then use .seconds, .total_seconds(), .resolution etc.
     #
-    # The string format is like that described
-    # at http://momentjs.com/docs/#/displaying/format/
+    # The string format is at http://momentjs.com/docs/#/displaying/format/
+    #
+    # Since I'm using these mostly for assignment due dates, if a date is given
+    # without a time, then the time will by default be set to 11:59pm local.
+
+    defaulttime = '11:59 pm'
+    default24time = '23:59:00'
     
+    @staticmethod
+    def parse(date_time_string):
+        """ Return Time object from human friendly description i.e. Time.parse('tomorrow') """
+        # If a time isn't given (i.e. found via regex search) then it's set to the default.
+        # The timezone is local - see settings.py.
+        date_time_string = str(date_time_string)  # convert from utf8 if needed
+        if 'midnight' in date_time_string:
+            date_time_string = date_time_string.replace('midnight', Time.defaulttime)
+        if not re.search('am|pm|noon|morning|afternoon|evening', date_time_string):
+            date_time_string += ' ' + Time.defaulttime
+        datetime = parsedatetime.Calendar().parseDT(
+           datetimeString=date_time_string,
+           tzinfo=pytz.timezone(localtimezone))[0]
+        return Time(datetime)
+        
     def __init__(self, *args, **kwargs):
         """ With no arguments, returns the 'now' time. """
-        # And if the arg is just e.g. '2015-01-02', add utc 'T12:00:00-05:00'
-        # (Apparently an ISO string date string like '2015-12-01' ignores
-        #  the tzinfo optional arg. However
-        #  arrow.get(datetime.date(2015,12,01), tzinfo=timezone) does work.)
-        if len(args)>=1 and isinstance(args[0], basestring) \
+        # If an iso date string is given without a time i.e. '2017-11-01'
+        # then the time will be set to the default 23:59:00 local.
+        # I'm checking for that explicit case here and adjusting accordingly.
+        # >>> str(Time('2017-12-02'))
+        # '2017-12-02T23:59:00-05:00'   where -5 is US/Eastern localtimezone
+        # >>> Time('2017-12-02').isodate()
+        # '2017-12-02'
+        if len(args)==1 and isinstance(args[0], basestring) \
                         and len(args[0])==10:
-            args = (args[0] + 'T12:00:00' + timezoneoffset,) +  args[1:]
-        self.arrow = arrow.get(*args, **kwargs).to(timezone)
+            args = (args[0] + 'T' + Time.default24time + localtimezoneoffset ,)
+        self.arrow = arrow.get(*args, **kwargs).to(localtimezone)
+    def __lt__(self, other):
+        try:
+            return self.arrow < other.arrow
+        except:
+            return False
+    def __le__(self, other):
+        try:
+            return self.arrow <= other.arrow
+        except:
+            return False
+    def __gt__(self, other):
+        try:
+            return self.arrow > other.arrow
+        except:
+            return False
+    def __ge__(self, other):
+        try:
+            return self.arrow >= other.arrow
+        except:
+            return False
+    def __eq__(self, other):
+        try:
+            return self.arrow == other.arrow
+        except:
+            return False
+    def __ne__(self, other):
+        try:
+            return self.arrow != other.arrow
+        except:
+            return False
     def __str__(self):
         """ ISO representation rounded down to the nearest second """
         return self.arrow.floor('second').isoformat()
@@ -57,6 +107,20 @@ class Time(object):
     def slashes(self):
         """ Return as e.g. '06/09/13' """
         return self.arrow.format('MM/DD/YY')
+    def assigndate(self):
+        """ Return as e.g. 'Thu Jan 26' or 'Tue Jan 23 2pm' """
+        datetime = self.arrow.format('ddd MMM D h:mm a')
+        if Time.defaulttime in datetime:
+            return self.arrow.format('ddd MMM D')
+        else:
+            return datetime
+    def assignISOdate(self):
+        """ Return as e.g. '2017-09-03' or '2017-09-4 2pm' """
+        datetime = self.arrow.format('YYYY-MM-DD h:mm a')
+        if Time.defaulttime in datetime:
+            return self.arrow.format('YYYY-MM-DD')
+        else:
+            return datetime
     def semester(self):
         """ Return as e.g. 'Summer 2013' """
         month = self.arrow.month
@@ -70,6 +134,28 @@ class Time(object):
     def str(self):
         return str(self)
 
+def parse_assignment_data(request_form):
+    """ Return a dict assignments_data[nth][name, due, blurb] from request form data 
+        >>> data = {'assignment_name_2':'readings', 'assignment_due_2':'2017-02-03'}
+        >>> p = parse_assignment_data(data)
+        >>> (p[2]['name'], p[2]['due'])
+        ('readings', '2017-02-03')
+    """
+    # The data are in request.form with keys like
+    # ('assignment_name_n', 'assignment_due_n', 'assignment_blurb_n')
+    # where n is an integer.
+    # Empty assignments (e.g. 'assignment_name_7':'') are ignored.
+    assignment_data = {}
+    regex_expression = re.compile(r'assignment_(\w+)_(\d+)')
+    for key in request_form:
+        m = regex_expression.match(key)
+        if m:
+            (which, nth) = (m.group(1), int(m.group(2)))
+            if not assignment_data.has_key(nth) and request_form[key]:
+                assignment_data[nth] = {}
+            assignment_data[nth][which] = request_form[key]
+    return assignment_data
+    
 class Git:
     """ a wrapper around sh.git """
     

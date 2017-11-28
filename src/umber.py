@@ -48,7 +48,7 @@ from settings import admin_email, about_copyright_url, \
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
-     git, is_clean_folder_name, parse_access_string
+     git, is_clean_folder_name, parse_access_string, parse_assignment_data
 from werkzeug import secure_filename
 
 app = Flask('umber',
@@ -196,7 +196,6 @@ def mainroute(pagepath):
         url = page.url
         while page.url[-1] != '/' and len(page.url) > 0:
             url = url[:-1]
-
         if len(page.url) > 12 and page.url[-12:] == '.access.yaml':
             return redirect(page.url[:-12])
         else:
@@ -205,7 +204,7 @@ def mainroute(pagepath):
     # Store the page object (and therefore page.course and page.user)
     # in the request, so that the request action handler doesn't need args.
     request.page = page
-
+    
     if request.method == 'POST' and '__ajax__' in request.form:
         return ajax_upload()
     
@@ -287,7 +286,7 @@ def form_post():
 
     if submit_what not in ('submit_delete', 'submit_edit',
                            'submit_login', 'submit_logout',
-                           'submit_createfolder'):
+                           'submit_createfolder', 'submit_assignments'):
         print_debug(' handle_post: OOPS - illegal submit_what ');
         
     # invoke submit_X handler
@@ -295,6 +294,15 @@ def form_post():
     
     print_debug(' handle_post : submit result = "{}" '.format(result))
     return result
+
+def submit_assignments():
+    """ handle assignment editing """
+    print_debug(' submit_assignments: ')
+    print_debug('   request.form is {}'.format(request.form))
+    assignment_data = parse_assignment_data(request.form)
+    print_debug('   len(assignment_data) = {}'.format(len(assignment_data)))
+    request.page.course.update_assignments(assignment_data)
+    return request.base_url    #  reload assignments page without edit
 
 def submit_createfolder():
     """ handle folder creation """

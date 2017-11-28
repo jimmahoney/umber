@@ -1,27 +1,24 @@
 {# content  #}
 {# ######## #}
-{% if page.is_sys %}
-  {% include 'umber/sys.html' %}
-{% elif not page.can['read'] %}
-  {% include 'umber/forbidden.html' %}
+{% if not page.can['read'] %}
+    {% include 'umber/forbidden.html' %}
+{% elif page.is_sys and page.action == 'edit' and page.can['write'] %}
+    {% include page.sys_edit_template %}
+{% elif page.is_sys %}
+    {% include page.sys_template %}
+{% elif not page.exists and page.can['write'] %}
+    {% include 'umber/edit_file.html' %}
 {% elif not page.exists %}
-  {% if page.can['write'] %}
-    {% include 'umber/edit_file.html' %}
-  {% else %}
     {% include 'umber/missing.html' %}
-  {% endif %}
-{% elif page.is_dir %}
-  {% if page.action == 'edit' and page.can['write'] %}
+{% elif page.is_dir and page.action == 'edit' and page.can['write'] %}
     {% include 'umber/edit_folder.html' %}
-  {% else %}
+{% elif page.is_dir %}
     {% include 'umber/folder.html' %}
-  {% endif %}
-{% else %}
-  {% if page.action == 'edit' and page.can['write'] %}
+{% elif page.action == 'edit' and page.can['write'] %}
     {% include 'umber/edit_file.html' %}
-  {% elif page.action == 'history' %}
+{% elif page.action == 'history' %}
     {% include 'umber/history_file.html' %}
-  {% else %}
-    {{ page.content_as_html() | safe }}
-  {% endif %}
+{% else %}
+  {{ page.content_as_html() | safe }}
 {% endif %}
+{# ######## #}

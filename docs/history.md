@@ -1,5 +1,9 @@
 # umber development history #
 
+## Nov 28
+
+ Displaying and editing assignments works.
+
 ## Oct 27
 
  first pass on file upload via drag'n'drop is done - needs more tests.

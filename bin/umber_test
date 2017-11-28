@@ -8,5 +8,6 @@ umber_init_db
 
 cd src
 echo "* Testing model.py";  python model.py
+echo "* Testing utilities.py";  python utilities.py
 # echo "* Testing page.py";   python page.py
 cd ..
