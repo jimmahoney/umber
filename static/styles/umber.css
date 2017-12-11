@@ -811,9 +811,16 @@ form.login {
     vertical-align: text-bottom;
 }
 
-#dir-ls td:last-child {
-    text-align: right;
+#dir-ls .heading {
+    text-decoration: underline;
+    /* color: #a0522d;  */  /* sienna */
 }
+
+/*
+  #dir-ls td:last-child {
+      text-align: right;
+  }
+*/
 
 #dir-ls img {
   border: none; 

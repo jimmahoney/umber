@@ -4,12 +4,12 @@
 <div id="dir-ls">
   <table>
     <tr>
-      <td></td> {# icon #}
-      <td>name</td>
-      <td>last modified</td>
-      <td>size</td>
+      <td></td>        {# icon #}
+      <td>&nbsp;</td>  {# name #}
+      <td class="heading">last modified</td>
+      <td class="heading">size</td>
     </tr>
-    <tr><td colspan=4><hr></td></tr>
+    <!-- <tr><td colspan=4><hr></td></tr> -->
     {% for child in page.children() %}
     <tr>
       <td><img src="{{ child.icon_url() }}" alt="TXT"></td>
@@ -18,6 +18,6 @@
       <td>{{ child.bytesize }}</td>
     </tr>
     {% endfor %}
-    <tr><td colspan=4><hr></td></tr>
+    <!-- <tr><td colspan=4><hr></td></tr> -->
   </table>
 </div>    

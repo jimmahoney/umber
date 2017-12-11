@@ -1,5 +1,9 @@
 # umber development history #
 
+## Dec 11
+
+ Working on attachments.
+
 ## Nov 28
 
  Displaying and editing assignments works.
@@ -1026,6 +1030,37 @@ ipython connectivity might also be something to consider.
 
  check out https://realpython.com/blog/python/the-minimum-viable-test-suite/
  which discusses Flask-Testing 
+
+-----------------
+
+ I can clone this repo if I can ssh into a server where it's store.
+ For my desktop (hardmaple) and with my ssh keys installed to
+ automate login :
+
+   $ cd Desktop    # clone will be put here
+   $ git clone harmaple:sugar/academics/umber
+   Cloning into 'umber'...
+   etc
+
+-------------------
+
+ git does have a version of repositories within repositories -
+ it's called "submodules".
+
+-------------------
+
+ LaTeX 
+ https://www.mathjax.org/#gettingstarted
+ They say to use 
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+
+
+
+
+
+
+
+
 
 
 

@@ -346,11 +346,11 @@ class Page(BaseModel):
     def _setup_attachments(self):
         if self.is_file and self.ext == '.md':
             attach_dir = self.abspath.replace(self.ext, '.attachments')
-            if os.path.exists(attach_dir) and os.path.is_dir(attach_dir):
+            if os.path.exists(attach_dir) and os.path.isdir(attach_dir):
                 self.attachments = self.children(abspath=attach_dir)
             else:
                 self.attachments = []
-            self.has_attachments = len(self.attachments) > 0:
+            self.has_attachments = len(self.attachments) > 0
         else:
             self.attachments = []
             self.has_attachments = False
