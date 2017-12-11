@@ -1,6 +1,6 @@
 <h1>assignments</h1>
 {% for assmt in page.course.get_assignments_with_extras()  %}
-  {# <a name="assignment_id"></a>   #}
+  <a name="{{ assmt.nth }}"></a>
   <h2><span class="assign-id">{{assmt.nth}}.</span> {{ assmt.name }}
     <span class="{{ assmt.dateclass }}">due {{ assmt.date }}
       {% if page.user_role.name == 'student' %}

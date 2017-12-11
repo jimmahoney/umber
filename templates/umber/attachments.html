@@ -1,1 +1,30 @@
+{# attachments #}
+{% if page.can['read'] and page.has_attachments %}
 <!-- attachments -->
+<div class="component">
+<h2 class="directory">
+  attachments
+  <img src="{{ static_url('images/paper_clip_tilt.png') }}" alt="[paper clip]">
+</h2>
+<div id="dir-ls">
+  <table>
+    <tr>
+      <td></td> {# icon #}
+      <td>name</td>
+      <td>last modified</td>
+      <td>size</td>
+    </tr>
+    <tr><td colspan=4><hr></td></tr>
+    {% for child in page.attachments %}
+    <tr>
+      <td><img src="{{ child.icon_url() }}" alt="TXT"></td>
+      <td><b><a href="{{ child.name_with_ext }}">{{ child.name_with_ext }}</a></b></td>
+      <td>{{ child.lastmodified.datetime() }}</td>
+      <td>{{ child.bytesize }}</td>
+    </tr>
+    {% endfor %}
+    <tr><td colspan=4><hr></td></tr>
+  </table>
+</div>
+</div>
+{% endif %}

@@ -332,24 +332,47 @@ class Page(BaseModel):
         page._setup_file_properties()       # sets page.isfile etc
         page.gitpath = os.path.join(git_base, page.path_with_ext)
         page.course = page.get_course()
+        page.relpath = page.path[len(page.course.path):] # i.e. within course
         page.access = page.get_access()
         if user:
             page._setup_user_permissions()  # sets page.can['read'] etc
         if revision or action=='history':
             page._setup_revision_data()     # sets page.history etc
-        page._setup_sys()         # sets .is_sys etc    
+        page._setup_sys()         # sets .is_sys etc
+        page._setup_attachments() # sets .has_attachments
+        page._setup_work()        # 
         return page
 
+    def _setup_attachments(self):
+        if self.is_file and self.ext == '.md':
+            attach_dir = self.abspath.replace(self.ext, '.attachments')
+            if os.path.exists(attach_dir) and os.path.is_dir(attach_dir):
+                self.attachments = self.children(abspath=attach_dir)
+            else:
+                self.attachments = []
+            self.has_attachments = len(self.attachments) > 0:
+        else:
+            self.attachments = []
+            self.has_attachments = False
+            
+    
+    def _setup_work(self):
+        """ see if this is a students/<name>/work/<number> student work page; 
+            define .is_work and .work, set up .work for html display
+        """
+        # print(' _setup_work : relpath = {}'.format(self.relpath))
+        self.is_work = re.match(r'students/(\w+)/(\d+)', self.relpath)
+        if not self.is_work:
+            self.work = None
+        else:
+            self.work = 'FIXME'
+    
     def _setup_sys(self):
-        """ define .relpath , .is_sys, .sys_template """
-        # relpath is path relative to course's path,
-        # which is '' for the course's home folder.
+        """ see if this is a sys/* page : define .relpath , .is_sys, .sys_template """
         # If relpath is 'sys/assignments', then is_sys will be true,
         # the template will be 'umber/sys/assignments.html'
         # and the edit template will be 'umber/sys/edit_assignments.html'
-        assert self.course != None
-        self.relpath = self.path[len(self.course.path):]
-        if len(self.relpath)>0 and self.relpath[0] == '/':
+        if len(self.relpath) > 0 and self.relpath[0] == '/':
             self.relpath = self.relpath[1:]
         self.is_sys = self.relpath[:4] == 'sys/'
         if self.is_sys:
@@ -482,16 +505,18 @@ class Page(BaseModel):
             # That way both folders & files can use this for git commits.
             self.keepabspath = self.abspath
 
-    def children(self):
+    def children(self, abspath=''):
         """ return page for each file or folder below this folder """
         result = []
-        if self.is_dir:
-            for name in os.listdir(self.abspath):
-                # loop over e.g. [u'.access.yaml', u'home.md', u'students']
+        if abspath == '':
+            abspath = self.abspath
+        try:
+            for name in os.listdir(abspath):
                 if name[0] == '.':  # skip invisible files e.g. .access.yaml
                     continue
-                result.append(Page.get_from_path(
-                    os.path.join(self.abspath, name)))
+                result.append(Page.get_from_path(os.path.join(abspath, name)))
+        except OSError:  # i.e. if abspath isn't a directory.
+            pass
         return result
 
     def icon_url(self):

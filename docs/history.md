@@ -1010,8 +1010,22 @@ ipython connectivity might also be something to consider.
    Hmmm. That looks pretty straightforward ... and sh is in conda.
    And they have a "from sh import git" already.
 
+------------
+ deploying it
 
+ Apache & mod_wsgi looks like a real option:
+   - I already have experience with apache
+   - should be able to have part of website static,
+     part umber as I do now on cs.
 
+ But also see 
+    https://www.fullstackpython.com/docker.html
+
+-------------
+ testing
+
+ check out https://realpython.com/blog/python/the-minimum-viable-test-suite/
+ which discusses Flask-Testing 
 
 
 

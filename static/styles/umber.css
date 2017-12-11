@@ -630,7 +630,8 @@ form.login {
  * Too much of a comment for a tiny bit of CSS, but...
  ***/
 .component + .component { 
-  border-top: 1px solid #e0f0f0;   /*#fffcfc; */
+    /* border-top: 1px solid #e0f0f0; */
+    border-top: 1px solid #fffcfc;
 } 
 
 /* ------------------- stuff within components --------------------- */
