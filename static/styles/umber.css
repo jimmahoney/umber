@@ -784,7 +784,7 @@ form.login {
 #dir-ls { 
   /*font-family: monospace; */              /* default for 'pre' */
   /* white-space: pre; */                   /* ditto; show spaces as-is */
-  padding: 0 1em 0.5em 1em;
+  padding: 0 1em 0 1em;
   margin: 0 0 0.5em 0;
   border: solid 1px #e0f0f0;           /* #90C0C0; */
   background-color: #fafafa;
@@ -799,7 +799,7 @@ form.login {
     /* border: solid 1px red; */
     width: 36em;   /* width of folder directory listing table */
     padding: 0;
-    margin: 0;
+    margin: 0 0 0.5em 0;
 }
 
 #dir-ls td {
@@ -936,7 +936,8 @@ form.login {
     /* in umber.js : while files dragged over this element,
           border     => 3px dashed #606000
           background => url(../images/file_add.png) no-repeat center
-    */
+   */
+    margin-bottom: 0;
 }
 
 /* #progressblurb {

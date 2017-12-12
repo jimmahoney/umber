@@ -119,18 +119,16 @@ CREATE TABLE Registration (
 --
 -- An Assignment is anything that gets graded, including tests.
 -- Faculty assign 'em ("Read this; write that") and grade 'em.
--- The "nth" field allows sorting them in the same order they're listed
--- in course_name/special/assignments.wiki
+-- The "nth" field gives each a (1,2,3,...) number.
 -- The "notes" field is (again) for possible future expansion
 --
 CREATE TABLE Assignment (
   assignment_id INTEGER PRIMARY KEY NOT NULL,
   course_id INTEGER NOT NULL DEFAULT 0
     CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
+  nth INTEGER UNIQUE NOT NULL DEFAULT 1,
   name TEXT NOT NULL DEFAULT '',
-  uriname TEXT NOT NULL DEFAULT '',
   due TEXT,
-  nth INTEGER,
   blurb TEXT NOT NULL DEFAULT '',
   active INTEGER NOT NULL DEFAULT 1,
   notes TEXT NOT NULL DEFAULT ''

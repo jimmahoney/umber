@@ -4,9 +4,14 @@
 """
 import os, urlparse, sh, arrow, string, re
 from markdown2 import markdown
-from settings import url_basename, os_base, localtimezone, localtimezoneoffset
+from settings import url_basename, os_base, DEBUG, \
+                     localtimezone, localtimezoneoffset
 from flask import url_for
 import parsedatetime, pytz
+
+def print_debug(message):
+    if DEBUG:
+        print message
 
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
@@ -167,8 +172,11 @@ class Git:
         # -- page is the folder from which the delete form was submitted.
         page.keep()
         self._git.rm('-r', *abspaths)
-        self._git.commit('--message=user:{}'.format(page.user.username),
-                         *abspaths)
+        try:
+            self._git.commit('--message=user:{}'.format(page.user.username),
+                                 *abspaths)
+        except Exception as err:
+            print_debug("git rm_and_commit error '{}'".format(err))
         
     def add_and_commit(self, page, abspath=None):
         """ commit abspath or this page or this folder to git repo """
@@ -176,8 +184,11 @@ class Git:
             page.keep()                 # if folder, create ./.keep file
             abspath = page.keepabspath  # page.abspath or folder's .keep
         self._git.add(abspath)
-        self._git.commit('--message=user:{}'.format(page.user.username), abspath)
-        
+        try:
+            self._git.commit('--message=user:{}'.format(page.user.username), abspath)
+        except Exception as err:
+            print_debug("git add_and_commit error '{}'".format(err))
+
     def log(self, page):
         # _git.log gives '(revision,date,user:who)\n(revision,date,user:who)'
         lines = self._git.log('--date=iso-strict',

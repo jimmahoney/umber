@@ -51,7 +51,18 @@
 	    contentType: false,
 	    processData: false,
 	    cache: false,
+
+	    complete: function(jqhxr, textStatus){
+		// called after any success() and error() callbacks.
+		// alert(" xrh complete ");    // this does get called.
+		window.location.reload(true);  // show changes
+	    },
+	    
 	    sucess: function(data){
+		// do something with the the returned xml
+
+		//alert(" xhr success ");  // this is apparently not called.
+		
 		progressbar.css({"width": "100%"});
 		data = JSON.parse(data);
 		if (data.status === "error"){
@@ -63,12 +74,22 @@
 		    progressbar.hide();
 		}
 	    },
+	    
 	    xhr: function(){
 		// upload in progress
+		
+		// alert("in xhr factor") // yes, this gets called.
+		
 		var xhrobj = $.ajaxSettings.xhr();
 		if (xhrobj.upload){
+
+		    // alert(" in 'if xrobj.upload' ") // this gets called too.
+		    
 		    xhrobj.upload.addEventListener("progress",
-			    function(event) {
+			   function(event) {
+
+ 			        // alert(" xhr progress "); // This is called.
+						       
 			        var percent = 0;
 			        var position = event.loaded || event.position;
 			        var total    = event.total;
@@ -82,7 +103,19 @@
 		}
 		return xhrobj;
 	    }         // xhr: function
+	    
 	});           // $.ajax
+
+	// The page change isn't showing.
+	// The xhr "upload in progress" and "success" functions
+	// don't seem to be being called at all, and I haven't debugged that.
+	// The file upload works ... but not the progress bars, yet.
+	//alert("TEST");
+	//
+	// See https://stackoverflow.com/questions/15668339/can-onprogress-functionality-be-added-to-jquery-ajax-by-using-xhrfields
+	// for some possible code to try.
+	//
+	
     }                 // function do_upload
     
     function init_dragndrop(){

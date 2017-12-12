@@ -1,5 +1,6 @@
 {# attachments #}
-{% if page.can['read'] and page.has_attachments %}
+{% if page.can['read'] and page.is_file and page.ext == '.md'
+      and not page.is_sys and (page.has_attachments or page.action == 'edit') %}
 <!-- attachments -->
 <div class="component">
 <h2 class="directory">
@@ -7,6 +8,48 @@
   <img src="{{ static_url('images/paper_clip_tilt.png') }}" alt="[paper clip]">
 </h2>
 <div id="dir-ls">
+{% if page.action == 'edit' and page.can['write'] %}
+  {# edit attachments #}
+<form class='folder' name='folder' method='POST' action='{{ page.url }}'>
+  <div id='dragndrop'>
+  <table>
+    <tr>
+      <td></td> {# checkbox column placeholder #}
+      <td></td> {# icon #}
+      <td>&nbsp;</td>
+      <td class="heading">last modified</td>
+      <td class="heading">size</td>
+    </tr>
+    {# <tr><td colspan=5><hr></td></tr> #}
+    {% for child in page.attachments %}
+    <tr>
+      <td><input type='checkbox' class='foldereditcheckbox'
+		 name='{{ child.abspath }}' value='checkboxdelete' }}'></td>
+      <td><img src='{{ child.icon_url() }}' alt='TXT'></td>
+      <td><b><a href='{{ page.name + '.attachments/' + child.name_with_ext }}'>{{ child.name_with_ext }}</a></b></td>
+      <td>{{ child.lastmodified.datetime() }}</td>
+      <td>{{ child.bytesize }}</td>
+    </tr>
+    {% endfor %}
+    {# <tr><td colspan=5><hr></td></tr> #}
+    <tr><td colspan=5> </td></tr>    
+    <tr><td colspan=2><input type='submit'
+			     name='submit_delete'
+			     id='folderdeletebutton'
+			     class='disabledbutton' 
+			     value='delete checked'
+			     disabled><td>
+      <td colspan=3><i>Drag and drop files here to upload them.</i></td>
+    </tr>
+  </table>
+  {# <div> Drag and drop files here to upload them.
+    <div id="progresstrough"><div id="progressbar"><div>0%</div></div></div>
+    <!-- <span id="progressblurb">upload progress &nbsp;</span> --> #}
+  </div>
+  </div> <!-- dragndrop -->
+</form>
+{% else %}
+  {# show attachements #}
   <table>
     <tr>
       <td></td> {# icon #}
@@ -18,13 +61,14 @@
     {% for child in page.attachments %}
     <tr>
       <td><img src="{{ child.icon_url() }}" alt="TXT"></td>
-      <td><b><a href="{{ child.name_with_ext }}">{{ child.name_with_ext }}</a></b></td>
+      <td><b><a href="{{ page.name + '.attachments/' + child.name_with_ext }}">{{ child.name_with_ext }}</a></b></td>
       <td>{{ child.lastmodified.datetime() }}</td>
       <td>{{ child.bytesize }}</td>
     </tr>
     {% endfor %}
     <!-- <tr><td colspan=4><hr></td></tr> -->
   </table>
+{% endif %}
 </div>
 </div>
 {% endif %}

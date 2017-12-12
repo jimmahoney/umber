@@ -43,12 +43,13 @@ from flask import Flask, Response, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask_login import LoginManager, login_user, logout_user, current_user
 from flask import render_template
-from settings import admin_email, about_copyright_url, \
+from settings import admin_email, about_copyright_url, DEBUG, \
      os_root, os_base, os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
-     git, is_clean_folder_name, parse_access_string, parse_assignment_data
+     git, is_clean_folder_name, parse_access_string, parse_assignment_data, \
+     print_debug
 from werkzeug import secure_filename
 
 app = Flask('umber',
@@ -59,10 +60,6 @@ app.config.from_pyfile(os_config)
 login_manager = LoginManager()
 login_manager.anonymous_user = Person.get_anonymous
 login_manager.init_app(app)
-
-def print_debug(message):
-    if app.config['DEBUG']:
-        print message
 
 ## TEST & DEBUG only
 # ssl_context = SSL.Context(SSL.SSLv23_METHOD)
@@ -251,17 +248,31 @@ def ajax_upload():
     print_debug('   page.url : {}'.format(page.url))
 
     # Make sure that this user is authorized to put files here.
-    if not (page.is_dir and page.can['write']):
+    if not page.can['write']:
         # TODO bail out in a better way
         return ajax_response(False, 'Oops - invalid permissions.') 
-        
+
+    if page.is_dir:
+        abspath = page.abspath
+    else:
+        # create .attachments folder if need be
+        abspath = page.attachments_folder()
+        if not os.path.exists(abspath):
+            try:
+                os.mkdir(abspath)
+            except:
+                print_debug(' submit_createfolder: os.makedir failed')
+                return request.base_url
+    
     for upload in request.files.getlist("file"):
         filename = secure_filename(upload.filename)
         print_debug('   file : "{}"'.format(filename))
-        destination = os.path.join(page.abspath, filename)
+        destination = os.path.join(abspath, filename)
         upload.save(destination)
         git.add_and_commit(page, abspath=destination)
 
+    print_debug(" upload reload ")
+        
     # Rather than return a bare ajax respose,
     # reload the edit folder page to see the new uploaded files.
     # return ajax_response(True, 'upload success') 
@@ -286,8 +297,14 @@ def form_post():
 
     if submit_what not in ('submit_delete', 'submit_edit',
                            'submit_login', 'submit_logout',
-                           'submit_createfolder', 'submit_assignments'):
+                           'submit_createfolder', 'submit_assignments',
+                           'submit_done'
+                               ):
         print_debug(' handle_post: OOPS - illegal submit_what ');
+
+    if submit_what == 'submit_done':
+        # done editing folder; just reload page
+        return request.base_url
         
     # invoke submit_X handler
     result = globals()[submit_what]()

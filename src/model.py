@@ -343,9 +343,12 @@ class Page(BaseModel):
         page._setup_work()        # 
         return page
 
+    def attachments_folder(self):
+        return self.abspath.replace(self.ext, '.attachments')
+    
     def _setup_attachments(self):
         if self.is_file and self.ext == '.md':
-            attach_dir = self.abspath.replace(self.ext, '.attachments')
+            attach_dir = self.attachments_folder()
             if os.path.exists(attach_dir) and os.path.isdir(attach_dir):
                 self.attachments = self.children(abspath=attach_dir)
             else:
@@ -354,7 +357,6 @@ class Page(BaseModel):
         else:
             self.attachments = []
             self.has_attachments = False
-            
     
     def _setup_work(self):
         """ see if this is a students/<name>/work/<number> student work page; 
@@ -728,14 +730,13 @@ class Assignment(BaseModel):
 
     assignment_id = PrimaryKeyField(db_column='assignment_id')
     
+    nth = IntegerField(null=False, unique=True)
     active = IntegerField()
     blurb = TextField()
     due = TextField(null=True)
     name = TextField()
     notes = TextField()
-    nth = IntegerField(null=True)
-    uriname = TextField()
-
+    
     course = ForeignKeyField(rel_model=Course,
                              db_column='course_id',
                              to_field='course_id')
@@ -898,39 +899,35 @@ def populate_database():
         john.set_password('test')
         ted.set_password('test')
         
-        Registration.get_or_create(
+        (r1, created) = Registration.get_or_create(
             person = john,
             course = democourse,
-            role = student,
-            date = '2013-01-02')
+            role = student)
+        r1.date = '2013-01-02'
         
-        Registration.get_or_create(
+        (r2, created) = Registration.get_or_create(
             person = jane,
             course = democourse,
-            role = student,
-            date = '2013-01-03')
+            role = student)
+        r2.date = '2013-01-03'
         
-        Registration.get_or_create(
+        (r3, created) = Registration.get_or_create(
             person = ted,
             course = democourse,
-            role = faculty,
-            date = '2013-01-04')
+            role = faculty)
+        r3.date = '2013-01-04'
         
         (assign1, created) = Assignment.get_or_create(
-            course = democourse,
-            nth = 1,
-            name = 'week 1',
-            uriname = 'week_1',
-            due = '2013-01-20',
-            blurb = 'Do chap 1 exercises 1 to 10.')
+            course=democourse, nth=1)
+        assign1.name = 'week 1'
+        assign1.due = '2013-01-20',
+        assign1.blurb = 'Do chap 1 exercises 1 to 10.'
         
         (assign2, created) = Assignment.get_or_create(
-            course_id = democourse,
-            nth = 2,
-            name = 'week 2',
-            uriname = 'week_2',
-            due = '2013-01-27',
-            blurb = 'Write a four part fugue.')
+            course_id = democourse, nth = 2)
+        assign2.name = 'week 2',
+        assign2.due = '2013-01-27',
+        assign2.blurb = 'Write a four part fugue.'
         
         Work.get_or_create(
             person = john,
@@ -943,7 +940,6 @@ def populate_database():
             assignment = assign1,
             submitted = '2013-01-21 16:01:01',
             grade = 'B-')
-
 
 if __name__ == '__main__':
     import doctest

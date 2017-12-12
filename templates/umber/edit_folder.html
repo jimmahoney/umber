@@ -2,18 +2,17 @@
 {# ######## #}
 <h2 class='directory'>Index of {{ page.path }} </h2>
 <div id='dir-ls'>
-
 <form class='folder' name='folder' method='POST' action='{{ page.url }}'>
   <div id='dragndrop'>
   <table>
     <tr>
       <td></td> {# checkbox column placeholder #}
       <td></td> {# icon #}
-      <td>name</td>
-      <td>last modified</td>
-      <td>size</td>
+      <td>&nbsp;</td>
+      <td class="heading">last modified</td>
+      <td class="heading">size</td>
     </tr>
-    <tr><td colspan=5><hr></td></tr>
+    {# <tr><td colspan=5><hr></td></tr> #}
     {% for child in page.children() %}
     <tr>
       <td><input type='checkbox' class='foldereditcheckbox'
@@ -24,22 +23,22 @@
       <td>{{ child.bytesize }}</td>
     </tr>
     {% endfor %}
-    <tr><td colspan=5><input type='submit'
+    <tr><td colspan=5> </td></tr>
+    <tr><td colspan=2><input type='submit'
 			     name='submit_delete'
 			     id='folderdeletebutton'
 			     class='disabledbutton' 
-			     value='delete'
-			     disabled><td></tr>
-    <tr><td colspan=5><hr></td></tr>    
+			     value='delete checked'
+			     disabled></td>
+      <td colspan=3><i>Drag and drop files here to upload them.</i></td>
+    </tr>
   </table>
-  <div>
-    Drag and drop files here to upload them.
+    {# <div> &nbsp; &nbsp; Drag and drop files here to upload them.
     <div id="progresstrough"><div id="progressbar"><div>0%</div></div></div>
-    <!-- <span id="progressblurb">upload progress &nbsp;</span> -->
+    <!-- <span id="progressblurb">upload progress &nbsp;</span> --> #}
   </div>
   </div> <!-- dragndrop -->
 </form>
-
 <form class='folder' id='new_folder_form' method='POST' action='{{ page.url }}'>
   <div>
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -57,7 +56,6 @@
   {% endwith %}
   </div>
 </form>
-
 <form class='folder' id='privileges_form' method='POST' action='{{ page.url }}'>
   <div>
   Access rights <small>(one of [all, guest, students, faculty, admin] or usernames)</small><br>
@@ -67,5 +65,7 @@
   &nbsp; 
   <input type='submit' name='submit_permissions' value='set permissions'/>
 </form>
-
+<form method='POST' action='{{ page.url }}'>
+  <input type='submit' name='submit_done' value='done editing'/>
+</form>
 </div>
