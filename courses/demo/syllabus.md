@@ -17,5 +17,5 @@ the [assignments](~/special/assignments) or something like 'em.
 
 For more information, questions, complaints,
 kudos, or advice, email Jim Mahoney (mahoney@marlboro.edu) - 
-or just send some chocolate.
+or just send chocolate.
 
