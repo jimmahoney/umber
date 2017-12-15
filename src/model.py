@@ -151,7 +151,11 @@ class Person(BaseModel):
     @staticmethod
     def by_username(username):
         if username not in Person._by_username:
-            person = Person.select().where(Person.username==username).first()
+            try:
+                person = Person.select() \
+                               .where(Person.username==username).first()
+            except:
+                return None
             Person._by_username[username] = person
         return Person._by_username[username]
         
@@ -215,6 +219,16 @@ class Course(BaseModel):
                               .where(Assignment.course == self) \
                               .order_by(Assignment.nth))
                               
+    def get_assignment_by_nth(self, nth):
+        """ Return nth assignment in this course """
+        try:
+            return Assignment.select() \
+                             .where(Assignment.course == self, \
+                                    Assignment.nth == nth) \
+                             .first()
+        except:
+            return None
+                              
     def update_assignments(self, assignments_data):
         """ Update course assignments from 
             a dict of assignments_data[nth][name, due, blurb] """
@@ -226,7 +240,8 @@ class Course(BaseModel):
                     (db_assignments[nth], status) = Assignment.get_or_create(
                         course=self, nth=nth)
                 db_assignments[nth].name = assignments_data[nth]['name']
-                db_assignments[nth].due = str(Time.parse(assignments_data[nth]['due']))
+                db_assignments[nth].due = \
+                  str(Time.parse(assignments_data[nth]['due']))
                 db_assignments[nth].blurb = assignments_data[nth]['blurb']
                 db_assignments[nth].save()
 
@@ -363,14 +378,36 @@ class Page(BaseModel):
             define .is_work and .work, set up .work for html display
         """
         # print(' _setup_work : relpath = {}'.format(self.relpath))
-        self.is_work = re.match(r'students/(\w+)/(\d+)', self.relpath)
-        if not self.is_work:
-            self.work = None
+        m = re.match(r'students/(\w+)/work/(\d+)', self.relpath)
+        if m:
+            self.is_work = True
+            (work_username, work_nth) = m.groups()
+            work_nth = int(work_nth)
+            self.work_person = Person.by_username(work_username)
+            self.work_assignment = self.course.get_assignment_by_nth(work_nth)
+            self.work = self.work_assignment.get_work(self.work_person)
+            self.work_due = Time(self.work_assignment.due).assigndate()
+            if self.work:
+                if self.work.submitted:
+                    self.work_submitted = Time(self.work.submitted).assigndate()
+                else:
+                    self.work_submitted = ''
+                self.work_grade = self.work.grade
+            else:
+                self.work_submitted = ''
+                self.work_grade = ''
         else:
-            self.work = 'FIXME'
+            self.is_work = False
+            self.work_assignment = None
+            self.work = None
+            self.work_person = None
+            self.work_due = ''
+            self.work_submitted = ''
+            self.work_grade = ''
     
     def _setup_sys(self):
-        """ see if this is a sys/* page : define .relpath , .is_sys, .sys_template """
+        """ see if this is a sys/* page : 
+            define .relpath , .is_sys, .sys_template """
         # If relpath is 'sys/assignments', then is_sys will be true,
         # the template will be 'umber/sys/assignments.html'
         # and the edit template will be 'umber/sys/edit_assignments.html'
@@ -740,7 +777,16 @@ class Assignment(BaseModel):
     course = ForeignKeyField(rel_model=Course,
                              db_column='course_id',
                              to_field='course_id')
-        
+
+    def get_work(self, person):
+        """ Return Work for this assignment by given student """
+        try:
+            return Work.select() \
+                       .where(Work.assignment == self, Work.person == person) \
+                       .first()
+        except:
+            return None
+    
 class Role(BaseModel):
     class Meta:
         db_table = 'Role'
@@ -904,41 +950,46 @@ def populate_database():
             course = democourse,
             role = student)
         r1.date = '2013-01-02'
+        r1.save()
         
         (r2, created) = Registration.get_or_create(
             person = jane,
             course = democourse,
             role = student)
-        r2.date = '2013-01-03'
+        r2.date = '2018-01-03'
+        r2.save()
         
         (r3, created) = Registration.get_or_create(
             person = ted,
             course = democourse,
             role = faculty)
-        r3.date = '2013-01-04'
+        r3.date = '2018-01-17' 
+        r3.save()
         
         (assign1, created) = Assignment.get_or_create(
             course=democourse, nth=1)
         assign1.name = 'week 1'
-        assign1.due = '2013-01-20',
+        assign1.due = '2018-01-23T23:59:00-05:00' # default 1min to midnight
         assign1.blurb = 'Do chap 1 exercises 1 to 10.'
+        assign1.save()
         
         (assign2, created) = Assignment.get_or_create(
             course_id = democourse, nth = 2)
-        assign2.name = 'week 2',
-        assign2.due = '2013-01-27',
+        assign2.name = 'week 2'
+        assign2.due = '2018-01-30T23:59:00-05:00',
         assign2.blurb = 'Write a four part fugue.'
+        assign2.save()
         
         Work.get_or_create(
             person = john,
             assignment = assign1,
-            submitted = '2013-01-20 18:19:20',
+            submitted = '2018-01-27T18:20:23-05:00',
             grade = 'B')
         
         Work.get_or_create(
             person = jane,
             assignment = assign1,
-            submitted = '2013-01-21 16:01:01',
+            submitted = '2018-02-04T22:23:24-05:00',
             grade = 'B-')
 
 if __name__ == '__main__':
@@ -1028,6 +1079,14 @@ if __name__ == '__main__':
 #    http://effbot.org/zone/python-with-statement.htm
 #    for a discussion of what it is for in python -
 #    and doesn't require a function definition.
+#
+#    Note however that if a memory object is modified,
+#    it must still be saved for the changes to get to the database.
+#
+#       with db.transaction():
+#         joe = Person.by_username('joe')
+#         joe.name = 'Joe Smith'
+#         joe.save()
 #
 # * get
 #

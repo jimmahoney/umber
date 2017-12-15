@@ -33,12 +33,15 @@ class Time(object):
     
     @staticmethod
     def parse(date_time_string):
-        """ Return Time object from human friendly description i.e. Time.parse('tomorrow') """
-        # If a time isn't given (i.e. found via regex search) then it's set to the default.
+        """ Return Time object from human friendly description 
+            i.e. Time.parse('tomorrow') """
+        # If a time isn't given (i.e. found via regex search)
+        # then it's set to the default.
         # The timezone is local - see settings.py.
         date_time_string = str(date_time_string)  # convert from utf8 if needed
         if 'midnight' in date_time_string:
-            date_time_string = date_time_string.replace('midnight', Time.defaulttime)
+            date_time_string = date_time_string.replace('midnight',
+                                                        Time.defaulttime)
         if not re.search('am|pm|noon|morning|afternoon|evening', date_time_string):
             date_time_string += ' ' + Time.defaulttime
         datetime = parsedatetime.Calendar().parseDT(
@@ -55,10 +58,20 @@ class Time(object):
         # '2017-12-02T23:59:00-05:00'   where -5 is US/Eastern localtimezone
         # >>> Time('2017-12-02').isodate()
         # '2017-12-02'
-        if len(args)==1 and isinstance(args[0], basestring) \
-                        and len(args[0])==10:
-            args = (args[0] + 'T' + Time.default24time + localtimezoneoffset ,)
-        self.arrow = arrow.get(*args, **kwargs).to(localtimezone)
+        if len(args)==1 and isinstance(args[0], basestring):
+            #if re.match('\d+-\d+-\d+T\d+:\d+:\d+(-|+)\d+:\d+', args[0]):
+            #    # i.e. '2017-12-02T23:59:00-05:00'
+            #    pass  # just leave it alone
+            if args[0] == '':
+                args[0] = None
+            if re.match('^\d+-\d+-\d+$', args[0]):
+                    # i.e. '2018-02-04'
+                args = (args[0] + 'T' + Time.default24time + \
+                        localtimezoneoffset ,)
+        try:
+            self.arrow = arrow.get(*args, **kwargs).to(localtimezone)
+        except:
+            self.arrow = arrow.get() # use current time if all else fails.
     def __lt__(self, other):
         try:
             return self.arrow < other.arrow

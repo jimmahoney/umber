@@ -997,6 +997,11 @@ form.login {
  }
 */
 
+#workassignmentuser {
+    font-size: 85%;
+    margin-left: 1em;
+}
+
 .grade-red       { color: #DC143C;  font-weight:bold; }
 .grade-darkred   { color: #8B0000;  font-weight:bold; }
 .grade-green     { color: #3CB371;  font-weight:bold; }

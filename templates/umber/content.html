@@ -6,10 +6,6 @@
     {% include page.sys_edit_template %}
 {% elif page.is_sys %}
     {% include page.sys_template %}
-{% elif page.is_work and page.action == 'edit' and page.can['write'] %}
-    {% include 'umber/edit_work.html' %}
-{% elif page.is_work %}
-    {% include 'umber/work.html' %}
 {% elif not page.exists and page.can['write'] %}
     {% include 'umber/edit_file.html' %}
 {% elif not page.exists %}
@@ -23,6 +19,9 @@
 {% elif page.action == 'history' %}
     {% include 'umber/history_file.html' %}
 {% else %}
+    {% if page.is_work %}
+        {% include 'umber/work_header.html' %}
+    {% endif %}
     {{ page.content_as_html() | safe }}
 {% endif %}
 {# ######## #}
