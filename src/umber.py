@@ -371,13 +371,20 @@ def submit_edit():
     """ handle file edit form """
     # invoked from handle_post()
     # the form text data is in the form dict key, i.e. request.form['edit_text']
-    #print_debug(' submit_edit: request.form : {}'.format(request.form.items()))
+    # print_debug(' submit_edit: request.form : {}'.format(request.form.items()))
     #
     # request.form will look something like
     #  { 'submit_edit' : u'save page',                     # submit button
     #    'edit_text'   : u'page content\r\n===\r\n etc'    # textarea
     #  }
     #
+    if 'grade' in request.form and request.page.user_role.name == 'faculty':
+        #print_debug(' submit_edit: grade submitted by faculty : {}'\
+        #                .format(request.form['grade']))
+        with db.transaction():
+            request.page.work.grade = str(request.form['grade'])
+            request.page.work.save()
+
     bytes_written = request.page.write_content(request.form['edit_text'])
     git.add_and_commit(request.page)
     return request.base_url  # ... and reload it without ?action=edit

@@ -44,14 +44,14 @@
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages and messages[0][0] == 'folder' %}
     New folder <input type='input' name='foldername' id='foldername' size='24'
- 		      value='{{ messages[1][1] |e }}' />
-    <input  type='submit' name='submit_createfolder' value='create' />  
+ 		      value='{{ messages[1][1] |e }}' >
+    <input  type='submit' name='submit_createfolder' value='create' >  
     <div class="error"> {{ messages[0][1] |e }} </div>
     {# possible message here is 'Oops: folder names can only contain ...' #}
   {% else %}
-    New folder <input type='input' name='foldername' id='foldername' size='24' />
+    New folder <input type='input' name='foldername' id='foldername' size='24' >
     <input  type='submit' name='submit_createfolder' value='create' 
-	    id='foldercreatebutton' class='disabledbutton' disabled />    
+	    id='foldercreatebutton' class='disabledbutton' disabled >    
   {% endif %}
   {% endwith %}
   </div>

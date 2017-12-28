@@ -1,1 +1,21 @@
-../edit_file.html
+<h3>editing {{page.path_no_name}}<span>{{ page.name_with_ext }}</span></h3>
+<form class="edit" name="edit" method="POST" action="{{ page.url }}">
+<textarea id="edit_text" name="edit_text" cols=45 rows=20
+{% if page.exists %}
+>{{ page.content() }}</textarea>
+{% else %}
+>
+{% include 'umber/default_navigation.md' %}
+</textarea>
+{% endif %}
+<input type="submit" name="submit_edit" value="save page" />
+</form>
+<div class="helptext">
+<h2>about edit navigation</h2>
+<div>Here you can customize the left navigation menu,
+defining which links are visible for visitors, students, and faculty.
+Copy and paste the following example as a starting point.</div>
+<textarea readonly rows=2>
+{% include 'umber/default_navigation.md' | escape %}
+</textarea>
+</div>

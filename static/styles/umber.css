@@ -207,6 +207,11 @@ ul {
   padding-left: 1em;
 }
 
+.helptext {
+  font-size: 85%;
+  color: #666666;    
+}
+
 /* --- header (across top)------------------------------------- */
 
 div#header {  
@@ -895,6 +900,11 @@ form.login {
 .grey {  
   color: grey;
 }
+.darkred {  
+  color: darkred;
+}
+
+
 
 /* submit edit button */
 .edit input[type="submit"] {

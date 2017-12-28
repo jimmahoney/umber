@@ -1,0 +1,11 @@
+<h1>navigation menu</h1>
+{% if page.action == 'history' %}
+  {% include 'umber/history_file.html' %}
+{% else %}
+  <pre>
+  {{ page.content() }}
+  </pre>
+  <h2>about</h2>
+ <div>This is the source for the course's navigation menu.<br>
+  Click the <b>edit</b> tab at the top to customize it.</div>
+{% endif %}

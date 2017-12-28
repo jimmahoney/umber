@@ -1,8 +1,23 @@
 # umber development history #
 
-## Dec 11
+## Dec 28
 
- Working on attachments.
+At this point:
+
+* showing & editing attachments seems to be OK.
+* work pages with grades and editing them is OK.
+* editing navigation works, including history and a default example
+
+What's left is the admin stuff :
+
+* sys grades page  (with colors for what changes to pay attention to)
+* sys roster page  (with photos)
+* edit roster      (update some static database of people from ldap dump maybe?)
+* all courses
+* all users
+* create course
+
+And of course deploying it and testing it.
 
 ## Nov 28
 

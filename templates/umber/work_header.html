@@ -1,10 +1,19 @@
 {# work header #}
-<div class="grade-h1"><span
-     class="grade">grade: {{ page.work_grade }}</span></div>
-<h1><a href="{{page.course.url ~ "/assignments#" ~ page.work_assignment.nth  }}"
+<div class="grade-h1"><span class="grade">grade: 
+<span class="grade-black">{{ page.work_grade }}</span></span></div>
+<h1><a href="{{page.course.url ~ "/sys/assignments#" 
+                               ~ page.work_assignment.nth  }}"
        >{{ page.work_assignment.name }}</a><span id="workassignmentuser"
        >{{ page.work_person.name }}'s work</span></h1>
 <p class="duesubmit">
   <span class="grey">due:</span> {{ page.work_due  }}<br>
-  <span class="grey">in:</span>  {{ page.work_submitted }}<br>	
+{% if page.work_submitted %}  
+  <span class="grey">in:</span>
+  {% if page.work_is_late %}
+    <span class="darkred">{{ page.work_submitted }}</span>
+  {% else %}
+    {{ page.work_submitted }}
+  {% endif %}
+  <br>
+{% endif %}
 </p>

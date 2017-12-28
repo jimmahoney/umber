@@ -320,7 +320,9 @@ class Page(BaseModel):
                     'grades': True,
                     'roster': True,
                     'settings': True,
-                    'users' : True}
+                    'users' : True,
+                    'navigation': True
+                    }
     editable_system_pages = {'navigation': True,
                              'assignments': True}
         
@@ -378,18 +380,23 @@ class Page(BaseModel):
             define .is_work and .work, set up .work for html display
         """
         # print(' _setup_work : relpath = {}'.format(self.relpath))
-        m = re.match(r'students/(\w+)/work/(\d+)', self.relpath)
+        m = re.match(r'students/(\w+)/work/(\d+)(\?.*)?', self.relpath)
         if m:
             self.is_work = True
-            (work_username, work_nth) = m.groups()
+            (work_username, work_nth, ignore) = m.groups()
             work_nth = int(work_nth)
             self.work_person = Person.by_username(work_username)
             self.work_assignment = self.course.get_assignment_by_nth(work_nth)
             self.work = self.work_assignment.get_work(self.work_person)
-            self.work_due = Time(self.work_assignment.due).assigndate()
+            duedate = Time(self.work_assignment.due)
+            self.work_due = duedate.assigndate()
+            self.work_is_late = False
             if self.work:
                 if self.work.submitted:
-                    self.work_submitted = Time(self.work.submitted).assigndate()
+                    submitdate = Time(self.work.submitted)
+                    self.work_submitted = submitdate.assigndate()
+                    if submitdate > duedate:
+                        self.work_is_late = True
                 else:
                     self.work_submitted = ''
                 self.work_grade = self.work.grade

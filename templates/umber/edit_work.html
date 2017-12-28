@@ -1,0 +1,50 @@
+<form class="edit" name="edit" method="POST" action="{{ page.url }}">
+{# -- grade -- #}
+<div class="grade-h1"><span class="grade">grade: <span class="grade-black">
+{% if page.user_role.name == 'faculty' %}
+  <input type="input" name="grade" size="12" >
+{% else %}  
+  {{ page.work_grade }}
+{% endif %}
+</span></span></div>
+{# -- header -- #}
+<h1><a href="{{page.course.url ~ "/sys/assignments#" 
+                               ~ page.work_assignment.nth  }}"
+       >{{ page.work_assignment.name }}</a><span id="workassignmentuser"
+       >{{ page.work_person.name }}'s work</span></h1>
+<p class="duesubmit">
+  <span class="grey">due:</span> {{ page.work_due  }}<br>
+{% if page.work_submitted %}  
+  <span class="grey">in:</span>
+  {% if page.work_is_late %}
+    <span class="darkred">{{ page.work_submitted }}</span>
+  {% else %}
+    {{ page.work_submitted }}
+  {% endif %}
+  <br>
+{% endif %}
+</p>
+{# -- edit content -- #}
+<textarea id="edit_text" name="edit_text" cols=45 rows=20
+{% if page.exists %}
+>{{ page.content() }}</textarea>
+{% else %}
+>
+{{ page.name_underlined }}
+
+This page doesn't exist yet.
+
+To create it, replace this text with your own and click "save page."
+
+For more information check out the help blurb below.
+</textarea>
+{% endif %}
+<input type="submit" name="submit_edit" value="save page" />
+</form>
+<h2>help</h2>
+<div>
+  Format the text here with markdown and html.
+  Just plain text with blank lines between paragraphs works.
+  For examples and docs see the
+  <a href="/formatting_help.html">formatting help</a> page.
+</div>

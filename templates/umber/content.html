@@ -7,7 +7,11 @@
 {% elif page.is_sys %}
     {% include page.sys_template %}
 {% elif not page.exists and page.can['write'] %}
-    {% include 'umber/edit_file.html' %}
+    {% if page.is_work %}
+        {% include 'umber/edit_work.html' %}
+    {% else %}
+        {% include 'umber/edit_file.html' %}
+    {% endif %}
 {% elif not page.exists %}
     {% include 'umber/missing.html' %}
 {% elif page.is_dir and page.action == 'edit' and page.can['write'] %}
@@ -15,7 +19,11 @@
 {% elif page.is_dir %}
     {% include 'umber/folder.html' %}
 {% elif page.action == 'edit' and page.can['write'] %}
-    {% include 'umber/edit_file.html' %}
+    {% if page.is_work %}
+        {% include 'umber/edit_work.html' %}
+    {% else %}
+        {% include 'umber/edit_file.html' %}
+    {% endif %}
 {% elif page.action == 'history' %}
     {% include 'umber/history_file.html' %}
 {% else %}
