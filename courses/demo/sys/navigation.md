@@ -3,7 +3,7 @@
 <div access='all'>
 <h5>course</h5>
 <div markdown=1>
-* [home](~/home)
+* [homey](~/home)
 * [syllabus](~/syllabus)
 * [resources](~/resources)
 * [notes](~/notes/)
