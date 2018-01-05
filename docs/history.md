@@ -1,6 +1,28 @@
 # umber development history #
 
-## Dec 28
+## Jan 4
+
+ working on grades.
+
+ - work _seen , _modified fields are now updated correctly
+
+
+
+## Jan 2 2018
+
+ Notes about related stuff :
+
+ - I have a 0th attempt from Oct to mirror the cs.marlboro.edu web pages;
+   see /var/www/umber on csmarlboro.org and ~/cs_marlboro_edu_static .
+
+ - The html generating part of wikiacademia is in
+   /Users/mahoney/sugar/academics/wikiacademia/v0.1alpha/htdocs/courses/source/ .
+
+ Future features to consider :
+
+ - github or generic git integration for student work folders ... some sort of git subfolder.
+
+## Dec 28 2017
 
 At this point:
 

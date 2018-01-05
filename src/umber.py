@@ -369,6 +369,7 @@ def submit_delete():
     
 def submit_edit():
     """ handle file edit form """
+    # ... including student work pages.
     # invoked from handle_post()
     # the form text data is in the form dict key, i.e. request.form['edit_text']
     # print_debug(' submit_edit: request.form : {}'.format(request.form.items()))
@@ -378,13 +379,20 @@ def submit_edit():
     #    'edit_text'   : u'page content\r\n===\r\n etc'    # textarea
     #  }
     #
-    if 'grade' in request.form and request.page.user_role.name == 'faculty':
-        #print_debug(' submit_edit: grade submitted by faculty : {}'\
-        #                .format(request.form['grade']))
+    # If this is a work page, then update the Work database object.
+    if request.page.is_work:
+        now = str(Time())  # string with current time
         with db.transaction():
-            request.page.work.grade = str(request.form['grade'])
+            if request.page.user_role.name == 'faculty':
+                request.page.work.faculty_modified = now
+                if 'grade' in request.form:
+                    request.page.work.grade = str(request.form['grade'])
+            else:
+                request.page.work.student_modified = now
+                if not request.page.work.submitted:
+                    request.page.work.submitted = now    
             request.page.work.save()
-
+    # Save the page content to a file and to git.
     bytes_written = request.page.write_content(request.form['edit_text'])
     git.add_and_commit(request.page)
     return request.base_url  # ... and reload it without ?action=edit

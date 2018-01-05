@@ -31,7 +31,6 @@
     &nbsp; page.is_sys = {{page.is_sys }} <br>
     &nbsp; page.sys_template = {{page.sys_template }} <br>
     &nbsp; page.sys_edit_template = {{page.sys_edit_template }} <br>  
-    &nbsp; page.is_work = {{page.is_work }} <br>            
     &nbsp; page.exists = {{page.exists }} <br>
     &nbsp; page.filetype = {{page.filetype }} <br>
     &nbsp; page.size = {{page.size }} <br>
@@ -51,11 +50,21 @@
     &nbsp; page.user_role = {{page.user_role.name }} <br>
     <br>
     &nbsp; page.revision = {{page.revision }} <br>
-    <!-- &nbsp; page.history = {{page.history }} <br> -->
+    &nbsp; page.history = {{ page.history }} <br>
     <br>
+
     &nbsp; page.user.username = {{page.user.username }} <br>
     &nbsp; page.course.name = {{page.course.name }} <br>
-
+    <br>
+    &nbsp; page.is_work = {{page.is_work }} <br>
+    {% if page.is_work %}
+    &nbsp; page.work.submitted = {{page.work.submitted }} <br>    
+    &nbsp; page.work.student_seen = {{page.work.student_seen }} <br>    
+    &nbsp; page.work.student_modified = {{page.work.student_modified }} <br>    
+    &nbsp; page.work.faculty_seen = {{page.work.faculty_seen }} <br>    
+    &nbsp; page.work.faculty_modified = {{page.work.faculty_modified }} <br>    
+    {% endif %}
+    
   <h4>user</h4>
     &nbsp; user.username = '{{user.username }}' <br>
     &nbsp; user.name = '{{user.name }}' <br>

@@ -1,0 +1,116 @@
+model_notes.txt
+
+------------------------------------------------------
+peewee database notes
+ * installation
+ 
+    $ pip install peewee
+    
+ * its source : https://github.com/coleifer/peewee
+ 
+ * features
+    playhouse.flask_utils : open/close db correctly during web request
+    playhouse.reflection  : extracting classes from an existing database
+    
+ * foreign keys and relationships
+    the correspondance between database column names and class fields
+    is set explicitly in the pewee class definition.
+    See the docs for ForeignKeyField
+    
+ * performance & foreign keys
+    See http://docs.peewee-orm.com/en/latest/peewee/querying.html#nplusone
+    
+ * notes on many-to-many methods
+    http://docs.peewee-orm.com/en/latest/peewee/querying.html#manytomany
+    
+ * meta data
+    Their classes store database & table stuff in a meta namespace
+    which isn't well documented.
+      > a = Assignment.select().first()
+      > a._meta.database, a._meta.db_table  # see output from pwiz
+      
+ * starting from an existing sql database
+    Peewee does allow models to be pulled from an existing sql
+    database.  However, after some playing around I found this too
+    limiting - modifing their generated classes was awkward. The
+    code for that approach would be
+      > from playhouse.reflection import Introspector.
+      > introspector = Introspector.from_database(db)
+      > models = introspector.generate_models()
+      > Person       = models['Person']
+      > Role         = models['Role']
+      > Course       = models['Course']
+      > Registration = models['Registration']
+      > Assignment   = models['Assignment']
+      > Work         = models['Work']
+    ... and then perhaps some python ugliness with things like "class
+    Person(Person)" to build custom classes on top of those.
+    
+    Instead I have chosen to use their "pwiz" tool to generate class code
+   that matches the database declarations, and then edited and extended
+   that code:
+      $ cd ../database
+      $ python -m pwiz -e sqlite3 umber.db > pwiz_model.py
+   And then used that pwiz_model.py code as a starting point.
+   
+ * __init__() => prepared()
+    To extend their classes, the __init__ method is problematic
+   because it runs before the field data has been loaded.
+   Peewee data classes have a prepared() method which
+   is called after that data is loaded ... which is
+   the right place to put what would otherwise go in __init__.
+   
+    For example, in Course.prepared I construct a course.username_to_role
+   dictionary that's is used for who's in the course and their permissions.
+   
+ * transactions
+ 
+   See http://docs.peewee-orm.com/en/latest/peewee/transactions.html :
+   peewee has some syntax for marking blocks as atomic
+   However, peewee's sqlite egine, based on pysql, is autocommit
+   by default and somewhat awkward to use otherwise.
+   (Turning off autocommit requires explict "begin" or "transaction".)
+   The suggested syntax is either
+     with db.transaction():
+       do_stuff()
+   or
+     @db.transaction()
+     def do():
+       stuff()
+   I think the "with" syntax is clearer - see
+   http://effbot.org/zone/python-with-statement.htm
+   for a discussion of what it is for in python -
+   and doesn't require a function definition.
+   
+   Note however that if a memory object is modified,
+   it must still be saved for the changes to get to the database.
+       with db.transaction():
+        joe = Person.by_username('joe')
+        joe.name = 'Joe Smith'
+        joe.save()
+ * get
+    peewee spells "find" as "get".
+   In other ORMs, get seems to often be only "get by id",
+   whereas find() or fetch() is by select() specifications.
+   
+ * flask
+    See docs.peewee-orm.com/en/latest/peewee/playhouse.html#flask-utils .
+   "automatically set up request ... handlers to ensure your connections
+   are managed properly"
+      from playhouse.flask_utils import FlaskDB
+      db = SqliteDatabase(db_path)
+      app = Flask(__name__)
+      flask_db = FlaskDB(app)
+
+    BUT it seems that this approach expects that flask_db
+    is in all the model meta information ... and that in
+    that case, testing the database or accessing it from
+    the command line doesn't work.
+
+    Looking at the source code, all that this really does is set
+       app.before_request(self.connect_db)
+       app.teardown_request(self.close_db)
+    where   connect_db => "database.connect()"
+    and    close_db    => "if not database.is_closed(): database.close()"
+    ... which seems simple enough for me to do myself in the flask app.
+

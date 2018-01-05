@@ -1,14 +1,17 @@
 <h1>assignments</h1>
-{% for assmt in page.course.get_assignments_with_extras()  %}
-  <a name="{{ assmt.nth }}"></a>
-  <h2><span class="assign-id">{{assmt.nth}}.</span> {{ assmt.name }}
-    <span class="{{ assmt.dateclass }}">due {{ assmt.date }}
+{% for ass in page.course.get_assignments_with_extras()  %}
+  <a name="{{ ass.nth }}"></a>
+  <h2><span class="assign-id">{{ ass.nth }}.</span> {{ ass.name }}
+    <span class="{{ ass.dateclass }}">due {{ ass.date }}
       {% if page.user_role.name == 'student' %}
-      &nbsp;&nbsp; <a href="{{ course.url }}/students/{{ user.username }}/work/{{ assmt.nth }}">your work</a>
+      &nbsp;&nbsp; <span class="yourwork"><a
+      href="{{ course.url }}/students/{{ user.username }}/work/{{ ass.nth }}">
+      your work
+      </a></span>
       {% endif %}
     </span>
   </h2>
-  {{ assmt.blurb_html | safe }}
+  {{ ass.blurb_html | safe }}
 {% endfor %}
 
 

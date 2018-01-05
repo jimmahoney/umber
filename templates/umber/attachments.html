@@ -1,6 +1,8 @@
 {# attachments #}
-{% if page.can['read'] and page.is_file and page.ext == '.md'
-      and not page.is_sys and (page.has_attachments or page.action == 'edit') %}
+{% if page.can['read'] and page.ext == '.md' and not page.is_sys and
+   (page.has_attachments or page.action == 'edit' or
+                            (not page.exists and page.can['write']))
+%}
 <!-- attachments -->
 <div class="component">
 <h2 class="directory">

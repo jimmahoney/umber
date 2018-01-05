@@ -1,1 +1,54 @@
-** grades **
+
+{% if page.user_role.name == 'faculty' %}
+<h1>grades</h1>
+<div></div>
+<table class="layout">
+  <tr class="heading">
+    <td>&nbsp;</td>
+    {% for ass in page.course.assignments %}
+    <td><span class="assign-id">{{ ass.nth }}.</span> <a
+	 href="{{ ass.get_url() }}">{{ ass.name }}</a></td>
+    {% endfor %}
+  </tr>
+  {% for stud in page.course.grade_data_grid() %}
+  <tr>
+    <td><a href="mailto:{{ stud.email  }}">{{ stud.name }}</a></td>
+    {% for work in stud.works %}
+    <td><a href="{{ work.url }}"
+	   ><span class="{{ work.css_grade }}"
+	   >{{ work.grade }}</span></a></td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+
+{% elif page.user_role.name == 'student' %}
+
+<h1>grades - {{ page.user.name }}</h1>
+<div></div>
+<table class="layout">
+ <tr class="heading">
+  <td>assignment</td>
+  <td>due</td>
+  <td>your work</td>
+ </tr>
+ {% for ass in page.course.grade_data_list(page.user) %}
+ <tr>
+  <td><span class="assign-id">{{ ass.nth }}.</span> <a
+       href="{{ ass.get_url() }}" >{{ ass.name }}</a></td>
+  <td>{{ ass.duedate }}</td>
+  <td><a href="{{ ass.work.get_url() }}"
+	   ><span class="{{ ass.work_css_grade }}"
+	   >{{ ass.work_grade }}</span></a></td>
+ </tr>
+ {% endfor %}
+
+</table>
+
+{% else %}
+
+ <div>
+ Only faculty and students are allowed to see grades.
+ </div>
+ 
+{% endif %}

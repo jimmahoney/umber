@@ -38,6 +38,8 @@
    >>> john.name = 'Johnny Smith'
    >>> rows_changed = john.save()
 
+ See docs/model_notes.txt for more about the database model.
+
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
@@ -49,7 +51,7 @@ from bs4 import BeautifulSoup
 from settings import db_path, protocol, host, url_basename, os_base, git_base
 from utilities import markdown2html, link_translate, static_url, \
                ext_to_filetype, filetype_to_icon, size_in_bytes, \
-               git, Time, stringify_access
+               git, Time, stringify_access, print_debug
 
 db = SqliteDatabase(db_path)
 
@@ -200,25 +202,93 @@ class Course(BaseModel):
     
     def prepared(self):
         """ setup this instance after it's attributes are set """
-        # This is essentially __init__ for these database objects.
-        self.username_to_role = {reg.person.username : reg.role
-            for reg in (Registration.select(Registration.person,
-                                            Registration.role)
-                                    .where(Registration.course == self))}
+        # This method is essentially __init__ for these database objects.
+        (self.students, self.username_to_role) = self._get_users()
+        self.assignments = self._get_assignments()
         self.semester = Time(self.start_date).semester()
         # url without request though that info is also in request
         self.url = protocol + '://' + host + '/' + \
                    url_basename + '/' + self.path
 
-    def os_path(self):
-        return os.path.join(os_base, self.path)
-
-    def get_assignments(self):
-        """ Return list of assignments for this course """
+    def _get_assignments(self):
         return list(Assignment.select() \
                               .where(Assignment.course == self) \
                               .order_by(Assignment.nth))
-                              
+                   
+    def _get_users(self):
+        registrations = list(Registration.select(Registration.person,
+                                                 Registration.role)
+                                         .where(Registration.course == self))
+        students = [reg.person for reg in registrations
+                               if reg.role == Role.by_name('student')]
+        students.sort(key=lambda s: s.name)
+        username_to_role = {reg.person.username : reg.role
+                            for reg in registrations}
+        return (students, username_to_role)
+    
+    def os_path(self):
+        return os.path.join(os_base, self.path)
+
+    def grade_data_list(self, student):
+        """ return student's view grade list for templates/grades.html """
+        # See the description below for the faculty grid.
+        result = list(self.get_assignments_with_extras())
+        for ass in result:
+            # Hmmm - not sure why this needs .person_id here, but it gives error without.
+            # Maybe something about how the jinja2 template treats variables?
+            # Or because the assignment has had its fields modified??
+            ass.work = ass.get_work(student.person_id)
+            (grade, css_grade) = ass.work.get_grade_css(faculty_view=True)
+            ass.work_grade = grade
+            ass.work_css_grade = "grade-{}".format(css_grade)
+            ass.duedate = Time(ass.due).assigndate()
+        return result
+    
+    def grade_data_grid(self):
+        """ return faculty's grade grid for templates/grades.html """
+        # Returned data is list of dicts, one per student.
+        # Each student dict includes list of student works, one per assignment.
+        # The grade will be shown as
+        #    '…'          if not submitted and not yet due
+        #    'overdue'    if not submitted and past due date
+        #    'ungraded'   if submitted and not graded
+        #    work.grade   if submitted and graded
+        #
+        # The grade css class is "grade-*"
+        # where * is one of (green,darkgreen,darkred,red,black)
+        #   for faculty viewing the color is :
+        #     red          overdue : due > today and not submitted
+        #     brown        faculty modified date > student seen date
+        #     darkgreen    student modified date > faculty seen date
+        #     green        ungraded : student has submitted; faculty hasn't graded
+        #     black        none of above
+        #   for student viewing the color is : 
+        #     brown        ungraded : student has submitted; faculty hasn't graded
+        #     brown        student modified; faculty hasn't seen
+        #     dark green   faculty modified; student hasn't seen
+        #     green        overdue : due > today and not submitted
+        #     black        none of above
+        #
+        # The basic idea of the colors is that
+        #    green-ish means the viewer should respond (i.e. "go")
+        #    red-ish   means that the other person should do something (i.e. a problem)
+        #
+        result = []
+        for stud in self.students:
+            works = []
+            for ass in self.assignments:
+                work = ass.get_work(stud)
+                (grade, css_grade) = work.get_grade_css(faculty_view=True)
+                works.append({'url':        work.get_url(),
+                              'css_grade':  'grade-{}'.format(css_grade),
+                              'grade':      grade
+                              })
+            result.append({'email': stud.email,
+                           'name' : stud.name,
+                           'works': works
+                           })
+        return result
+    
     def get_assignment_by_nth(self, nth):
         """ Return nth assignment in this course """
         try:
@@ -233,7 +303,7 @@ class Course(BaseModel):
         """ Update course assignments from 
             a dict of assignments_data[nth][name, due, blurb] """
         # Note: passed argument is *not* made up of Assignment objects.
-        db_assignments = {a.nth : a for a in self.get_assignments()}
+        db_assignments = {a.nth : a for a in self.get_assignments}
         with db.transaction():
             for nth in assignments_data:
                 if nth not in db_assignments:
@@ -244,29 +314,29 @@ class Course(BaseModel):
                   str(Time.parse(assignments_data[nth]['due']))
                 db_assignments[nth].blurb = assignments_data[nth]['blurb']
                 db_assignments[nth].save()
+        self.assignments = self._get_assignments()
 
     def get_assignments_with_extras(self):
         """ Return list of assignments in this course with extra info """
         # ... i.e. prepare the data for html display
         now = Time()
         # print(" now = " + str(now))
-        assignments = self.get_assignments()
-        if len(assignments) == 0:
+        if len(self.assignments) == 0:
             self.assignment_nth_plus1 = 1
         else:
-            self.assignment_nth_plus1 = assignments[-1].nth + 1
-        for assmt in assignments:
-            duedate = Time(assmt.due)
+            self.assignment_nth_plus1 = self.assignments[-1].nth + 1
+        for ass in self.assignments:
+            duedate = Time(ass.due)
             if duedate < now:
-                print(" PAST : duedate = " + str(duedate))
-                assmt.dateclass = 'assign-date-past'
+                #print(" PAST : duedate = " + str(duedate))
+                ass.dateclass = 'assign-date-past'
             else:
-                print(" FUTURE : duedate = " + str(duedate))
-                assmt.dateclass = 'assign-date'
-            assmt.date = duedate.assigndate()         # for assignment list display
-            assmt.ISOdate = duedate.assignISOdate()   # for assignment list editing
-            assmt.blurb_html = markdown2html(assmt.blurb)
-        return assignments
+                #print(" FUTURE : duedate = " + str(duedate))
+                ass.dateclass = 'assign-date'
+            ass.date = duedate.assigndate()         # for assignment list display
+            ass.ISOdate = duedate.assignISOdate()   # for assignment list editing
+            ass.blurb_html = markdown2html(ass.blurb)
+        return self.assignments
     
     def nav_page(self, user):
         """ return course's navigation page """
@@ -377,11 +447,13 @@ class Page(BaseModel):
     
     def _setup_work(self):
         """ see if this is a students/<name>/work/<number> student work page; 
-            define .is_work and .work, set up .work for html display
+            define .is_work and .work, set up .work for html display,
+            update 
         """
         # print(' _setup_work : relpath = {}'.format(self.relpath))
         m = re.match(r'students/(\w+)/work/(\d+)(\?.*)?', self.relpath)
         if m:
+            now = Time()
             self.is_work = True
             (work_username, work_nth, ignore) = m.groups()
             work_nth = int(work_nth)
@@ -390,26 +462,31 @@ class Page(BaseModel):
             self.work = self.work_assignment.get_work(self.work_person)
             duedate = Time(self.work_assignment.due)
             self.work_due = duedate.assigndate()
-            self.work_is_late = False
-            if self.work:
-                if self.work.submitted:
-                    submitdate = Time(self.work.submitted)
-                    self.work_submitted = submitdate.assigndate()
-                    if submitdate > duedate:
-                        self.work_is_late = True
-                else:
-                    self.work_submitted = ''
-                self.work_grade = self.work.grade
+            if self.work.submitted:
+                submitdate = Time(self.work.submitted)
+                self.work_submitted = submitdate.assigndate()
+                self.work_is_late = submitdate > duedate
             else:
                 self.work_submitted = ''
-                self.work_grade = ''
+                self.work_is_late = now > duedate
+            self.work_grade = self.work.grade
+            # update *_seen fields in the database
+            # TODO : think about whether there's a better
+            #        transactional way to update the database here.
+            if self.user_role.name == 'faculty':
+                self.work.faculty_seen = str(now)
+                self.work.save()
+            if self.user.username == work_username:
+                self.work.student_seen = str(now)
+                self.work.save()
         else:
             self.is_work = False
-            self.work_assignment = None
             self.work = None
+            self.work_assignment = None
             self.work_person = None
             self.work_due = ''
             self.work_submitted = ''
+            self.work_is_late = False
             self.work_grade = ''
     
     def _setup_sys(self):
@@ -785,14 +862,26 @@ class Assignment(BaseModel):
                              db_column='course_id',
                              to_field='course_id')
 
+    def get_url(self):
+        return '{}/sys/assignments#{}'.format(self.course.url, self.nth)
+    
     def get_work(self, person):
         """ Return Work for this assignment by given student """
-        try:
-            return Work.select() \
-                       .where(Work.assignment == self, Work.person == person) \
-                       .first()
-        except:
-            return None
+        # i.e. work = assignment.get_work(student)
+        with db.transaction():
+            (work, created) = Work.get_or_create(assignment = self,
+                                                 person = person)
+            if created:
+                work.grade = ''     # | I would have expected this to be 
+                work.notes = ''     # | created with the sql defaults ...
+                work.submitted = '' # | but apparently not.
+                work.student_modified = ''
+                work.faculty_modified = ''
+                work.student_seen     = ''
+                work.faculty_seen     = ''
+                work.page = 0
+                work.save()
+        return work
     
 class Role(BaseModel):
     class Meta:
@@ -873,13 +962,13 @@ class Work(BaseModel):
 
     work_id = PrimaryKeyField(db_column='work_id')
                 
-    facultylastmodified = TextField(db_column='facultyLastModified')
-    facultylastseen = TextField(db_column='facultyLastSeen')
     grade = TextField()
     notes = TextField()
-    studentlastmodified = TextField(db_column='studentLastModified')
-    studentlastseen = TextField(db_column='studentLastSeen')
     submitted = TextField()
+    student_modified = TextField(db_column='student_modified')
+    student_seen = TextField(db_column='student_seen')
+    faculty_modified = TextField(db_column='faculty_modified')
+    faculty_seen = TextField(db_column='faculty_seen')
 
     assignment = ForeignKeyField(rel_model=Assignment,
                                  db_column='assignment_id',
@@ -891,7 +980,60 @@ class Work(BaseModel):
                            db_column='page_id',
                            to_field='page_id')
 
+    def get_url(self):
+        # Also see templates/assignments.html
+        return '{}/students/{}/work/{}.md'.format(self.assignment.course.url,
+                                                  self.person.username,
+                                                  self.assignment.nth)
 
+    def get_grade_css(self, faculty_view):
+        css_class = 'black'      # the default
+        before_due_date = Time() < Time(self.assignment.due)
+        # Set blank times to '1901' to avoid errors.
+        faculty_modified = self.faculty_modified or '1901'
+        faculty_seen = self.faculty_seen or '1901'
+        student_modified = self.student_modified or '1901'
+        student_seen = self.student_seen or '1901'
+        #print_debug("   faculty_modified = '{}'".format(faculty_modified))
+        #print_debug("   faculty_seen = '{}'".format(faculty_seen))
+        #print_debug("   student_modified = '{}'".format(student_modified))
+        #print_debug("   student_seen = '{}'".format(student_seen))
+        if faculty_view:
+            if Time(faculty_modified) > Time(student_seen):
+                css_class = 'brown'
+            if Time(student_modified) > Time(faculty_seen):
+                css_class = 'darkgreen'
+            if not self.submitted:
+                if before_due_date:
+                    grade = u'…'
+                else:
+                    grade = 'overdue'
+                    css_class = 'red'
+            else:
+                if not self.grade:
+                    grade = 'ungraded'
+                    css_class = 'green'
+                else:
+                    grade = self.grade
+        else:
+            if Time(student_modified) > Time(faculty_seen):
+                css_class = 'brown'
+            if Time(faculty_modified) > Time(student_seen):
+                css_class = 'darkgreen'
+            if not self.submitted:
+                if before_due_date:
+                    grade = u'…'
+                else:
+                    grade = 'overdue'
+                    css_class = 'green'
+            else:
+                if not self.grade:
+                    grade = 'ungraded'
+                    css_class = 'brown'
+                else:
+                    grade = self.grade
+        return (grade, css_class)
+    
 def populate_database():
     """ Create (and commit) the default database objects """
     #
@@ -974,153 +1116,41 @@ def populate_database():
         r3.save()
         
         (assign1, created) = Assignment.get_or_create(
-            course=democourse, nth=1)
+            course=democourse,
+            nth=1)
         assign1.name = 'week 1'
         assign1.due = '2018-01-23T23:59:00-05:00' # default 1min to midnight
         assign1.blurb = 'Do chap 1 exercises 1 to 10.'
         assign1.save()
         
         (assign2, created) = Assignment.get_or_create(
-            course_id = democourse, nth = 2)
+            course_id = democourse,
+            nth = 2)
         assign2.name = 'week 2'
         assign2.due = '2018-01-30T23:59:00-05:00',
         assign2.blurb = 'Write a four part fugue.'
         assign2.save()
         
-        Work.get_or_create(
+        (work1_john, created) = Work.get_or_create(
             person = john,
             assignment = assign1,
-            submitted = '2018-01-27T18:20:23-05:00',
+            submitted = '2018-01-22T18:20:23-05:00',      # on time
             grade = 'B')
+        work1_john.student_seen = work1_john.submitted
+        work1_john.student_modified = work1_john.submitted
+        work1_john.faculty_seen = '2018-01-28T16:00:00-05:00'
+        work1_john.faculty_modified = work1_john.faculty_seen
+        work1_john.save()
         
-        Work.get_or_create(
+        (work1_jane, created) = Work.get_or_create(
             person = jane,
             assignment = assign1,
-            submitted = '2018-02-04T22:23:24-05:00',
-            grade = 'B-')
+            submitted = '2018-02-04T22:23:24-05:00',     # past due
+            grade = '')                                  # ungraded
+        work1_jane.student_seen = work1_jane.submitted
+        work1_jane.student_modified = work1_jane.submitted
+        work1_jane.save()
 
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
-
-# ------------------------------------------------------
-# peewee database notes
-#
-# * installation
-#     $ pip install peewee
-#
-# * its source : https://github.com/coleifer/peewee
-#
-# * features
-#     playhouse.flask_utils : open/close db correctly during web request
-#     playhouse.reflection  : extracting classes from an existing database
-#
-# * foreign keys and relationships
-#     the correspondance between database column names and class fields
-#     is set explicitly in the pewee class definition.
-#     See the docs for ForeignKeyField
-#
-# * performance & foreign keys
-#     See http://docs.peewee-orm.com/en/latest/peewee/querying.html#nplusone
-#
-# * notes on many-to-many methods
-#     http://docs.peewee-orm.com/en/latest/peewee/querying.html#manytomany
-#
-# * meta data
-#     Their classes store database & table stuff in a meta namespace
-#     which isn't well documented.
-#       > a = Assignment.select().first()
-#       > a._meta.database, a._meta.db_table  # see output from pwiz
-#
-# * starting from an existing sql database
-#
-#     Peewee does allow models to be pulled from an existing sql
-#     database.  However, after some playing around I found this too
-#     limiting - modifing their generated classes was awkward. The
-#     code for that approach would be
-#       > from playhouse.reflection import Introspector.
-#       > introspector = Introspector.from_database(db)
-#       > models = introspector.generate_models()
-#       > Person       = models['Person']
-#       > Role         = models['Role']
-#       > Course       = models['Course']
-#       > Registration = models['Registration']
-#       > Assignment   = models['Assignment']
-#       > Work         = models['Work']
-#     ... and then perhaps some python ugliness with things like "class
-#     Person(Person)" to build custom classes on top of those.
-#
-#    Instead I have chosen to use their "pwiz" tool to generate class code
-#    that matches the database declarations, and then edited and extended
-#    that code:
-#       $ cd ../database
-#       $ python -m pwiz -e sqlite3 umber.db > pwiz_model.py
-#    And then used that pwiz_model.py code as a starting point.
-#
-# * __init__() => prepared()
-#
-#    To extend their classes, the __init__ method is problematic
-#    because it runs before the field data has been loaded.
-#    Peewee data classes have a prepared() method which
-#    is called after that data is loaded ... which is
-#    the right place to put what would otherwise go in __init__.
-#
-#    For example, in Course.prepared I construct a course.username_to_role
-#    dictionary that's is used for who's in the course and their permissions.
-#
-# * transactions
-#
-#    See http://docs.peewee-orm.com/en/latest/peewee/transactions.html :
-#    peewee has some syntax for marking blocks as atomic
-#    However, peewee's sqlite egine, based on pysql, is autocommit
-#    by default and somewhat awkward to use otherwise.
-#    (Turning off autocommit requires explict "begin" or "transaction".)
-#    The suggested syntax is either
-#      with db.transaction():
-#        do_stuff()
-#    or
-#      @db.transaction()
-#      def do():
-#        stuff()
-#    I think the "with" syntax is clearer - see
-#    http://effbot.org/zone/python-with-statement.htm
-#    for a discussion of what it is for in python -
-#    and doesn't require a function definition.
-#
-#    Note however that if a memory object is modified,
-#    it must still be saved for the changes to get to the database.
-#
-#       with db.transaction():
-#         joe = Person.by_username('joe')
-#         joe.name = 'Joe Smith'
-#         joe.save()
-#
-# * get
-#
-#    peewee spells "find" as "get".
-#    In other ORMs, get seems to often be only "get by id",
-#    whereas find() or fetch() is by select() specifications.
-#
-# * flask
-#
-#    See docs.peewee-orm.com/en/latest/peewee/playhouse.html#flask-utils .
-#    "automatically set up request ... handlers to ensure your connections
-#    are managed properly"
-#
-#      from playhouse.flask_utils import FlaskDB
-#      db = SqliteDatabase(db_path)
-#      app = Flask(__name__)
-#      flask_db = FlaskDB(app)
-#
-#    BUT it seems that this approach expects that flask_db
-#    is in all the model meta information ... and that in
-#    that case, testing the database or accessing it from
-#    the command line doesn't work.
-#
-#    Looking at the source code, all that this really does is set
-#       app.before_request(self.connect_db)
-#       app.teardown_request(self.close_db)
-#    where   connect_db => "database.connect()"
-#    and    close_db    => "if not database.is_closed(): database.close()"
-#    ... which seems simple enough for me to do myself in the flask app.
-#

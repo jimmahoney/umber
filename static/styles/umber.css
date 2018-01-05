@@ -987,11 +987,16 @@ form.login {
     vertical-align: middle;
 }
 
+.yourwork {
+    font-size: 90%;
+}
+
 /* single grade on a student work submission page */
 .grade { 
   /* float: right; */
   font-size: 66%;
   color: #606060;
+  margin-right: 1em;
   /* position: absolute; */
   /* right: 0px; */
   /* top: 0.2em; */
@@ -1014,6 +1019,7 @@ form.login {
 
 .grade-red       { color: #DC143C;  font-weight:bold; }
 .grade-darkred   { color: #8B0000;  font-weight:bold; }
+.grade-brown     { color: #8B4513;  font-weight:bold; }  /* saddle brown */
 .grade-green     { color: #3CB371;  font-weight:bold; }
 .grade-darkgreen { color: #006400;  font-weight:bold; }
 .grade-black     { color: #303030;  font-weight:bold; }

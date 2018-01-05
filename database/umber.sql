@@ -99,7 +99,7 @@ CREATE UNIQUE INDEX page_path_index ON Page(path);
 --    date    : of this registration (pretty much unused)
 --    midterm : grade, eg 'S', 'S-' etc
 --    grade   : final course grade, eg 'A', 'WP', etc
---    credits : if different for this student than the course default
+--    credits : what this student is registered for in this course
 --    status  : any other info, eg 'withdrawn', 'audit', etc
 CREATE TABLE Registration (
   registration_id INTEGER PRIMARY KEY NOT NULL,
@@ -119,14 +119,14 @@ CREATE TABLE Registration (
 --
 -- An Assignment is anything that gets graded, including tests.
 -- Faculty assign 'em ("Read this; write that") and grade 'em.
--- The "nth" field gives each a (1,2,3,...) number.
+-- The "nth" field gives each a (1,2,3,...) number within one course.
 -- The "notes" field is (again) for possible future expansion
 --
 CREATE TABLE Assignment (
   assignment_id INTEGER PRIMARY KEY NOT NULL,
   course_id INTEGER NOT NULL DEFAULT 0
     CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
-  nth INTEGER UNIQUE NOT NULL DEFAULT 1,
+  nth INTEGER NOT NULL DEFAULT 1,
   name TEXT NOT NULL DEFAULT '',
   due TEXT,
   blurb TEXT NOT NULL DEFAULT '',
@@ -135,16 +135,15 @@ CREATE TABLE Assignment (
 );
 
 --
--- Work is a what a student submits (or uploads) for an Assignment,
--- or where faculty comment on what the student has done.
--- Each corresponds to a wiki page that only one student and the faculty
--- can see, namely course_name/students/username/assignment_uriname.wiki
--- The 'submitted' field holds the 
--- DATETIME (in mysql is e.g. "2001-11-02 13:22:01") 
--- that the work was submitted; 
--- an empty string means the student hasn't submitted anything yet.
--- (At the moment I'm storing all times in the local timezone,
--- even though that's not part of the mysql datetime string.)
+-- Work corresponds to a web page where a student submits their work
+-- for an Assignment, and where faculty comments on and grades that work.
+-- The web page can only be seen by that student and the faculty,
+-- at <course_name>/students/<username>/<nth>.md .
+-- The 'submitted' field holds the date that the work was submitted,
+-- e.g. "2018-01-30T23:59:00-05:00".
+-- An empty string means the student hasn't submitted anything yet.
+-- Similarly, the *_seen and *_modified fields are the dates when
+-- the work page was last seen and last modified.
 -- The "notes" field is for possible future expansion.
 --
 CREATE TABLE Work (
@@ -156,10 +155,10 @@ CREATE TABLE Work (
   assignment_id INTEGER NOT NULL DEFAULT 0
    CONSTRAINT fk_assignment_assignment_id REFERENCES Assignment(assignment_id),
   submitted TEXT NOT NULL DEFAULT '',
-  studentLastSeen TEXT NOT NULL DEFAULT '',
-  studentLastModified TEXT NOT NULL DEFAULT '',
-  facultyLastSeen TEXT NOT NULL DEFAULT '',
-  facultyLastModified TEXT NOT NULL DEFAULT '',
+  student_seen TEXT NOT NULL DEFAULT '',
+  student_modified TEXT NOT NULL DEFAULT '',
+  faculty_seen TEXT NOT NULL DEFAULT '',
+  faculty_modified TEXT NOT NULL DEFAULT '',
   grade TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT ''
 );
