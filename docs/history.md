@@ -1,12 +1,8 @@
 # umber development history #
 
-## Jan 4
+## Jan 5
 
- working on grades.
-
- - work _seen , _modified fields are now updated correctly
-
-
+ The grade page seems to work.
 
 ## Jan 2 2018
 
