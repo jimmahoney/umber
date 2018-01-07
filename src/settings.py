@@ -38,8 +38,8 @@
 """
 import sys, os
 
-url_basename = 'umber'   # URL prefix for umber courses
-os_basename = 'courses'  # course folder within project folder os_root
+url_basename = 'umber'    # URL prefix for umber courses
+_os_basename = 'courses'  # course folder within project folder os_root
 
 git_base = 'courses'     # root of git repo; append page.path for its git path
 
@@ -63,10 +63,13 @@ def _get_os_root():
     return parent_folder
 
 os_root = _get_os_root()
-os_base = os.path.join(os_root, os_basename)   # base of courses folder
 os_src = os.path.join(os_root, 'src')
 os_template = os.path.join(os_root, 'templates')
 os_static = os.path.join(os_root, 'static')
+
+# ***
+# root of folder with course files
+os_base = os.path.join(os_root, _os_basename) 
 
 db_path = os_root + '/database/umber.db'   # absolute sqlite3 file path
 

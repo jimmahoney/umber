@@ -44,7 +44,7 @@ from flask import Flask, Response, request, session, g, \
 from flask_login import LoginManager, login_user, logout_user, current_user
 from flask import render_template
 from settings import admin_email, about_copyright_url, DEBUG, \
-     os_root, os_base, os_static, os_template, url_basename, os_config
+     os_static, os_template, url_basename, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
