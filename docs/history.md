@@ -14,8 +14,6 @@
    $ git commit -m "message"    # notation about this set of changes
    $ git push                   # upload to github
 
- another minor change test.
-
 ## Jan 10
 
  markdown2 apparently has a bug in how it handles query strings in links :
