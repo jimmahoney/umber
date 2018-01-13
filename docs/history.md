@@ -14,7 +14,7 @@
    $ git commit -m "message"    # notation about this set of changes
    $ git push                   # upload to github
 
- minor change test.
+ another minor change test.
 
 ## Jan 10
 
