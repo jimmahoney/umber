@@ -25,7 +25,9 @@
 {% include 'umber/actions.html' %} 
 <div id="column-one">
  <h1><a href="{{ course.url }}"> {{ course.name_as_title }} </a></h1>
+ {% if not page.course.name == 'Umber' %} 
  <div><div id="semester"> {{ course.semester }} </div></div>
+ {% endif %}
  <div>{{ course.nav_html(user, page) }}</div>
  {# include 'umber/navigation.html' #} 
  <div>

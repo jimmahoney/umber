@@ -43,8 +43,8 @@ from flask import Flask, Response, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask_login import LoginManager, login_user, logout_user, current_user
 from flask import render_template
-from settings import admin_email, about_copyright_url, DEBUG, \
-     os_static, os_template, url_basename, os_config
+from settings import admin_email, about_copyright_url, help_url, DEBUG, \
+     os_static, os_template, url_basename, umber_url_base, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
@@ -94,6 +94,8 @@ def template_context():
                 # python functions imported into jinja2 template context
                 dir = dir,                # built-in python function dir()
                 pwd = os.getcwd,
+                Person = Person,
+                Course = Course
                )
 
 @app.before_request
@@ -112,14 +114,16 @@ def before_request():
     # site settings
     g.admin_email = admin_email
     g.about_copyright_url = about_copyright_url
+    g.umber_url_base = umber_url_base
+    g.help_url = help_url
     g.now = Time()
     
     # Set information to be passed to the template engine as in
     # stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask
     #
     # Test passing parameters.
-    session['test'] = 'testing session'       # request thread variable
-    g.alpha = 'beta'                          # test global variable
+    #session['test'] = 'testing session'       # request thread variable
+    #g.alpha = 'beta'                          # test global variable
 
 @app.teardown_request
 def after_request(exception=None):
@@ -173,6 +177,11 @@ def mainroute(pagepath):
                               user=current_user)
 
     print_debug(' mainroute: page.abspath = {}'.format(page.abspath))
+
+    # If this page isn't in a course, just return "not found".
+    if not page.course:
+        return abort(404)  # Just say "not found"
+
     print_debug(' mainroute: course.name = "{}"'.format(page.course.name))
     print_debug(' mainroute: course.url = "{}"'.format(page.course.url))
     print_debug(' mainroute: page.access = {}'.format(page.access))
@@ -181,7 +190,7 @@ def mainroute(pagepath):
     print_debug((' mainroute: page exists = {},' + \
         ' is_file = {}, is_dir = {}').format(
         page.exists, page.is_file, page.is_dir))
-
+    
     # Redirect directories which don't end in '/' to '/'.
     if page.is_dir and len(pagepath) > 0 and pagepath[-1] != '/':
         print_debug('redirecting directory to /')
@@ -197,7 +206,7 @@ def mainroute(pagepath):
             return redirect(page.url[:-12])
         else:
             return redirect(page.course.url)
-    
+
     # Store the page object (and therefore page.course and page.user)
     # in the request, so that the request action handler doesn't need args.
     request.page = page

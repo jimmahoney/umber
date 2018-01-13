@@ -5,7 +5,7 @@
   {% if user.is_authenticated() %}
     <li class="first {{ page.user_role.name }}">{{ user.username }}</li>
     <li class="middle">{{ page.user_role.name }}</li>
-    <li class="rest"><a href="/courses/special/user">settings</a></li>
+    <li class="rest"><a href="{{ g.umber_url_base ~ '/site/sys/user' }}">settings</a></li>
     <li class="rest"><input name="submit_logout" type="submit" value="log out"/></li>
   {% elif page.action == 'login' %}
     <li class="first any">user <input name="username" type="text" size="16"  /></li>

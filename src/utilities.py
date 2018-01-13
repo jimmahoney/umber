@@ -339,13 +339,27 @@ def parse_access_string(access):
         names = names[0]
     return names
     
-def markdown2html(string):
+def markdown2html(string, extras=True):
     # See https://github.com/trentm/python-markdown2
     #     https://github.com/trentm/python-markdown2/wiki/Extras
-    output = markdown(string,
+    if extras:
+        output = markdown(string,
                     extras=['code-friendly', 'fenced-code-blocks',
                             'footnotes', 'pyshell', 'tables',
                             'cuddled-lists', 'markdown-in-html'])
+    else:
+        output = markdown(string)
+    # ---
+    # markdown2 bug fix :
+    #   query string & should not be escaped to &amp;
+    #   semi colons should not be inserted into link
+    href_amp = re.compile(r'href=([^\s>]*)&amp;')
+    href_semi = re.compile(r'href=([^\s>]*);')
+    while re.search(href_amp, output):
+        output = re.sub(href_amp, r'href=\1&', output)
+    while re.search(href_semi, output):
+        output = re.sub(href_semi, r'href=\1', output)
+    # ---
     return output
 
 def split_url(urlpath):

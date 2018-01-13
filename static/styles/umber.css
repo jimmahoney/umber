@@ -129,8 +129,26 @@ form {
     padding: 0;
 }
 
+/* div subtitle in course name */
+/* "a course managment system" beneath "umber" course */
+#column-one h1 a div {
+    font-size: 50%;
+    padding: 0.5em 0;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    width: 65%;
+    /* other border color possibilities : 
+       peru CD853F , 
+       light green borders 90C0C0 */    
+    border-top: 1px solid #006030;  
+    border-bottom: 1px solid #006030;
+}
+
+
 div.indent { 
-  margin-left: 5em;
+    margin-left: 5em;
 }
 
 textarea {
@@ -153,6 +171,8 @@ textarea {
 #edit textarea { 
   font-family: monospace;
 }
+
+
 
 
 /* I'm not sure this changes dialogs in file upload;
@@ -256,14 +276,17 @@ div#header {
   margin:0;
   padding: 3px 3px 0 0;    /* top right bottom left */ 
 }
+#login li.admin {
+  background: url('../images/user_icons/admin.png') left center no-repeat;
+}
 #login li.faculty {
   background: url('../images/user_icons/faculty.png') left center no-repeat;
 }
 #login li.student {
   background: url('../images/user_icons/student.png') left center no-repeat;
 }
-#login li.guest {
-  background: url('../images/user_icons/guest.png') left center no-repeat;
+#login li.member {
+  background: url('../images/user_icons/member.png') left center no-repeat;
 }
 #login li.any {
   background: url('../images/user_icons/any.png') left center no-repeat;
@@ -1035,6 +1058,12 @@ form.login {
   margin: 0.5em 0.5em 0 1em;
 }
 */
+
+/* td user photo in user settings */
+.userphoto {
+    vertical-align: top;
+    padding: 1em;
+}
 
 /* table with 
  *  a) gray font for headings

@@ -8,17 +8,17 @@
     os_basename     # e.g. courses , folder with content pages
     os_base         # e.g. /Users/mahoney/sugar/academics/umber/courses
     os_src          # e.g. /Users/mahoney/sugar/academics/umber/src
-    url_base        # e.g. umber , url prefix http://host/umber/...
+    url_basename    # e.g. umber , url prefix http://host/umber/...
     http_port
     https_port
     timezone
     db_path
 
  URLs have the form
-     host url_base path
+     host url_basename path
  e.g.
-     http://localhost:8080/  umber    /  demo       / home
-            host             url_base    course_path  page_path
+     http://localhost:8080/  umber         /  demo       / home
+            host             url_basename    course_path  page_path
 
  os paths to files files are
      os_base path
@@ -46,12 +46,14 @@ git_base = 'courses'     # root of git repo; append page.path for its git path
 host = '127.0.0.1:5000'  # host:port      : for constructing breadcrumb url
 protocol = 'http'        # http | https
 
-about_copyright_url = 'http://FIXME'
+umber_url_base = protocol + '://' + host + '/' + url_basename
+
+admin_email = '<a mailto:"mahoney@marlboro.edu">Jim Mahoney</a>' 
+about_copyright_url = umber_url_base + '/site/docs/about'
+help_url = umber_url_base + '/site/docs/help'
 
 localtimezone = 'US/Eastern'
 localtimezoneoffset = '-05:00'  # for ISO GMT strings
-
-admin_email = '<a mailto:"mahoney@marlboro.edu">Jim Mahoney</a>' 
 
 def _get_os_root():
     """ Return absolute path to project folder, without trailing slash."""
@@ -70,6 +72,10 @@ os_static = os.path.join(os_root, 'static')
 # ***
 # root of folder with course files
 os_base = os.path.join(os_root, _os_basename) 
+
+# user images , <username>.jpg ,
+# about (122 x 152) px (what nook.marlboro.edu is using Jan 2018)
+photo_folder_url = umber_url_base + '/site/photos/'
 
 db_path = os_root + '/database/umber.db'   # absolute sqlite3 file path
 

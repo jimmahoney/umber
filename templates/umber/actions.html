@@ -4,7 +4,7 @@
   <ul>
   {#  #}
   {# --- edit tab --- #}
-  {% if page.action == 'edit' or not page.exists %}
+  {% if page.action == 'edit' or (not page.exists and not page.is_sys) %}
     <li class='front'>edit</li>
   {% elif page.action == 'history' %}
     <li class='behind'><span style='color:grey'>edit</span></li>

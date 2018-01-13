@@ -48,7 +48,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
-from settings import db_path, protocol, host, url_basename, os_base, git_base
+from settings import db_path, protocol, host, url_basename, os_base, \
+     git_base, photo_folder_url
 from utilities import markdown2html, link_translate, static_url, \
                ext_to_filetype, filetype_to_icon, size_in_bytes, \
                git, Time, stringify_access, print_debug
@@ -65,7 +66,7 @@ class BaseModel(Model):
                            self.__dict__['_data'].items()))
         return '<{}({}) at 0x{:X}>'.format(self.__class__.__name__,
                                        fields, id(self))
-        
+
     @classmethod
     def first(cls):
         return cls.select().first()
@@ -86,6 +87,23 @@ class Person(BaseModel):
     email = TextField()                
     notes = TextField()
 
+    _by_username = {} # cache
+    _admins = None
+
+    def course_data(self):
+        """ return courses that this person is registered in 
+            as a dict with keys role,course,url,semester """
+        registrations = list(Registration.select(Registration.role, Registration.course)
+                                         .where(Registration.person == self))
+        registrations.sort(key=lambda r: r.course.start_date + ' ' + r.course.name)
+        registrations.reverse()  # put most recent courses first
+        return [{'role':r.role.name, 'course':r.course.name,
+                 'url':r.course.url, 'semester':Time(r.course.start_date).semester()}
+                for r in registrations if not r.course.name == 'Umber']
+
+    def get_username(self, username):
+        return Person.by_username(username)
+    
     def works(self, course):
         query = (Work.select()
                      .where( Work.person == self,
@@ -148,8 +166,9 @@ class Person(BaseModel):
         else:
             return unicode(self.username)
 
-    _by_username = {} # cache
-        
+    def get_photo_url(self):
+        return photo_folder_url + self.username + '.jpg'
+
     @staticmethod
     def by_username(username):
         if username not in Person._by_username:
@@ -169,14 +188,13 @@ class Person(BaseModel):
                           .join(Registration)
                           .where(Registration.role == Role.by_name(rolename))
                           .execute())
-
-    _admins = None  # cache - TODO reset when someone gets admin status
     
     @staticmethod
     def admins():
         """ Return list of administrators """
         if not Person._admins:
-            Person._admins =  Person.by_rolename('admin')
+            Person._admins = {p.username : True
+                              for p in Person.by_rolename('admin')}
         return Person._admins
     
 class Course(BaseModel):
@@ -195,6 +213,23 @@ class Course(BaseModel):
     path = TextField(unique=True)
     start_date = TextField()
 
+    _umber_site = None  # course for site data
+
+    @staticmethod
+    def get_all():
+        """ Return all but the 'Umber' course, sorted by semester """
+        result = [c for c in Course.all() if not c.name == 'Umber']
+        result.sort(key=lambda c: c.start_date + ' ' + c.name)
+        result.reverse()
+        return result
+    
+    @staticmethod
+    def umber_site():
+        """ return site admin course 'Umber' """
+        if not Course._umber_site:
+            Course._umber_site = Course.get(name='Umber')
+        return Course._umber_site
+    
     def person_to_role(self, person):
         """ Return role of person in course, or visitor """
         return self.username_to_role.get(person.username,
@@ -203,13 +238,13 @@ class Course(BaseModel):
     def prepared(self):
         """ setup this instance after it's attributes are set """
         # This method is essentially __init__ for these database objects.
-        (self.students, self.username_to_role) = self._get_users()
+        (self.students, self.faculty, self.username_to_role) = self._get_users()
         self.assignments = self._get_assignments()
         self.semester = Time(self.start_date).semester()
         # url without request though that info is also in request
         self.url = protocol + '://' + host + '/' + \
                    url_basename + '/' + self.path
-
+                   
     def _get_assignments(self):
         return list(Assignment.select() \
                               .where(Assignment.course == self) \
@@ -221,10 +256,17 @@ class Course(BaseModel):
                                          .where(Registration.course == self))
         students = [reg.person for reg in registrations
                                if reg.role == Role.by_name('student')]
+        faculty = [reg.person for reg in registrations
+                               if reg.role == Role.by_name('faculty')]
         students.sort(key=lambda s: s.name)
+        faculty.sort(key=lambda s: s.name)
         username_to_role = {reg.person.username : reg.role
                             for reg in registrations}
-        return (students, username_to_role)
+        return (students, faculty, username_to_role)
+
+    def get_faculty_data(self):
+        """ return {'email', 'name'} of faculty """
+        return [{'email':person.email, 'name':person.name} for person in self.faculty]
     
     def os_path(self):
         return os.path.join(os_base, self.path)
@@ -340,6 +382,8 @@ class Course(BaseModel):
     
     def nav_page(self, user):
         """ return course's navigation page """
+        # TODO: put this in a "try" and do something reasonable if it fails.
+        #       (otherwise, pages in courses without sys/navigation.md will crash.)
         # TODO: should this be cached to self._nav_page ?
         # (Need it for both displaying and editing course's navigation page.)
         return Page.get_from_path(self.path + '/sys/' + 'navigation.md',
@@ -350,6 +394,23 @@ class Course(BaseModel):
             for a given user & a given page """
         return self.nav_page(user).nav_content_as_html(page)
 
+    def enroll(self, person, rolename, datestring):
+        """ Enroll a person in this course. """
+        # And also make sure they're in the "Umber" course .. if this isn't the Umber course'
+        (reg1, created) = Registration.get_or_create(
+            person = person,
+            course = self,
+            role = Role.by_name(rolename))
+        reg1.date = datestring
+        reg1.save()
+        if not self.name == 'Umber':
+            (reg2, created) = Registration.get_or_create(
+                person = person,
+                course = Course.umber_site(),
+                role = Role.by_name('member'))
+            reg2.date = datestring
+            reg2.save()
+    
 class Page(BaseModel):
 
     #  --- path, filename, url definitions ---
@@ -381,20 +442,13 @@ class Page(BaseModel):
     class Meta:
         db_table = 'Page'
 
-
     # Each course has some sys/* pages which get special treatment.
-    system_pages = {'assignments' : True,
-                    'courses' : True,
-                    'error' : True,
-                    'folder': True,
-                    'grades': True,
-                    'roster': True,
-                    'settings': True,
-                    'users' : True,
-                    'navigation': True
-                    }
-    editable_system_pages = {'navigation': True,
-                             'assignments': True}
+    # Also here are site/sys/* pages for editing users and courses,
+    # which are only accessible within the 'site' course.
+    system_pages = ('assignments', 'navigation', 'error', 'folder',
+                    'grades', 'roster', 'user', 'users', 'course', 'courses')
+    editable_system_pages = ('assignments', 'navigation',
+                             'user', 'users', 'course', 'courses')
         
     page_id = PrimaryKeyField(db_column='page_id')
 
@@ -419,13 +473,16 @@ class Page(BaseModel):
         page._setup_file_properties()       # sets page.isfile etc
         page.gitpath = os.path.join(git_base, page.path_with_ext)
         page.course = page.get_course()
+        if not page.course:
+            # just return - we'll throw a 404 "not found"
+            return page
         page.relpath = page.path[len(page.course.path):] # i.e. within course
         page.access = page.get_access()
         if user:
             page._setup_user_permissions()  # sets page.can['read'] etc
         if revision or action=='history':
             page._setup_revision_data()     # sets page.history etc
-        page._setup_sys()         # sets .is_sys etc
+        page._setup_sys()         # sets .is_sys etc ... may override access
         page._setup_attachments() # sets .has_attachments
         page._setup_work()        # 
         return page
@@ -544,6 +601,7 @@ class Page(BaseModel):
     def get_access(self):
         """ Return .access dict from .access.yaml in an enclosing folder """
         # e.g. {'read': ['janedoe', 'johnsmith'], 'write': 'faculty'}
+        #access_dict = {'read':'all', 'write':'faculty'}  # default if we don't find it.
         if self.is_dir:
             abspath = self.abspath
         else:
@@ -809,7 +867,7 @@ class Page(BaseModel):
         # This method converts the content of that file to html,
         # keeping only the parts that this user is allowed to see.
         parser = BeautifulSoup(self.content(), 'html.parser')
-        for role in ['admin', 'student', 'faculty', 'guest', 'all']:
+        for role in Role.name_rank.keys():
             divs = parser.find_all('div', access=role)
             if self.user_rank < Role.by_name(role).rank:
                 for div in divs:
@@ -895,7 +953,7 @@ class Role(BaseModel):
     name_rank = {'admin': 5,
                  'faculty': 4,
                  'student': 3,
-                 'guest': 2,
+                 'member': 2,
                  'visitor': 1
                  }
     name_alias = {'admin':           'admin',
@@ -904,7 +962,9 @@ class Role(BaseModel):
                   'student':         'student',
                   'students':        'student',
                   'class':           'student',
-                  'guest':           'guest',
+                  'guests':          'member',
+                  'guest':           'member',
+                  'member':          'member',
                   'all':             'visitor',
                   'any':             'visitor',
                   'visitor':         'visitor'
@@ -1037,19 +1097,16 @@ class Work(BaseModel):
 def populate_database():
     """ Create (and commit) the default database objects """
     #
-    # Put some initial data into the database tables:
+    # This puts initial data into the database tables:
     # Roles, Course 'demo' and its example Persons,
     # Registrations, Assignments, and Works.
     #
     # The Roles data must be in place for the login system to work.
+    # And the Umber course must exist for user photos and site docs.
     # The rest of this is just for examples and tests.
     #
-    # The sqlite database must already exist before this is run.
-    # Create it with ../database/init_db.
-    #
-    # populate_db() is mostly idempotent; that is, runing multiple times
-    # is no different than running it once. The one thing that will
-    # change is the random seeds for the demo course sample users.
+    # The sqlite database must already exist before this is run;
+    # the .../database/init_db will create the database and run this.
 
     print "* Populating database with default data."
     
@@ -1057,21 +1114,24 @@ def populate_database():
     
     with db.transaction():
         
-        student = Role.get(name = 'student')
-        faculty = Role.get(name = 'faculty')
+        student = Role.by_name('student')
+        faculty = Role.by_name('faculty')
         
         (democourse, created) = Course.get_or_create(
                 name = 'Demo Course',
                 name_as_title = 'Demo<br>Course',
                 path = 'demo',
-                start_date = '2013-01-01')
+                start_date = '2018-01-01')
 
-        (umbercourse, created) = Course.get_or_create(
+        # for site resoruces i.e. help files, user id photos etc.
+        # (With .access.yaml by folder, can set differing rights.)
+        # See #column-one h1 a div in umber.csss for display properties.
+        (sitecourse, created) = Course.get_or_create(
                 name = 'Umber',
-                name_as_title = 'Umber',
-                path = '',
-                start_date = '2013-01-01')
-                 
+                name_as_title = 'Umber<div>a course<br>managment<br>system</div>',
+                path = 'site',
+                start_date = '2018-01-01')
+         
         (jane, created) = Person.get_or_create(
             username = 'janedoe',
             name = 'Jane Q. Doe',
@@ -1086,34 +1146,25 @@ def populate_database():
             username = 'tedteacher',
             name = 'Ted Teacher',
             email = 'ted@fake.address')
-        
+
+        (adam, created)  = Person.get_or_create(
+            username = 'adamadmin',
+            name = 'Adam Administrator',
+            email = 'adam@fake.address')
+         
         # The hashed seeded passwords are different each time,
         # so they shouldn't be put in args to find_or_create. Otherwise, the
-        # new passwords won't be found and duplicate people would be created.
+        # new passwords won't be found and duplicate people would be created. 
         jane.set_password('test')
         john.set_password('test')
         ted.set_password('test')
+        adam.set_password('test')
         
-        (r1, created) = Registration.get_or_create(
-            person = john,
-            course = democourse,
-            role = student)
-        r1.date = '2013-01-02'
-        r1.save()
-        
-        (r2, created) = Registration.get_or_create(
-            person = jane,
-            course = democourse,
-            role = student)
-        r2.date = '2018-01-03'
-        r2.save()
-        
-        (r3, created) = Registration.get_or_create(
-            person = ted,
-            course = democourse,
-            role = faculty)
-        r3.date = '2018-01-17' 
-        r3.save()
+        default_date = '2018-01-02'
+        democourse.enroll(john, 'student', default_date)
+        democourse.enroll(jane, 'student', default_date)
+        democourse.enroll(ted,  'faculty', default_date)
+        sitecourse.enroll(adam, 'admin',   default_date)
         
         (assign1, created) = Assignment.get_or_create(
             course=democourse,

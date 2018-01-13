@@ -14,7 +14,7 @@
 
 """
 
-from settings import os_src, os_root, os_basename, url_basename
+from settings import os_src, os_root, url_basename
 from pprint import pprint as pp
 from flask import request, url_for
 
@@ -23,6 +23,7 @@ import sys
 sys.path.insert(0, os_src)
 
 from umber import *
+from utilities import markdown2html
 
 # Set context for a typical page request.
 # ( adapted from http://flask.pocoo.org/docs/0.11/shell/ )

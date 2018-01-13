@@ -1,8 +1,65 @@
 # umber development history #
 
+
+
+## Jan 10
+
+ markdown2 apparently has a bug in how it handles query strings in links :
+
+ markdown2html('[foo](bar?a=b&c=d)')
+ u'<p><a href="bar?a=b&amp;c=d">foo</a></p>\n'
+
+ The issue is the conversion of & to "&amp;" in the query string ... oops.
+ Workaround regex fix I have is an ugly regex loop ...
+
+ I've decided on these url APIs for user and course site stuff :
+
+   -- any member --
+   
+   site/sys/user                                see own data  
+   site/sys/user?action=edit                    edit password
+
+   -- admin --
+   
+   site/sys/user?username=janedoe 
+   site/sys/user?username=janedoe&action=edit   edit all fields except username
+   site/sys/user?action=edit&new                create new user
+   
+   site/sys/courses                             see all courses
+   site/sys/course?id=xx                        see one course
+   site/sys/course?id=xx&action=edit            edit one course
+   site/sys/course?action=edit&new              create a course
+
+   site/sys/users                               see all users & courses they're in
+
+ Without an ldap thingy, 
+ I will need some way to batch input the users.
+ It will probably be easier to write some sort of
+ script for that that works on some sort of csv file,
+ without putting that functionality directly into a web page.
+
+## Jan 7
+
+ Having trouble with urls which aren't in the demo course.
+ Am implementing a quick fix :
+   * Even though I am leaving the "Umber" course
+     for the folder which holds the other courses,
+     trying to display any page within in gives a 404 "not found" error.
+
+ Am creating a new "site" course which will hold site-wide resources
+ and handle access to them, including help files and user photos.
+   site/help/.access.yaml    read: all
+       /photos/              read: guests
+ (where guest is someone who is logged in i.e. not visitor or anonymous)
+
+ TODO : enhance access.yaml to let a folder's contents to be read
+        without showing a listing of that folder ...
+        so that having access to photos doesn't give access
+        to the list of all usernames.
+
 ## Jan 5
 
- The grade page seems to work.
+ Finished a first pass on the grades page.
 
 ## Jan 2 2018
 
@@ -1087,6 +1144,91 @@ ipython connectivity might also be something to consider.
  They say to use 
 <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
 
+ 4.7G  home
+ 51M   var/www
+ 13M   etc
+ 45M   root
+
+# ls -ld /media/sda/sbin/init
+ls: cannot access /media/sda/sbin/init: No such file or directory
+# file $(readlink -f /media/sda/sbin/init)
+/media/sda/sbin/init: cannot open `/media/sda/sbin/init' (No such file or directory)
+# ls -ld /media/sda/bin /media/sda/sbin /media/sda/lib /media/sda/usr /media/sda/etc
+sda/usr /media/sda/etc -ld /media/sda/bin /media/sda/sbin /media/sda/lib /media/ 
+drwxr-xr-x   2 root root  4096 Jan 12 00:43 /media/sda/bin
+drwxr-xr-x 142 root root 12288 Jan 12 05:46 /media/sda/etc
+drwxr-xr-x  19 root root  4096 Jan 12 00:44 /media/sda/lib
+drwxr-xr-x   2 root root 12288 Jan 12 00:44 /media/sda/sbin
+drwxr-xr-x  12 root root  4096 Feb 11  2016 /media/sda/usr
+
+root@ttyS0:~# mkdir /media/sda
+root@ttyS0:~# mount /dev/sda /media/sda
+root@ttyS0:~# ls -ld /media/sda/sbin/init
+ls: cannot access /media/sda/sbin/init: No such file or directory
+root@ttyS0:~# file $(readlink -f /media/sda/sbin/init)
+/media/sda/sbin/init: cannot open `/media/sda/sbin/init' (No such file or directory)
+root@ttyS0:~# ls -ld /media/sda/bin /media/sda/sbin /media/sda/lib /media/sda/usr /media/sda/etc
+drwxr-xr-x   2 root root  4096 Jan 12 00:43 /media/sda/bin
+drwxr-xr-x 142 root root 12288 Jan 12 05:46 /media/sda/etc
+drwxr-xr-x  19 root root  4096 Jan 12 00:44 /media/sda/lib
+drwxr-xr-x   2 root root 12288 Jan 12 00:44 /media/sda/sbin
+drwxr-xr-x  12 root root  4096 Feb 11  2016 /media/sda/usr
+
+===============
+
+deploy :
+
+
+      software/
+      cours/
+      datat/
+
+
+my choices
+
+     umber.cc
+     csmarlboro.cc
+     csmarlboro.org
+
+
+     courses
+     cursai | cúrsaí       irish          
+     cours                 french         <===
+     cursussen             dutch
+     cursos                catalan
+     kursoj                esperanto
+     kurssit               finnish
+     kursy                 polish
+     kurs                  norwegian  
+
+   -------
+
+     umber.cc/                               the software ?
+     
+     cs.marlboro.edu/courses/fall2010        ... what it was
+     
+     umber.cc/marlboro/courses/fall2016      old stuff
+     umber.cc/marlboro/kurs/spring2018       new stuff ?
+     umber.cc/cs.marlboro                    cs homepage ?
+
+     marlboro.college/umber/fall2016
+
+     cs.marlboro.college/courses/fall2016
+     cs.marlboro.college/kurs/spring2018/
+                         cours
+  or
+
+     csmarlboro.cc/courses/fall2018
+     csmarlboro.cc/kurs/2017
+     csmarlboro.cc/umber
+
+  --- recursively change text ---
+  find ./ -type f -readable -writable -exec sed -i "s/cybernetnews/cybernet/g" {} \;
+  --- then --------------
+    /courses/       => new folder
+    cs.marlboro.edu => new host
+
+     
 
 
 

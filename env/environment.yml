@@ -65,6 +65,7 @@
 # Aug  29 - conda update --all ; conda env export; copied that here.
 # Nov  28 - pip install parsedatetime 
 #         - pip install pytz ; conda env export; copied that here
+# Jan 10 2018 - conda install ldap3 ; updated this file
 
 name: umber
 channels:
@@ -86,6 +87,7 @@ dependencies:
 - jinja2=2.9.6=py27_0
 - krb5=1.13.2=0
 - libssh2=1.8.0=0
+- ldap3=2.4
 - markdown2=2.3.4=py27_0
 - markupsafe=1.0=py27_0
 - mkl=2017.0.3=0
