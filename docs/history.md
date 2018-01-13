@@ -1,6 +1,18 @@
 # umber development history #
 
+## Jan 13
 
+ I've been working on this locally but now have uploaded the project to github :
+
+ * created an empty "umber" project on github
+ * followed their recipe for adding this stuff to that :
+   $ git remote add origin https://github.com/jimmahoney/umber.git
+   $ git push -u origin master
+
+ Now the workflow after making changes is
+   $ git add .                  # what goes into this set of changes
+   $ git commit -m "message"    # notation about this set of changes
+   $ git push                   # upload to github
 
 ## Jan 10
 
