@@ -1,50 +1,37 @@
 env/install.txt
 
+See ../Makefile , eh?
+
 Installation instructions
 
  1. First make sure that git is installed, which the project requires.
-    (macos: "brew install git"; ubuntu: "apt-get install git")
+ 
       $ git --version
 
- 2. Install a virtual python2.7 environment, with either conda or virtualenv,
-    along with the project's pythong packages.
+ 2. Install a virtual python2.7 environment
 
-      anaconda :
-         2a.  Install conda from e.g. http://conda.pydata.org/miniconda.html
-	        $ conda --version  # check to see if you have it.
-	 2b.  Create an "umber" virtual python that includes the prereqs
-  	        $ conda create -n umber python=2.7 anaconda --file environment.yml
+    Get python2.7 and a compatible virtualenv
+    ... probably already installed; otherwise see e.g. python.org.
 
-      virtualenv :
-         2a.  Get python2.7 and a compatible virtualenv
-	      if you don't already have them. (See python.org.)
-	        $ python --version
-		$ virtualenv --version
-	      (Probably already installed; otherwise see e.g. python.org/)
-	 2b.  From the project root folder (umber)
-	        $ virtualenv --python=python2.7 venv
-         2c.  Load the python libraries.
-	        $ pip install -r env/requirements.txt
+      $ python --version
+      $ virtualenv --version
 
- 3. Turn on the python environmentn with either
+    Create the virtual environment venv folder.
 
-         $ . env/_activate_conda
-    or	
+      $ virtualenv --python=python2.7 venv
 
-         $ . env/activate_virtualenv     
+    Load the project python packages.
 
+      $ pip install -r env/requirements.txt
+
+ 3. Turn on that python environment with either
+
+      $ . env/_activate_conda
+      
     which also sets up the project environment variables.
 
-    Or better yet, symlink env/activate to one of these. :)
+ 4. After changes to the installed packages, the specs can be updated with
 
---------------------------------------------------------
+     $ pip freeze > requirements_new.txt
 
-After changes to the installed packages, the specs can be updated with
 
-  $ conda env export > environment_new.yml
-  
-or
-
-  $ pip freeze > requirements_new.txt
-
---------------------------------------------

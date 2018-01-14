@@ -1,5 +1,46 @@
 # umber development history #
 
+## Jan 14
+
+### environment
+
+All of the examples online I see of flask deployments,
+including googling "best practice", all use virtualenv
+rather than the anaconda virtual python that I have been using.
+
+And on a production system, anaconda's model of putting everything
+in a user's folder rather than the project seems less than ideal.
+
+I also think from reading that virtualenv has improved since
+I stopped using it some time ago.
+
+So I have just added in env/ some instructions and files
+for virtualenv, which I was able to setup without much
+trouble (at least, after finding "conda install virtualenv",
+ironically enough - my existing virtualenv was broken or
+at least incomapatible with the anaconda python I've been using.)
+
+I've saved a commit 573cc76404dfe5f11ed318ade6379fc1311ba52c
+which has both anaconda and virtualenv stuff ... but am going
+to now get rid of the anaconda environment rather than
+try to keep two virtual environments up to date.
+
+### settings
+
+I've also revamped the src/settings.py file to allow for
+a cleaner DEVELOPMENT vs PRODUCTION mode of working.
+
+The production setup I am envisioning on cs.marlboro.edu is
+
+ /opt/umber                      umber software repo
+
+ /var/www/cs/                    apache root for static pages including
+ /var/www/cs/courses/fall2017    older courses (url cs.marlboro.edu/courses/ )
+
+ /var/www/cours                  umber repo (url cs.marlboro.edu/cours/
+ /var/www/cours/spring2018       this semester's courses       
+ /var/www/cours/_umber_.db       sqlite3 database (within git repo)
+
 ## Jan 13
 
  I've been working on this locally but now have uploaded the project to github :
