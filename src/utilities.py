@@ -4,8 +4,7 @@
 """
 import os, urlparse, sh, arrow, string, re
 from markdown2 import markdown
-from settings import url_basename, os_base, DEBUG, \
-                     localtimezone, localtimezoneoffset
+from settings import URL_BASE,DEBUG, LOCALTIMEZONE, LOCALTIMEZONEOFFSET, OS_GIT
 from flask import url_for
 import parsedatetime, pytz
 
@@ -46,7 +45,7 @@ class Time(object):
             date_time_string += ' ' + Time.defaulttime
         datetime = parsedatetime.Calendar().parseDT(
            datetimeString=date_time_string,
-           tzinfo=pytz.timezone(localtimezone))[0]
+           tzinfo=pytz.timezone(LOCALTIMEZONE))[0]
         return Time(datetime)
         
     def __init__(self, *args, **kwargs):
@@ -67,9 +66,9 @@ class Time(object):
             if re.match('^\d+-\d+-\d+$', args[0]):
                     # i.e. '2018-02-04'
                 args = (args[0] + 'T' + Time.default24time + \
-                        localtimezoneoffset ,)
+                        LOCALTIMEZONEOFFSET ,)
         try:
-            self.arrow = arrow.get(*args, **kwargs).to(localtimezone)
+            self.arrow = arrow.get(*args, **kwargs).to(LOCALTIMEZONE)
         except:
             self.arrow = arrow.get() # use current time if all else fails.
     def __lt__(self, other):
@@ -178,7 +177,7 @@ class Git:
     """ a wrapper around sh.git """
     
     def __init__(self):
-        self._git = sh.git.bake(_cwd=os_base, _tty_out=False)
+        self._git = sh.git.bake(_cwd=OS_GIT, _tty_out=False)
 
     def rm_and_commit(self, page, abspaths):
         """ remove files and folders (absolute paths) & commit changes """
@@ -310,7 +309,7 @@ def link_translate(course, html):
     """ return html string with ~/ and ~~/ links translated
         into the appropriate course and site urls """
     html = html.replace('~/', course.url + '/')
-    html = html.replace('~~/', '/' + url_basename + '/')
+    html = html.replace('~~/', '/' + URL_BASE + '/')
     return html
 
 def whitestrip(x):

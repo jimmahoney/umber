@@ -1,0 +1,16 @@
+# -- conda virtual python environment --
+#
+# To define the python environment for an anaconda python environment,
+# load this from * the project root folder * (i.e. umber/) with
+#
+#     $ source env/_activate_conda
+#
+
+# First define the project environment variables.
+source env/_set_shell_variables
+
+# Then load anaconda's python environment and its software paths.
+#   * This assumes that anaconda's "activate" is in already in your PATH
+#     and that the conda python umber environment has been created.
+#   * See ./environment.yml for python & package installation specs.
+source activate umber

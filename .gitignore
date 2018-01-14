@@ -1,6 +1,9 @@
 
 # compiled files
 *.pyc
+*.pyo
+*.egg
+*.egg-info
 
 # temp files
 .#*
@@ -10,7 +13,9 @@
 .DS_Store/*
 nul
 
-# database binary file
-database/sqlite3/umber.db
+# virtual python environment
+venv
 
+# development database binary
+database/sqlite3/umber.db
 

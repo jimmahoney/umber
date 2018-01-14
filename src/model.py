@@ -48,13 +48,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
-from settings import db_path, protocol, host, url_basename, os_base, \
-     git_base, photo_folder_url
 from utilities import markdown2html, link_translate, static_url, \
-               ext_to_filetype, filetype_to_icon, size_in_bytes, \
-               git, Time, stringify_access, print_debug
+     ext_to_filetype, filetype_to_icon, size_in_bytes, \
+     git, Time, stringify_access, print_debug
+from settings import OS_DB, UMBER_URL, PROTOCOL, SERVER_NAME, \
+    OS_COURSES, PHOTOS_URL, URL_BASE
 
-db = SqliteDatabase(db_path)
+db = SqliteDatabase(OS_DB)
 
 class BaseModel(Model):
     class Meta:
@@ -167,7 +167,7 @@ class Person(BaseModel):
             return unicode(self.username)
 
     def get_photo_url(self):
-        return photo_folder_url + self.username + '.jpg'
+        return PHOTOS_URL + self.username + '.jpg'
 
     @staticmethod
     def by_username(username):
@@ -242,8 +242,7 @@ class Course(BaseModel):
         self.assignments = self._get_assignments()
         self.semester = Time(self.start_date).semester()
         # url without request though that info is also in request
-        self.url = protocol + '://' + host + '/' + \
-                   url_basename + '/' + self.path
+        self.url = UMBER_URL + '/' + self.path
                    
     def _get_assignments(self):
         return list(Assignment.select() \
@@ -269,7 +268,7 @@ class Course(BaseModel):
         return [{'email':person.email, 'name':person.name} for person in self.faculty]
     
     def os_path(self):
-        return os.path.join(os_base, self.path)
+        return os.path.join(OS_COURSES, self.path)
 
     def grade_data_list(self, student):
         """ return student's view grade list for templates/grades.html """
@@ -415,14 +414,13 @@ class Page(BaseModel):
 
     #  --- path, filename, url definitions ---
     #  With settings on my laptop development machine as
-    #    os_base    /Users/mahoney/academics/umber/courses
-    #    url_base                            umber
+    #    OS_COURSES    /Users/mahoney/academics/umber/courses
     #  then for the 'notes/week1' file within a course at 'fall/math' ,
     #  the parts are
-    #    url:  http://localhost:8090/  umber    /  fall/math / notes/week1
-    #          protocol  host          url_base    path...................
+    #    url:  http://127.0.0.1:5000/  umber    /  fall/math / notes/week1
+    #          PROTOCOL  SERVER_NAME   URL_BASE    path...................
     #    file: /Users/mahoney/academics/umber/courses / fall/math / notes/week1
-    #          os_base                                  path...................
+    #          OS_COURSES                               path...................
     #  Following python's os.path phrasing, other terms used here are
     #    basename     last word in address (same as os.path.basename)
     #    abspath      e.g. /Users/mahoney/.../fall/math/notes/week1
@@ -471,7 +469,8 @@ class Page(BaseModel):
         page.revision = revision
         page.allow_insecure_login = True  # TODO : figure out https stuff
         page._setup_file_properties()       # sets page.isfile etc
-        page.gitpath = os.path.join(git_base, page.path_with_ext)
+        # I'm setting this to abspath - let's see if that works.
+        page.gitpath = os.path.join(OS_COURSES, page.path_with_ext)
         page.course = page.get_course()
         if not page.course:
             # just return - we'll throw a 404 "not found"
@@ -606,7 +605,7 @@ class Page(BaseModel):
             abspath = self.abspath
         else:
             abspath = os.path.dirname(self.abspath)
-        while len(abspath) >= len(os_base):
+        while len(abspath) >= len(OS_COURSES):
             accesspath = os.path.join(abspath, '.access.yaml')
             if os.path.exists(accesspath):
                 accessfile = open(accesspath)
@@ -749,7 +748,7 @@ class Page(BaseModel):
             including self.absfilename, self.exists, self.is_file, self.is_dir,
             self.lastmodified, self.breadcrumbs
          """
-        self.abspath = os.path.join(os_base, self.path)
+        self.abspath = os.path.join(OS_COURSES, self.path)
         self.path_with_ext = self.path  # default, unless modified below
         if not os.path.exists(self.abspath):
             for ext in ['.md', '.html']:
@@ -788,18 +787,15 @@ class Page(BaseModel):
             self.lastmodified = None
             self.size = None
         # -- build url links for page breadcrumbs --
-        ## request.base_url should have also have this page's url.
-        ## But here instead I'm building it from what's defined in settings.py,
-        ## namely (protocol, host, url_basename), along with self.path.
-        url_list = [url_basename] + self.path.split('/')
-        urlsofar = protocol + '://' + host
+        url_list = [URL_BASE] + self.path.split('/')
+        urlsofar = PROTOCOL + SERVER_NAME 
         self.breadcrumbs = '<a href="{}">{}</a>'.format(urlsofar, urlsofar)
         while url_list:
             pathpart = '/' + url_list.pop(0)
             urlsofar += pathpart
             self.breadcrumbs += '&nbsp;' + '<a href="{}">{}</a>'.format(
                 urlsofar, pathpart)
-        self.url = protocol+'://'+host+'/'+url_basename+'/'+self.path
+        self.url = UMBER_URL + '/' + self.path
         self.url_for_print_version = self.url + '?print=1'
         self.bytesize = size_in_bytes(self.size)
 

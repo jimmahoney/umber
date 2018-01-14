@@ -1,70 +1,32 @@
 # -- coding: utf-8 --
 """
  umber.py
-
- Running this for development looks like this.
-
-   set PATH 
-   $ source env/activate
-
-   initialize database
-   $ umber_init_db
-
-   interact with sql database
-   $ umber_console
-   >>> # see src/model.py for what you can do
-
-   turn on http and https with the server script to browse & debug pages
-   $ umber_server
-
-   with a browser, visit urls like
-     http://127.0.0.1:5000/test
-     http://127.0.0.1:5000/umber/demo/home
-
- Also see
-   ./README.md, src/*, database/*, and docs/history.txt .
-   http://flask.pocoo.org/docs/0.12/api/ .
-
- For production, at least change the TEST & DEBUG tags in
-   src/umber.py
-   src/config.py
-   env/activate
-   
- FIXME : get https working.
  
  Jim Mahoney | mahoney@marlboro.edu | May 2017 | MIT License
 """
 import sys, re, os, json
 
-## TEST & DEBUG only
-# from OpenSSL import SSL
-
 from flask import Flask, Response, request, session, g, \
      redirect, url_for, abort, flash, get_flashed_messages
 from flask_login import LoginManager, login_user, logout_user, current_user
 from flask import render_template
-from settings import admin_email, about_copyright_url, help_url, DEBUG, \
-     os_static, os_template, url_basename, umber_url_base, os_config
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
      git, is_clean_folder_name, parse_access_string, parse_assignment_data, \
      print_debug
 from werkzeug import secure_filename
+from settings import OS_ROOT, URL_BASE, \
+     UMBER_URL, ADMIN_CONTACT_URL, ABOUT_URL, HELP_URL
 
 app = Flask('umber',
-            static_folder=os_static,
-            template_folder=os_template)
-app.config.from_pyfile(os_config)
+            static_folder=os.path.join(OS_ROOT, 'static'),
+            template_folder=os.path.join(OS_ROOT, 'templates'))
+app.config.from_pyfile(os.path.join(OS_ROOT, 'src', 'settings.py'))
 
 login_manager = LoginManager()
 login_manager.anonymous_user = Person.get_anonymous
 login_manager.init_app(app)
-
-## TEST & DEBUG only
-# ssl_context = SSL.Context(SSL.SSLv23_METHOD)
-# ssl_context.use_privatekey_file('../ssl/ssl.key')
-# ssl_context.use_certificate_file('../ssl/ssl.crt')
 
 @login_manager.user_loader
 def load_user(user_session_id):
@@ -112,16 +74,15 @@ def before_request():
     session.permanent = True
 
     # site settings
-    g.admin_email = admin_email
-    g.about_copyright_url = about_copyright_url
-    g.umber_url_base = umber_url_base
-    g.help_url = help_url
+    g.admin_contact_url = ADMIN_CONTACT_URL
+    g.about_url = ABOUT_URL
+    g.help_url = HELP_URL
+    g.umber_url = UMBER_URL
     g.now = Time()
     
-    # Set information to be passed to the template engine as in
-    # stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask
-    #
-    # Test passing parameters.
+    ## Set information to be passed to the template engine as in
+    ## stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask
+    ## Test passing parameters.
     #session['test'] = 'testing session'       # request thread variable
     #g.alpha = 'beta'                          # test global variable
 
@@ -144,7 +105,7 @@ def testroute():
                            test2 = 'foobar'
         )
 
-@app.route('/' + url_basename + '/<path:pagepath>', methods=['GET', 'POST'])
+@app.route('/' + URL_BASE + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
 
     print_debug('- '*30)
@@ -164,7 +125,7 @@ def mainroute(pagepath):
     (basepath, extension) = os.path.splitext(pagepath)
     if extension ==  '.md':
         (ignore1, ignore2, query) = split_url(request.url)
-        redirect_url = '/' + url_basename + '/' + basepath
+        redirect_url = '/' + URL_BASE + '/' + basepath
         if query:
             redirect_url += '?' + query
         print_debug('redirecting to "{}"'.format(redirect_url))
@@ -244,7 +205,7 @@ def mainroute(pagepath):
                                debug = True
                                )
 
-@app.route('/' + url_basename + '/', methods=['GET', 'POST'])
+@app.route('/' + URL_BASE + '/', methods=['GET', 'POST'])
 def mainroute_blank():
     mainroute('')
     

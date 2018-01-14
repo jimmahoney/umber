@@ -14,20 +14,20 @@
 
 """
 
-from settings import os_src, os_root, url_basename
+import os, sys
 from pprint import pprint as pp
 from flask import request, url_for
+from settings import OS_ROOT, URL_BASE
 
 # Make sure that umber.py is in python's import path
-import sys
-sys.path.insert(0, os_src)
+sys.path.insert(0, os.path.join(OS_ROOT, 'src'))
 
 from umber import *
 from utilities import markdown2html
 
 # Set context for a typical page request.
 # ( adapted from http://flask.pocoo.org/docs/0.11/shell/ )
-democoursehomeurl = '/' + url_basename + '/demo/home'
+democoursehomeurl = '/' + URL_BASE + '/demo/home'
 request_context = app.test_request_context(democoursehomeurl)
 request_context.push()        # make it active
 app.preprocess_request()      # code that runs before request
@@ -41,9 +41,4 @@ print "== Umber console | flask shell =="
 print "Available variables include (democourse, homepage, jane, app, request)."
 print "For formatted output of all defined names : >>> pp(vars())."
 
-# -------------------------
-# 
-# >>> pp(vars())
-# >>> dir()
-# >>> dir(homepage)
 

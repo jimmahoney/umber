@@ -1,6 +1,6 @@
 ###########################################################
-# environment.yml - software for project "umber"
-#
+# env/environment.yml : conda package specs
+# 
 # This file specifies the software packages required for this project
 # in a format that the "conda" package and environment manager understands.
 #

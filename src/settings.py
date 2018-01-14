@@ -34,20 +34,20 @@
 
 """
 import os, sys, datetime
-from os.path import abspath, join, realpath
+from os.path import realpath, join, dirname
 
-OS_ROOT = abspath(join(realpath(__file__), '..'))
+OS_ROOT = realpath(join(dirname(realpath(__file__)), '..'))
 
-if os.environ('UMBER_CONFIG') == 'DEVELOPMENT':
+if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
 
     PROTOCOL = 'http://'
     SERVER_NAME = '127.0.0.1:5000'
     URL_BASE = 'umber'
-    ADMIN_CONTACT_URL = '<a mailto:"adam@fake.fake">Adam Administrator</a>'  # ** Customize **
+    ADMIN_CONTACT_URL = '<a mailto:"adam@fake.fake">Adam Administrator</a>'
     
     OS_COURSES = os.path.join(OS_ROOT, 'courses')
-    OS_DB = os.path.join(OS_ROOT, 'database', 'umber.sql')
-    OS_GIT = OS_ROOT
+    OS_DB = os.path.join(OS_ROOT, 'database', 'umber.db')
+    OS_GIT = OS_COURSES
 
     DEBUG = True
     TESTING = True
@@ -57,18 +57,18 @@ if os.environ('UMBER_CONFIG') == 'DEVELOPMENT':
     LOCALTIMEZONE = 'US/Eastern'
     LOCALTIMEZONEOFFSET = '-05:00'
 
-elif os.environ('UMBER_CONFIG') == 'PRODUCTION':
+elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
                                                                        #
     PROTOCOL = 'http://'                                               # 
     SERVER_NAME = 'cs.marlboro.college'                                #  c
     URL_BASE = 'cours'                                                 #  u
     ADMIN_CONTACT_URL = '<a mailto:"jim@mahoney.cc">Jim Mahoney</a>'   #  s
                                                                        #  t
+    OS_DB = '/var/www/cours/_umber_marlboro.sql'                       #  o
     OS_COURSES = '/var/www/cours'                                      #  m
-    OS_DB = '/var/www/cours/_umber_marlboro.sql'                       #  i
-    OS_GIT = '/var/www/cours'                                          #  z
-                                                                       #  e
-    DEBUG = False                                                      #
+    OS_GIT = '/var/www/cours'                                          #  i
+                                                                       #  z
+    DEBUG = False                                                      #  e
     TESTING = False                                                    #
     SECRET_KEY = 'seeekrit_marlboro'                                   #
     SESSION_COOKIE_NAME = 'umber_marlboro'                             #
@@ -84,16 +84,12 @@ ABOUT_URL = UMBER_URL + '/site/docs/about'
 HELP_URL = UMBER_URL + '/site/docs/help'
 PHOTOS_URL = UMBER_URL + '/site/photos'
 
-OS_SRC = join(OS_ROOT, 'src')
-OS_TEMPLATE = join(OS_ROOT, 'templates')
-OS_STATIC = join(OS_ROOT, 'static')
-
 # =============================================================================
 #
 # url_basename = 'umber'    # URL prefix for umber courses
 # _os_basename = 'cours'    # course folder within project folder os_root
 #
-# git_base = 'courses'     # root of git repo; append page.path for its git path
+# git_base = 'courses'     # root of git repo; append page.path to get git path
 #
 # host = '127.0.0.1:5000'  # host:port      : for constructing breadcrumb url
 # protocol = 'http'        # http | https

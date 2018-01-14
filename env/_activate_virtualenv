@@ -1,0 +1,16 @@
+# -- virtualenv python environment --
+#
+# To define the python environment for a virtualenv python
+# load this from * the project root folder * (i.e. umber/) with
+#
+#     $ source env/_activate_virtualenv
+#
+
+# First define the project environment variables.
+source env/_set_shell_variables
+
+# Then load the python environment and its software paths.
+#   * This assumes that ../venv/ has already been created
+#     and it's packages installed.
+#   * See ./requirements.yml for python & package installation specs.
+source venv/bin/activate
