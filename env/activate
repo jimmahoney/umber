@@ -24,8 +24,12 @@ echo "prepending "$UMBER_ROOT"/bin to PATH"
 export FLASK_APP=src/umber.py
 echo "defining FLASK_APP=src/umber.py"
 
+# See src/settings.py ; either DEVELPMENT or PRODUCTION
+export UMBER_CONFIG=DEVELOPMENT
+
 # These should all be COMMENTED OUT FOR PRODUCTION !!
 export FLASK_DEBUG=1
 export WERKZEUG_DEBUG_PIN=off
 echo "turning on FLASK_DEBUG"
 echo "disabling WERKZEUG_DEBUG_PIN"
+

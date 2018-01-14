@@ -7,11 +7,6 @@ cd $UMBER_ROOT   # Set the working folder to the project root.
 # stop old background servers
 pkill -f flask
 
-# start new background (http? https?) web server
+# start new background web server
 python -B -m flask run
 
-## ... an older version of flask
-# cd src
-# python umber.py     &
-# python umber.py ssl &
-# cd ..
