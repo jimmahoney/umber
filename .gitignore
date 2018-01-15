@@ -17,5 +17,5 @@ nul
 venv
 
 # development database binary
-database/sqlite3/umber.db
+database/umber.db
 
