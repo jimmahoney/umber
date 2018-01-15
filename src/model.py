@@ -52,7 +52,7 @@ from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
      git, Time, stringify_access, print_debug
 from settings import OS_DB, UMBER_URL, PROTOCOL, SERVER_NAME, \
-    OS_COURSES, PHOTOS_URL, URL_BASE
+    OS_COURSES, PHOTOS_URL, URL_BASE, DEBUG
 
 db = SqliteDatabase(OS_DB)
 
@@ -90,6 +90,30 @@ class Person(BaseModel):
     _by_username = {} # cache
     _admins = None
 
+    @staticmethod
+    def new_user(username, name, email, password):
+        with db.atomic():
+            (user, created) = Person.get_or_create(username=username)
+            user.name = name
+            user.email = email
+            user.set_password(password)
+            user.save()
+            Course.enroll_site(user)
+
+    @staticmethod
+    def edit_user(username, name, email, password):
+        try:
+            with db.atomic():
+                user = Person.by_username(username)
+                user.name = name
+                user.email = email
+                if password != '':
+                    user.set_password(password)
+                user.save()
+        except:
+            print_debug('OOPS : Person.edit_user(username="{}") failed' \
+                                .format(username))
+                    
     def course_data(self):
         """ return courses that this person is registered in 
             as a dict with keys role,course,url,semester """
@@ -239,7 +263,8 @@ class Course(BaseModel):
     def prepared(self):
         """ setup this instance after it's attributes are set """
         # This method is essentially __init__ for these database objects.
-        (self.students, self.faculty, self.username_to_role) = self._get_users()
+        (self.students, self.guests,
+         self.faculty, self.username_to_role) = self._get_users()
         self.assignments = self._get_assignments()
         self.semester = Time(self.start_date).semester()
         # url without request though that info is also in request
@@ -258,12 +283,20 @@ class Course(BaseModel):
                                if reg.role == Role.by_name('student')]
         faculty = [reg.person for reg in registrations
                                if reg.role == Role.by_name('faculty')]
+        guests = [reg.person for reg in registrations
+                               if reg.role == Role.by_name('guest')]
         students.sort(key=lambda s: s.name)
         faculty.sort(key=lambda s: s.name)
         username_to_role = {reg.person.username : reg.role
                             for reg in registrations}
-        return (students, faculty, username_to_role)
+        return (students, guests, faculty, username_to_role)
 
+    def get_registered(self):
+        return self.students + self.guests + self.faculty
+
+    def has_username(self, username):
+        return username in self.username_to_role
+    
     def get_faculty_data(self):
         """ return {'email', 'name'} of faculty """
         return [{'email':person.email, 'name':person.name} for person in self.faculty]
@@ -394,22 +427,34 @@ class Course(BaseModel):
             for a given user & a given page """
         return self.nav_page(user).nav_content_as_html(page)
 
-    def enroll(self, person, rolename, datestring):
+    @staticmethod
+    def enroll_site(person, datestring=None):
+        """ enroll a person as a member in the default site course """
+        if not datestring:
+            datestring = str(Time())
+        sitecourse = Course.umber_site()
+        with db.atomic():
+            (reg, created) = Registration.get_or_create(
+                person = person,
+                course = sitecourse,
+                role = Role.by_name('member'))
+            reg.date = datestring
+            reg.save()
+
+    def enroll(self, person, rolename, datestring=None):
         """ Enroll a person in this course. """
         # And also make sure they're in the "Umber" course .. if this isn't the Umber course'
-        (reg1, created) = Registration.get_or_create(
-            person = person,
-            course = self,
-            role = Role.by_name(rolename))
-        reg1.date = datestring
-        reg1.save()
-        if not self.name == 'Umber':
-            (reg2, created) = Registration.get_or_create(
+        if not datestring:
+            datestring = str(Time())
+        with db.atomic():
+            (reg, created) = Registration.get_or_create(
                 person = person,
-                course = Course.umber_site(),
-                role = Role.by_name('member'))
-            reg2.date = datestring
-            reg2.save()
+                course = self,
+                role = Role.by_name(rolename))
+            reg.date = datestring
+            reg.save()
+            if not self.name == 'Umber':
+                Course.enroll_site(person, datestring=datestring)
     
 class Page(BaseModel):
 
@@ -445,9 +490,10 @@ class Page(BaseModel):
     # Also here are site/sys/* pages for editing users and courses,
     # which are only accessible within the 'site' course.
     system_pages = ('assignments', 'navigation', 'error', 'folder',
-                    'grades', 'roster', 'user', 'users', 'course', 'courses')
+                    'grades', 'roster', 'user', 'users', 'course',
+                    'courses', 'registration', 'newuser', 'newcourse')
     editable_system_pages = ('assignments', 'navigation',
-                             'user', 'users', 'course', 'courses')
+                             'grades', 'user', 'course')
         
     page_id = PrimaryKeyField(db_column='page_id')
 
@@ -468,16 +514,16 @@ class Page(BaseModel):
         page.user = user
         page.action = action
         page.revision = revision
-        page.allow_insecure_login = True  # TODO : figure out https stuff
-        page._setup_file_properties()       # sets page.isfile etc
-        # I'm setting this to abspath - let's see if that works.
+        page._setup_file_properties()           # sets page.isfile etc
         page.gitpath = os.path.join(OS_COURSES, page.path_with_ext)
-        page.course = page.get_course()
-        if not page.course:
-            # just return - we'll throw a 404 "not found"
-            return page
+        course = page.get_course()
+        if not course:
+            if DEBUG:                            # Drop into degger.
+                raise Exception("Oops - course not found.")
+            return page     # This will throw a 404 - not found.
+        page.course = course
         page.relpath = page.path[len(page.course.path):] # i.e. within course
-        page.access = page.get_access()
+        page.access = page.get_access()     # gets .access.yaml property.
         if user:
             page._setup_user_permissions()  # sets page.can['read'] etc
         if revision or action=='history':
@@ -555,6 +601,7 @@ class Page(BaseModel):
         if len(self.relpath) > 0 and self.relpath[0] == '/':
             self.relpath = self.relpath[1:]
         self.is_sys = self.relpath[:4] == 'sys/'
+        # -- default values for sys templates for all pages --
         if self.is_sys:
             template = self.relpath[4:]
         else:
@@ -564,11 +611,22 @@ class Page(BaseModel):
         if template not in Page.system_pages:
             template = 'error'
         self.sys_template = 'umber/sys/' + template + '.html'
-        if template in Page.editable_system_pages:
-            self.sys_edit_template = 'umber/sys/edit_' + template + '.html'
-        else:
-            self.sys_edit_template = 'umber/sys/edit_error.html'
-    
+        self.sys_edit_template = 'umber/sys/editerror.html'
+        if self.is_sys:
+            if template in Page.editable_system_pages:
+                self.sys_edit_template = 'umber/sys/edit_' + template + '.html'
+            if self.sys_edit_template == 'umber/sys/editerror.html':
+                if hasattr(self, 'can'):
+                    self.can['write'] = False
+            ## ---- special cases ----
+            # students can edit their passwords
+            if self.relpath == 'sys/user' and \
+              self.user_rank >= Role.name_rank['member']:
+                self.can['write'] = True         
+            # public can see assignments
+            if self.relpath == 'sys/assignments':
+                self.can['read'] = True
+
     def get_course(self):
         """ return this page's course """  # TODO : cache in sql database ??
         # extract path pieces e.g. ['demo', 'home']
@@ -585,7 +643,10 @@ class Page(BaseModel):
         query = Course.select().where(condition)
         courses = list(query.execute())
         # choose the one with the longest path
-        return max(courses, key=lambda c: len(c.path))
+        if courses:
+            return max(courses, key=lambda c: len(c.path))
+        else:
+            return None   # couldn't find a course.
 
     def write_access_file(self, accessdict):
         """ Given an access dict from user input e.g. 

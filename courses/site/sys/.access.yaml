@@ -1,3 +1,4 @@
-read: member
-write: member
+read: admin
+write: admin
+
 

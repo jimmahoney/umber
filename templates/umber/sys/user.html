@@ -2,7 +2,7 @@
 {% if not user.is_authenticated() %}
 {%   include 'umber/forbidden.html' %}
 {% else %}
-{%   if user.is_admin() and request.args.username %}
+{%   if request.args.username and page.course.has_username(request.args.username) %}
 {%     set _user = Person.by_username(request.args.username) %}
 {%   else %}
 {%     set _user = user %}
@@ -35,9 +35,12 @@
 	 <td class="heading">password</td>
 	 <td>*****</td>
        </tr>
+       {% if page.course.name == 'Umber' %}
        <tr>
 	 <td class="heading" style="text-align:top">courses</td>
 	 <td>{% for cd in _user.course_data() %}{{ cd.role }} in <a href="{{ cd.url ~ '/home' }}">{{ cd.course }}</a> , {{ cd.semester }}<br>{% endfor %}</td>
+       </tr>
+       {% endif %}
      </table>
    </td>
   </tr>

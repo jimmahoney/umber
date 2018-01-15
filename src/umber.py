@@ -50,15 +50,15 @@ def template_context():
     """ Set variables and/or functions for all template contexts."""
     # These are in addition to 
     #  (a) the names passed via render_template(template, name=value, ...)
-    #  (b) the default Flask globals
+    #  (b) the default Flask globals, g.* (see before_request())
     # Also can be more app.context_processor additions.
     return dict(static_url = static_url,
                 message = get_message,
-                # python functions imported into jinja2 template context
                 dir = dir,                # built-in python function dir()
                 pwd = os.getcwd,
                 Person = Person,
-                Course = Course
+                Course = Course,
+                Role = Role
                )
 
 @app.before_request
@@ -71,7 +71,7 @@ def before_request():
     if not in_console():
         db.connect()
 
-    # See PERMANENT_SESSION_LIFETIME in config.py
+    # See PERMANENT_SESSION_LIFETIME in env/settings.py
     session.permanent = True
 
     # site settings
@@ -92,20 +92,20 @@ def before_request():
 def after_request(exception=None):
     db.close()
     
-@app.route('/test')
-def testroute():
-    # The variables that Flask makes available by default within templates;
-    # see http://flask.pocoo.org/docs/templating/ .
-    # The global variables are :
-    #    config, g, request, session, current_user, get_flashed_messages()
-    # Also see @app.context_processor (above) for custom template variables.
-    # ( I've looked at two templating engines: jinja2 & mako;
-    #   The choice as of May 2017 is jinja2 due to better flask integration.
-    #   mako globlas have 'context' instead of 'config'; otherwise the same.)
-    return render_template('test/test.html',   # template 
-                           test1 = 'George',   # variables
-                           test2 = 'foobar'
-        )
+#@app.route('/test')
+#def testroute():
+#    # The variables that Flask makes available by default within templates;
+#    # see http://flask.pocoo.org/docs/templating/ .
+#    # The global variables are :
+#    #    config, g, request, session, current_user, get_flashed_messages()
+#    # Also see @app.context_processor (above) for custom template variables.
+#    # ( I've looked at two templating engines: jinja2 & mako;
+#    #   The choice as of May 2017 is jinja2 due to better flask integration.
+#    #   mako globlas have 'context' instead of 'config'; otherwise the same.)
+#    return render_template('test/test.html',   # template 
+#                           test1 = 'George',   # variables
+#                           test2 = 'foobar'
+#        )
 
 @app.route('/' + URL_BASE + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
@@ -270,8 +270,9 @@ def form_post():
     if submit_what not in ('submit_delete', 'submit_edit',
                            'submit_login', 'submit_logout',
                            'submit_createfolder', 'submit_assignments',
-                           'submit_done', 'submit_password'
-                               ):
+                           'submit_done', 'submit_password',
+                           'submit_edituser', 'submit_newuser'
+                           ):
         print_debug(' handle_post: OOPS - illegal submit_what ');
 
     if submit_what == 'submit_done':
@@ -283,6 +284,32 @@ def form_post():
     
     print_debug(' handle_post : submit result = "{}" '.format(result))
     return result
+
+def submit_newuser():
+    """ create new user - admin only """
+    if request.page.user.is_admin():
+        username = request.form['username']
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        print_debug(' new_user: ' + \
+           'username={} name="{}" email={} password=""'.format(
+            username, name, email, password))
+        Person.new_user(username, name, email, password)
+    return URL_BASE + '/site/sys/user?username=' + username
+
+def submit_edituser():
+    """ edit existing user - admin only """
+    if request.page.user.is_admin():
+        username = request.form['username']
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        print_debug(' submit_edituser: ' + \
+            'username={} name="{}" email={} password=""'.format(
+            username, name, email, password))
+        Person.edit_user(username, name, email, password)
+    return request.base_url + '?username=' + username
 
 def submit_password():
     password = request.form['password']

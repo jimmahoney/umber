@@ -1,7 +1,0 @@
-= notes =
-
-A folder place for course lecture notes.
-
-Files here are visible to the whole 
-internet by default.
-

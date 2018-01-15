@@ -24,36 +24,42 @@
      <table class="layout">
        <tr>
 	 <td class="heading">name</td>
-	 <td>{{ _user.name }}</td>
+	 <td>{% if editall %}<input type="input"
+				    name="name"
+				    value="{{_user.name}}"
+	    >{% else %}{{ _user.name }}{% endif %}</td>
        </tr>
        <tr>
 	 <td class="heading">username</td>
-	 <td>{{ _user.username }}</td>
+	 <td>{{ _user.username }}<input
+	   type="hidden" name="username" value="{{ _user.username }}"></td>
        </tr>
        <tr>
 	 <td class="heading">email</td>
-	 <td><a href="mailto:{{ _user.email }}">{{ _user.email }}</a></td>
+	 <td>{% if editall %}<input type="input"
+				    name="email"
+				    value="{{_user.email}}"
+           >{% else %}<a href="mailto:{{ _user.email }}"
+	   >{{ _user.email }}</a>{% endif %}</td>
        </tr>
        <tr>
 	 <td class="heading">password</td>
 	 <td><input type="password" name="password" value=""></td>
        </tr>
-       <tr>
-	 <td class="heading" style="text-align:top">courses</td>
-	 <td>{% for cd in _user.course_data() %}{{ cd.role }} in <a
-	   href="{{ cd.url ~ '/home' }}">{{ cd.course }}</a
-  	   > , {{ cd.semester }}<br>{% endfor %}</td>
      </table>
    </td>
   </tr>
-  {% if not editall %}
+  {% if editall %}
+  <tr><td></td><td><input type="submit" name="submit_edituser"
+			  value="edit_user"></td></tr>
+  {% else %}
   <tr><td></td><td><input type="submit" name="submit_password"
 			  value="change password"></td></tr>
   {% endif %}
 </table>
 </form>
 {% if not editall %}
-<p>To make changes contact {{ g.contact_url | safe}} .</td></tr>
+<p>To make changes other than your password, contact {{ g.contact_url | safe}} .</td></tr>
 {% endif %}
 {% endif %}{# -- _user == None -- #}
 {% endif %}{# -- authenticated -- #}

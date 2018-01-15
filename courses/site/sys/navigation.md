@@ -12,11 +12,11 @@
 <h5>admin</h5>
 <div markdown=1>
 * [all users](~/sys/users)
-* [new user](~/sys/user?action=edit&new)
+* [new user](~/sys/newuser)
 
 ----
 
 * [all courses](~/sys/courses)
-* [new course](~/sys/course?action=edit&new)
+* [new course](~/sys/newcourse)
 </div>
 </div>

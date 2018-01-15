@@ -34,7 +34,7 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     SERVER_NAME = '127.0.0.1:5000'
     URL_BASE = 'umber'
     CONTACT_URL = '<a href="adam@fake.fake">Adam Admin</a>'
-    SITE_URL = 'http://127.0.0.1:5000/demo/home'
+    SITE_URL = 'http://127.0.0.1:5000/umber/demo/home'
     
     OS_COURSES = os.path.join(OS_ROOT, 'courses')
     OS_DB = os.path.join(OS_ROOT, 'database', 'umber.db')

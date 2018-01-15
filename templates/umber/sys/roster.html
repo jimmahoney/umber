@@ -1,2 +1,29 @@
-** roster **
+<h1>roster</h1>
+{% if page.user_rank < 1 %}
+<div>Only people registered in this course may see the roster.</div>
+{% else %}
+{%   set pics_per_row = 6 %}
+{%   set index = 0 %}
+<table style="border-spacing:0.5em">
+<tr>
+{%   for _user in page.course.get_registered() %}
+{%     set index = index + 1 %}
+   <td align='center' valign='top'><a
+       href="{{ page.course.url ~ '/sys/user?usrname=' ~ _user.username }}"><img
+       src="{{ _user.get_photo_url() }}"
+       alt="{{ _user.username }} photo" height="152" /
+       ></a><br/><b>{{ _user.name }}</b><br/
+       ><small><a href="mailto:{{ _user.email }}">{{ _user.username }}</a></small></td>
+{%     if index % pics_per_row == 0 %}
+</tr><tr>
+{%     endif %}
+{%   endfor %}
+</tr>
+<tr>
+</tr>  
+</table>
+{% endif %}
+
+		       
+
 

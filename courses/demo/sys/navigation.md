@@ -24,15 +24,16 @@
 <div markdown=1>
 * [edit assignments](~/sys/assignments?action=edit)
 * [edit navigation](~/sys/navigation?action=edit)
-* [edit roster](~/sys/users)
+* [enroll users](~/sys/registration)
 </div>
 </div>
 
 <div access='admin'>
 <h5>admin</h5>
 <div markdown=1>
-* [site home](~~/home)
-* [all courses](~~/special/courses)
-* [all users](~~/special/users)
+* [site home](~~/site/docs/about)
+* [all courses](~~/site/sys/courses)
+* [all users](~~/site/sys/users)
 </div>
 </div>
+

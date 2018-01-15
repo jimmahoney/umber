@@ -1,5 +1,20 @@
 # umber development history #
 
+## Jan 15
+
+ TODO
+
+  * DEPLOY
+
+  - admin user=? if not found ... check
+  - enroll users : put into course & make student folder with yaml
+  - all users
+  - all courses : edit & copy
+  - edit a single course
+  - add a new course  *   &  default course skeleton
+  - script to add users from csv file
+  - script do add courses from csv file (?)
+
 ## Jan 14
 
 ### environment

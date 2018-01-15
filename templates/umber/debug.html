@@ -8,75 +8,76 @@
     &nbsp; os.getcwd = {{ pwd() }}<br>
   
   <h4>request</h4>
-    &nbsp; request.url = {{request.url }} <br>
-    &nbsp; request.args = {{request.args }} <br>  
-    &nbsp; request.host = {{request.host }} <br>
-    &nbsp; request.url_root = {{request.url_root }} <br>
-    &nbsp; request.base_url = {{request.base_url }} <br>
-    &nbsp; request.path = {{request.path }} <br>
-    &nbsp; request.endpoint = {{request.endpoint }} <br>
-    &nbsp; request.is_secure = {{request.is_secure }} <br>
-    {# &nbsp; request.cookies = {{request.cookies }} <br> #}
+    &nbsp; request.url = {{ request.url }} <br>
+    &nbsp; request.args = {{ request.args }} <br>  
+    &nbsp; request.host = {{ request.host }} <br>
+    &nbsp; request.url_root = {{ request.url_root }} <br>
+    &nbsp; request.base_url = {{ request.base_url }} <br>
+    &nbsp; request.path = {{ request.path }} <br>
+    &nbsp; request.endpoint = {{ request.endpoint }} <br>
+    &nbsp; request.is_secure = {{ request.is_secure }} <br>
+    {# &nbsp; request.cookies = {{ request.cookies }} <br> #}
 
   <h4>page</h4>
-    &nbsp; page.path = {{page.path }} <br>
-    &nbsp; page.ext = '{{page.ext }}' <br>  
-    &nbsp; page.path_with_ext = {{page.path_with_ext }} <br>
-    &nbsp; page.relpath = {{page.relpath }} <br>    
-    &nbsp; page.action = {{page.action }} <br>  
-    &nbsp; page.revision = {{page.revision }} <br>  
-    &nbsp; page.url = {{page.path }} <br>
+    &nbsp; page.path = {{ page.path }} <br>
+    &nbsp; page.ext = '{{ page.ext }}' <br>  
+    &nbsp; page.path_with_ext = {{ page.path_with_ext }} <br>
+    &nbsp; page.relpath = {{ page.relpath }} <br>    
+    &nbsp; page.action = {{ page.action }} <br>  
+    &nbsp; page.revision = {{ page.revision }} <br>  
+    &nbsp; page.url = {{ page.path }} <br>
     &nbsp; page.is_file = {{page.is_file }} <br>
-    &nbsp; page.is_dir = {{page.is_dir }} <br>
-    &nbsp; page.is_sys = {{page.is_sys }} <br>
-    &nbsp; page.sys_template = {{page.sys_template }} <br>
-    &nbsp; page.sys_edit_template = {{page.sys_edit_template }} <br>  
+    &nbsp; page.is_dir = {{ page.is_dir }} <br>
+    &nbsp; page.is_sys = {{ page.is_sys }} <br>
+    &nbsp; page.sys_template = {{ page.sys_template }} <br>
+    &nbsp; page.sys_edit_template = {{ page.sys_edit_template }} <br>  
     &nbsp; page.exists = {{page.exists }} <br>
-    &nbsp; page.filetype = {{page.filetype }} <br>
-    &nbsp; page.size = {{page.size }} <br>
-    &nbsp; page.bytesize = '{{page.bytesize }}' <br>  
-    &nbsp; page.abspath = {{page.abspath }} <br>
+    &nbsp; page.filetype = {{ page.filetype }} <br>
+    &nbsp; page.size = {{ page.size }} <br>
+    &nbsp; page.bytesize = '{{ page.bytesize }}' <br>  
+    &nbsp; page.abspath = {{ page.abspath }} <br>
     {% if page.lastmodified != None %}
       &nbsp; page.lastmodified = {{ page.lastmodified.daydatetime() }} <br>
     {% endif %}
     <br>
-    &nbsp; page.access = {{page.access }} <br>
-    &nbsp; page.can['read'] = {{page.can['read'] }} <br>
-    &nbsp; page.can['write'] = {{page.can['write'] }} <br>
-    &nbsp; page.user_rank = {{page.user_rank }}
+    &nbsp; page.access = {{ page.access }} <br>
+    &nbsp; page.can['read'] = {{ page.can['read'] }} <br>
+    &nbsp; page.can['write'] = {{ page.can['write'] }} <br>
+    &nbsp; page.user_rank = {{ page.user_rank }} <br>
+    &nbsp; Role.name_rank['member'] = {{ Role.name_rank['member'] }}    
     <small><small>
 	(1-5 : visitor,member,student,faculty,admin)
     </small></small> <br>
-    &nbsp; page.user_role = {{page.user_role.name }} <br>
+    &nbsp; page.user_role = {{ page.user_role.name }} <br>
     <br>
-    &nbsp; page.revision = {{page.revision }} <br>
+    &nbsp; page.revision = {{ page.revision }} <br>
     &nbsp; page.history = {{ page.history }} <br>
     <br>
 
-    &nbsp; page.user.username = {{page.user.username }} <br>
-    &nbsp; page.course.name = {{page.course.name }} <br>
+    &nbsp; page.user.username = {{ page.user.username }} <br>
+    &nbsp; page.course.name = {{ page.course.name }} <br>
     <br>
-    &nbsp; page.is_work = {{page.is_work }} <br>
+    &nbsp; page.is_work = {{ page.is_work }} <br>
     {% if page.is_work %}
-    &nbsp; page.work.submitted = {{page.work.submitted }} <br>    
-    &nbsp; page.work.student_seen = {{page.work.student_seen }} <br>    
-    &nbsp; page.work.student_modified = {{page.work.student_modified }} <br>    
-    &nbsp; page.work.faculty_seen = {{page.work.faculty_seen }} <br>    
-    &nbsp; page.work.faculty_modified = {{page.work.faculty_modified }} <br>    
+    &nbsp; page.work.submitted = {{ page.work.submitted }} <br>    
+    &nbsp; page.work.student_seen = {{ page.work.student_seen }} <br>    
+    &nbsp; page.work.student_modified = {{ page.work.student_modified }} <br>    
+    &nbsp; page.work.faculty_seen = {{ page.work.faculty_seen }} <br>    
+    &nbsp; page.work.faculty_modified = {{ page.work.faculty_modified }} <br>    
     {% endif %}
     
   <h4>user</h4>
-    &nbsp; user.username = '{{user.username }}' <br>
-    &nbsp; user.name = '{{user.name }}' <br>
-    &nbsp; user.is_authenticated() = {{user.is_authenticated() }} <br>
-    &nbsp; user.is_anonymous() = {{user.is_anonymous() }} <br>
-    {# &nbsp; user.person_id = {{user.person_id }} <br> #}
+    &nbsp; user.username = '{{ user.username }}' <br>
+    &nbsp; user.name = '{{ user.name }}' <br>
+    &nbsp; user.is_authenticated() = {{ user.is_authenticated() }} <br>
+    &nbsp; user.is_anonymous() = {{ user.is_anonymous() }} <br>
+    {# &nbsp; user.person_id = {{ user.person_id }} <br> #}
 
   <h4>course</h4>
-    &nbsp; course.name = '{{course.name }}' <br>
+    &nbsp; course.name = '{{ course.name }}' <br>
     &nbsp; course.username_to_role.items() : <br>
     {% for (username, role) in course.username_to_role.items() %}
-    &nbsp; &nbsp; &nbsp; {{username}} : {{role.name}} <br>
+    &nbsp; &nbsp; &nbsp; {{ username }} : {{ role.name }} <br>
     {% endfor %}
 
   <p></p>

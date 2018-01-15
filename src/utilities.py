@@ -308,8 +308,8 @@ def size_in_bytes(n):
 def link_translate(course, html):
     """ return html string with ~/ and ~~/ links translated
         into the appropriate course and site urls """
-    html = html.replace('~/', course.url + '/')
     html = html.replace('~~/', '/' + URL_BASE + '/')
+    html = html.replace('~/', course.url + '/')
     return html
 
 def whitestrip(x):

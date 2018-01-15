@@ -1,2 +1,0 @@
-read: [!!python/unicode 'johnsmith', !!python/unicode 'faculty']
-write: !!python/unicode 'janedoe'

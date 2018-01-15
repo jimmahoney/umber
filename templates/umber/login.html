@@ -5,10 +5,10 @@
   {% if user.is_authenticated() %}
     <li class="first {{ page.user_role.name }}">{{ user.username }}</li>
     <li class="middle">{{ page.user_role.name }}</li>
-    {% if page.path == 'site/sys/user' %}
+    {% if page.relpath == 'sys/user' %}
     <li class="rest thispage">profile</li>
     {% else %}
-    <li class="rest"><a href="{{ g.umber_url ~ '/site/sys/user' }}">profile</a></li>
+    <li class="rest"><a href="{{ page.course.url ~ '/sys/user' }}">profile</a></li>
     {% endif %}
     <li class="rest"><input name="submit_logout" type="submit" value="log out"/></li>
   {% elif page.action == 'login' %}

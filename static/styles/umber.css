@@ -70,6 +70,19 @@
        images/background.png    (images refered to here)
 ****/  
 
+/* I'm not quite sure what the right thing here is. 
+   Turning off the focus this way means that for clickable images and links,
+   one cannot tab through them and choose one to activate with return.
+   However, with the default focus, clicking on a link or image and 
+   then hitting the browser "return" means that the last clicked item
+   has a dotted rectangle around it ... which I find annoying.
+   The consensus from reading about this seems to be "leave the focus where it is".
+   But ... annoying. Maybe I can explicitly clear the focus after "back" ? Hmmm.
+ */
+/* :focus {
+    outline: 0;
+} */
+
 body { 
   background: #f9fcf9 url('../images/random_umber.png') 0px 0px repeat;
   /* font: x-small serif; */                          /* start too small */
