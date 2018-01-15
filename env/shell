@@ -1,0 +1,28 @@
+# env/shell
+#
+# Set the shell's environment variables.
+
+# UMBER_CONFIG should be either DEVELPMENT or PRODUCTION.
+# See src/settings.py.
+# (Or comment this out and set it elsewhere.)     ** EDIT UMBER_CONFIG ***
+export UMBER_CONFIG=DEVELOPMENT
+echo "env/shell : UMBER_CONFIG = "$UMBER_CONFIG
+
+# Define the project directory path
+export UMBER_ROOT=`pwd`
+#echo "env/shell : UMBER_ROOT = "$UMBER_ROOT
+
+# Prepend this project's ./bin/ and ./src/ folders to the PATH
+# so that (console, init_db, test, server, umber.py) can be found 
+export PATH=$UMBER_ROOT/bin:$PATH
+#echo "env/shell : prepending "$UMBER_ROOT"/bin to PATH"
+
+# Used by the command line "flask" tool as of flask v0.11
+export FLASK_APP=src/umber.py
+#echo "env/shell : FLASK_APP="$FLASH_APP
+
+# These should be COMMENTED OUT FOR PRODUCTION !!
+export FLASK_DEBUG=1
+export WERKZEUG_DEBUG_PIN=off
+#echo "env/shell : FLASK_DEBUG = "$FLASK_DEBUG
+#echo "env/shell : WERKZEUG_DEBUG_PIN = "$WERKZEUG_DEBUG_PIN

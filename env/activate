@@ -7,7 +7,7 @@
 #
 
 # First define the project environment variables.
-source env/set_shell_variables
+source env/shell
 
 # Then load the python environment and its software paths.
 #   * This assumes that ../venv/ has already been created

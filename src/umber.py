@@ -17,7 +17,8 @@ from utilities import in_console, split_url, static_url, size_in_bytes, \
      print_debug
 from werkzeug import secure_filename
 from settings import OS_ROOT, URL_BASE, \
-     UMBER_URL, ADMIN_CONTACT_URL, ABOUT_URL, HELP_URL
+     UMBER_URL, CONTACT_URL, ABOUT_URL, HELP_URL, SITE_URL
+import safe
 
 app = Flask('umber',
             static_folder=os.path.join(OS_ROOT, 'static'),
@@ -74,10 +75,11 @@ def before_request():
     session.permanent = True
 
     # site settings
-    g.admin_contact_url = ADMIN_CONTACT_URL
+    g.contact_url = CONTACT_URL
     g.about_url = ABOUT_URL
     g.help_url = HELP_URL
     g.umber_url = UMBER_URL
+    g.site_url = SITE_URL
     g.now = Time()
     
     ## Set information to be passed to the template engine as in
@@ -268,7 +270,7 @@ def form_post():
     if submit_what not in ('submit_delete', 'submit_edit',
                            'submit_login', 'submit_logout',
                            'submit_createfolder', 'submit_assignments',
-                           'submit_done'
+                           'submit_done', 'submit_password'
                                ):
         print_debug(' handle_post: OOPS - illegal submit_what ');
 
@@ -281,6 +283,19 @@ def form_post():
     
     print_debug(' handle_post : submit result = "{}" '.format(result))
     return result
+
+def submit_password():
+    password = request.form['password']
+    if not safe.check(password):
+        flash('Oops: that password is too easily guessed. ' + \
+              'Try again with a longer one using a mix of numbers, ' + \
+              'symbols, upper and lower case.', 'user')
+        print_debug(' submit_password: failed safe.check("{}")'.format(password))              
+        return request.base_url + '?action=edit'
+    else:
+        request.page.user.set_password(password)
+        print_debug(' submit_password: password reset')
+        return request.base_url
 
 def submit_assignments():
     """ handle assignment editing """
@@ -352,7 +367,7 @@ def submit_edit():
     # If this is a work page, then update the Work database object.
     if request.page.is_work:
         now = str(Time())  # string with current time
-        with db.transaction():
+        with db.atomic():
             if request.page.user_role.name == 'faculty':
                 request.page.work.faculty_modified = now
                 if 'grade' in request.form:

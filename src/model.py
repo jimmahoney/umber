@@ -120,8 +120,9 @@ class Person(BaseModel):
         self.save()
     
     def set_password(self, passwordtext):
-        self.password = generate_password_hash(passwordtext)
-        self._save()
+        with db.atomic():
+            self.password = generate_password_hash(passwordtext)
+            self._save()
         
     def check_password(self, passwordtext):
         return check_password_hash(self.password, passwordtext)
@@ -167,7 +168,7 @@ class Person(BaseModel):
             return unicode(self.username)
 
     def get_photo_url(self):
-        return PHOTOS_URL + self.username + '.jpg'
+        return PHOTOS_URL + '/' + self.username + '.jpg'
 
     @staticmethod
     def by_username(username):
@@ -345,7 +346,7 @@ class Course(BaseModel):
             a dict of assignments_data[nth][name, due, blurb] """
         # Note: passed argument is *not* made up of Assignment objects.
         db_assignments = {a.nth : a for a in self.get_assignments}
-        with db.transaction():
+        with db.atomic():
             for nth in assignments_data:
                 if nth not in db_assignments:
                     (db_assignments[nth], status) = Assignment.get_or_create(
@@ -691,10 +692,11 @@ class Page(BaseModel):
         if abspath == '':
             abspath = self.abspath
         try:
+            path = os.path.relpath(abspath, OS_COURSES)
             for name in os.listdir(abspath):
                 if name[0] == '.':  # skip invisible files e.g. .access.yaml
                     continue
-                result.append(Page.get_from_path(os.path.join(abspath, name)))
+                result.append(Page.get_from_path(os.path.join(path, name), user=self.user))
         except OSError:  # i.e. if abspath isn't a directory.
             pass
         return result
@@ -922,7 +924,7 @@ class Assignment(BaseModel):
     def get_work(self, person):
         """ Return Work for this assignment by given student """
         # i.e. work = assignment.get_work(student)
-        with db.transaction():
+        with db.atomic():
             (work, created) = Work.get_or_create(assignment = self,
                                                  person = person)
             if created:
@@ -986,7 +988,7 @@ class Role(BaseModel):
 
     @staticmethod
     def create_defaults():
-        with db.transaction():
+        with db.atomic():
             for (name, rank) in Role.name_rank.items():
                 Role.get_or_create(name=name, rank=rank)
                 
@@ -1108,7 +1110,7 @@ def populate_database():
     
     Role.create_defaults()
     
-    with db.transaction():
+    with db.atomic():
         
         student = Role.by_name('student')
         faculty = Role.by_name('faculty')

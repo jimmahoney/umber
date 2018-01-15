@@ -1,1 +1,64 @@
-* edit user *
+
+{% if not user.is_authenticated() %}
+{%   include 'umber/forbidden.html' %}
+{% else %}
+{%   if user.is_admin() and request.args.username %}
+{%     set _user = Person.by_username(request.args.username) %}
+{%     set editall = True %}
+{%   else %}
+{%     set _user = user %}
+{%     set editall = False %}
+{%   endif %}
+
+<h1>user profile</h1>
+{%   if _user == None %}
+<div class="error"><b>OOPS</b> : user not found </div>
+{% else %}
+<form class="user" id="edit_user_form" method="POST" action='{{ page.url }}'>
+<table>
+  <tr>
+   <td class="userphoto">
+     <img height="152" src="{{ _user.get_photo_url() }}" alt="user photo">
+   </td>
+   <td>
+     <table class="layout">
+       <tr>
+	 <td class="heading">name</td>
+	 <td>{{ _user.name }}</td>
+       </tr>
+       <tr>
+	 <td class="heading">username</td>
+	 <td>{{ _user.username }}</td>
+       </tr>
+       <tr>
+	 <td class="heading">email</td>
+	 <td><a href="mailto:{{ _user.email }}">{{ _user.email }}</a></td>
+       </tr>
+       <tr>
+	 <td class="heading">password</td>
+	 <td><input type="password" name="password" value=""></td>
+       </tr>
+       <tr>
+	 <td class="heading" style="text-align:top">courses</td>
+	 <td>{% for cd in _user.course_data() %}{{ cd.role }} in <a
+	   href="{{ cd.url ~ '/home' }}">{{ cd.course }}</a
+  	   > , {{ cd.semester }}<br>{% endfor %}</td>
+     </table>
+   </td>
+  </tr>
+  {% if not editall %}
+  <tr><td></td><td><input type="submit" name="submit_password"
+			  value="change password"></td></tr>
+  {% endif %}
+</table>
+</form>
+{% if not editall %}
+<p>To make changes contact {{ g.contact_url | safe}} .</td></tr>
+{% endif %}
+{% endif %}{# -- _user == None -- #}
+{% endif %}{# -- authenticated -- #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages and messages[0][0] == 'user' %}
+<div class="error">{{ messages[0][1] | safe}}</div>
+{% endif %}
+{% endwith %}
