@@ -2,13 +2,14 @@
 
 ## Jan 15
 
+ Time to try to deploy this. 
+
  TODO
 
-  * DEPLOY
-
   - admin user=? if not found ... check   CHECK
-  - enroll users : put into course & make student folder with yaml
-  - all users
+  - enroll users :                        CHECK
+
+  ------- postponed
   - all courses : edit & copy
   - edit a single course
   - add a new course  *   &  default course skeleton
