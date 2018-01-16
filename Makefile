@@ -16,7 +16,7 @@ prereqs:
 	sudo apt-get install virtualenv
 	sudo apt-get install libapache2-mod-wsgi
 env:
-	virtualenv venv && . env/activate && make deps
+	virtualenv --python=python2.7 venv && . env/activate && make deps
 
 deps:
 	pip install -r env/requirements

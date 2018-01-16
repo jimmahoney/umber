@@ -1,15 +1,18 @@
 # env/activate
 #
-# To define the python environment for a virtualenv python
-# load this from * the project root folder * (i.e. umber/) with
+# To turn on the python development shell environment,
+# load this from the project root folder (i.e. ..) with
 #
 #     $ . env/activate
 #
 
-# First define the project environment variables.
+# Define the project's environment variables.
 source env/shell_development
 
-# Then load the python environment and its software paths.
-#   * This assumes that ../venv/ has already been created
-#     and it's packages installed; see ../Makefile & ./install_notes.txt
+# Activate the python virtual environment.
+# (This assumes that ../venv/ has already been created
+# and it's packages installed; see ../Makefile & ./install_notes.txt)
 source venv/bin/activate
+
+# Add the project python src folder to the python load path.
+export PYTHONPATH=$PYTHONPATH:$UMBER_ROOT/src

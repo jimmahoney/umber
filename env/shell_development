@@ -6,7 +6,7 @@
 # See src/settings.py.
 # (Or comment this out and set it elsewhere.)     ** EDIT UMBER_CONFIG ***
 export UMBER_CONFIG=DEVELOPMENT
-echo "env/shell : UMBER_CONFIG = "$UMBER_CONFIG
+#echo "env/shell : UMBER_CONFIG = "$UMBER_CONFIG
 
 # Define the project directory path
 export UMBER_ROOT=`pwd`
