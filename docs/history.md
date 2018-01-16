@@ -2,6 +2,70 @@
 
 ## Jan 15
 
+ 
+
+ ##### trying to deploy ... failed.
+
+   - most of the time : nothing I can see in any logs "file not found"
+   
+   - tried moving to /var/www thinking that a global apache pref kept
+     it from running elsewhre
+
+   - tried writing to a log file for diagnostics ... nothing
+
+   - did get a "hello world" flask app to run
+
+   - tried installing packages in system python,
+     but even minimal one gives no indication of what's wrong
+
+   - try something else besides apache ?
+
+   gunicorn has had some good reviews - 
+   it suggests using it with nginx ... though it looks like apache also works.
+
+   https://djangodeployment.com/2016/11/30/how-to-setup-apache-with-gunicorn/
+
+   gunicorn installs with pip , is a stand-alone, serving up pages on
+   say 127.0.0.1:4000 , which nginx or apache then proxies.
+
+  
+
+------------------
+
+ I'll be using Apache, WSGI, and virtualenv.
+ The relevant recipes are
+   http://modwsgi.readthedocs.io/en/develop/user-guides/virtual-environments.html
+   http://flask.pocoo.org/docs/0.12/deploying/mod_wsgi/#installing-mod-wsgi
+
+ On the linode deploy server (umber.cc ; cs.marlboro.edu):
+ 
+   $ cd /opt/umber
+   # this sets some environment variables and then does virtualenv's 
+   # "source venv/bin/activate"
+   $ ./env/activate
+   (venv)$ python -c 'import sys; print(sys.prefix)'  # location of virtual env
+   /opt/umber/venv
+
+ No app.run() : check.
+
+ Same python for mod_wsgi install & virtualenv (2.7.12) : check.
+   $ python --version
+   Python 2.7.12
+   $ sudo apt-get install libapache2-mod-wsgi
+   $ cd /opt/umber
+   $ virtualenv env
+   $ source venv/bin/activate
+   (venv)$ pip install env/requirements.txt
+   (venv)$ python --version
+   Python 2.7.12
+
+ Seems to be various schemes for defining the environment variables
+ that the app will need. I notice that one option is to head for
+ /etc/apache2/envvars which give the defaults for apache2 :
+ I'd think that editing that - or loading another file from it - would work.
+
+ ----------
+
  Time to try to deploy this.
  commit 06dad3177f6e5266cebc4444546e6a70d32b6bbb
 
@@ -16,6 +80,27 @@
   - add a new course  *   &  default course skeleton
   - script to add users from csv file
   - script do add courses from csv file (?)
+
+### access rights
+
+ I decided that the mechanism for assigning which pages
+ could be read/write by whom was too awkward for sys/*
+ pages - the code was spreading itself here and there.
+ 
+ I will now require that all sys files (except navigation)
+ have a first line that can serve as the .access.yaml like this :
+
+   {# {'write':..., 'read':...} #}
+
+ where the {# #} is the jinja2 template comment.
+ Part of the issue was that I want the access rights
+ before the action.html piece runs which draws
+ the edit|history tabs, but the sys/ content pieces
+ don't run until later. The current approach looks
+ at the first line early in Page.get_from_path(...)
+ and sets up accessdict from either the .access.yaml
+ (for regular files and folders) or from the first
+ accessyaml comment (for sys/* special pages).
 
 ## Jan 14
 
@@ -82,25 +167,37 @@ The production setup I am envisioning on cs.marlboro.edu is
  The issue is the conversion of & to "&amp;" in the query string ... oops.
  Workaround regex fix I have is an ugly regex loop ...
 
- I've decided on these url APIs for user and course site stuff :
+ ----------
 
-   -- any member --
+ After a bit of futzing around, here's the API for user & course stuff.
+
+ I've decided to put all registered users in the site/ course.
+ And I'm using the "member" to mean a registered person who can log in
+ i.e. admin + faculty + students + guests.
+
+   -- members --
    
-   site/sys/user                                see own data  
-   site/sys/user?action=edit                    edit password
+   course/sys/user                              see own data
+   course/sys/user?username=janedoe             see user in same course
+   course/sys/user?action=edit                  edit password
+   course/sys/roster                            picture book
+
+   -- faculty --
+
+   course/sys/users                             edit who is in course
 
    -- admin --
    
-   site/sys/user?username=janedoe 
    site/sys/user?username=janedoe&action=edit   edit all fields except username
-   site/sys/user?action=edit&new                create new user
-   
+   site/sys/user?newuser                        create new user
+
+   site/sys/users                               see all users & courses they're in
+
+   --- tentative
    site/sys/courses                             see all courses
    site/sys/course?id=xx                        see one course
    site/sys/course?id=xx&action=edit            edit one course
-   site/sys/course?action=edit&new              create a course
-
-   site/sys/users                               see all users & courses they're in
+   site/sys/newcourse                           create a course
 
  Without an ldap thingy, 
  I will need some way to batch input the users.
@@ -115,17 +212,15 @@ The production setup I am envisioning on cs.marlboro.edu is
    * Even though I am leaving the "Umber" course
      for the folder which holds the other courses,
      trying to display any page within in gives a 404 "not found" error.
+   * update: I now have an "error" course which signals the 404
+     for this case. Trying to have page.course=None was not
+     playing nicely with the peewee ORM.
 
  Am creating a new "site" course which will hold site-wide resources
  and handle access to them, including help files and user photos.
    site/help/.access.yaml    read: all
        /photos/              read: guests
  (where guest is someone who is logged in i.e. not visitor or anonymous)
-
- TODO : enhance access.yaml to let a folder's contents to be read
-        without showing a listing of that folder ...
-        so that having access to photos doesn't give access
-        to the list of all usernames.
 
 ## Jan 5
 

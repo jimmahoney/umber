@@ -91,6 +91,10 @@ def before_request():
 def after_request(exception=None):
     db.close()
 
+@app.route('/hello')
+def hello():
+    return "umber test hello ..."
+    
 @app.route('/' + URL_BASE + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
 

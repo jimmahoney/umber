@@ -56,13 +56,13 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     CONTACT_URL = '<a href="mailto:jim@mahoney.cc">Jim Mahoney</a>'    #  u
     SITE_URL = 'https://cs.marlboro.edu'                               #  s
                                                                        #  t
-    OS_DB = '/var/www/cours/_umber_marlboro.sql'                       #  o
+    OS_DB = '/var/www/cours/umber_mboro.sql'                           #  o
     OS_COURSES = '/var/www/cours'                                      #  m
     OS_GIT = '/var/www/cours'                                          #  i
                                                                        #  z
     DEBUG = False                                                      #  e
     TESTING = False                                                    #
-    SECRET_KEY = 'reeely_reely_seeekrit'                               #
+    SECRET_KEY = os.environ['UMBER_SECRET_KEY']                        #
     SESSION_COOKIE_NAME = 'umber_marlboro'                             #
     PERMANENT_SESSION_LIFETIME = datetime.timedelta(days=1)            #
     LOCALTIMEZONE = 'US/Eastern'                                       #

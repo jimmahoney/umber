@@ -1,6 +1,6 @@
-# env/shell
+# env/shell_development
 #
-# Set the shell's environment variables.
+# Set the shell's environment variables - development version
 
 # UMBER_CONFIG should be either DEVELPMENT or PRODUCTION.
 # See src/settings.py.

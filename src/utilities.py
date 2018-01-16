@@ -8,9 +8,14 @@ from settings import URL_BASE,DEBUG, LOCALTIMEZONE, LOCALTIMEZONEOFFSET, OS_GIT
 from flask import url_for
 import parsedatetime, pytz
 
+TMP = {'file': None}
 def print_debug(message):
     if DEBUG:
         print message
+    else:
+        if not TMP['file']:
+            TMP['file'] = open('/tmp/umberlog.txt', 'a')
+        TMP['file'].write(message + "\n")
 
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
