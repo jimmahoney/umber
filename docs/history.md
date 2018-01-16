@@ -6,7 +6,7 @@
 
   * DEPLOY
 
-  - admin user=? if not found ... check
+  - admin user=? if not found ... check   CHECK
   - enroll users : put into course & make student folder with yaml
   - all users
   - all courses : edit & copy

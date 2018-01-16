@@ -29,8 +29,10 @@
     &nbsp; page.is_file = {{page.is_file }} <br>
     &nbsp; page.is_dir = {{ page.is_dir }} <br>
     &nbsp; page.is_sys = {{ page.is_sys }} <br>
+    {% if page.is_sys %}
     &nbsp; page.sys_template = {{ page.sys_template }} <br>
-    &nbsp; page.sys_edit_template = {{ page.sys_edit_template }} <br>  
+    &nbsp; page.sys_edit_template = {{ page.sys_edit_template }} <br>
+    {% endif %}
     &nbsp; page.exists = {{page.exists }} <br>
     &nbsp; page.filetype = {{ page.filetype }} <br>
     &nbsp; page.size = {{ page.size }} <br>

@@ -20,16 +20,16 @@
 <div id="header">
   <a id="cs-logo" href="{{ g.site_url }}"><img src="{{ static_url('images/cs_m_edu.png') }}" 
      alt="computer science @ marlboro.edu" /></a>
-  {% include 'umber/login.html' %}
+  {% include 'login.html' %}
 </div>
-{% include 'umber/actions.html' %} 
+{% include 'actions.html' %} 
 <div id="column-one">
  <h1><a href="{{ course.url }}"> {{ course.name_as_title }} </a></h1>
  {% if not page.course.name == 'Umber' %} 
  <div><div id="semester"> {{ course.semester }} </div></div>
  {% endif %}
  <div>{{ course.nav_html(user, page) }}</div>
- {# include 'umber/navigation.html' #} 
+ {# include 'navigation.html' #} 
  <div>
   <a href="http://www.marlboro.edu"><img id="mc-logo" alt="Marlboro College" 
      src="{{static_url('images/deadtree_logo.png')}}"/></a>
@@ -37,7 +37,7 @@
 </div>
 <div id="column-two">
   <div class="component">
-  {% include 'umber/content.html' %}
+  {% include 'content.html' %}
   <div id="modified">
     {{ page.breadcrumbs }}
   {% if page.lastmodified %}
@@ -45,13 +45,13 @@
   {% endif %}
   </div>
  </div>
- {% include 'umber/attachments.html' %}
+ {% include 'attachments.html' %}
  <div class="footer">
-   {% include 'umber/footer.html' %}
+   {% include 'footer.html' %}
  </div>
 </div>
 {% if debug %}
-  {% include 'umber/debug.html' %}
+  {% include 'debug.html' %}
 {% endif %}
 </body>
 </html>

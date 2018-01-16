@@ -4,7 +4,7 @@
   <ul>
   {#  #}
   {# --- edit tab --- #}
-  {% if page.action == 'edit' or (not page.exists and not page.is_sys) %}
+  {% if page.action == 'edit' %}
     <li class='front'>edit</li>
   {% elif page.action == 'history' %}
     <li class='behind'><span style='color:grey'>edit</span></li>
@@ -22,14 +22,14 @@
   {% endif %}
   {#  #}
   {# --- history tab --- #}    
-  {% if page.action == 'history' %}
+  {% if page.action == 'history' and page.is_file %}
     <li class='front'>history</li>
-  {% elif page.is_file and (not page.is_sys or page.relpath == 'sys/navigation') %}
+  {% elif page.is_file %}
     <li class='behind'><a href="{{page.url}}?action=history">history</a></li>
   {% endif %}  
   {# --- revision prev|info|next|current tab --- #}
   {#  #}    
-  {% if page.revision %}
+  {% if page.revision and page.is_file %}
   <li class='behind'><a href="{{page.url}}">current</a></li>
   <li class='behind'><span class='actionversion'>
      <a href="{{page.revision_prev_url}}{{page.action_query()}}">⏪</a> 

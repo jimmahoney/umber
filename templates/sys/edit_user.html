@@ -1,6 +1,6 @@
 
 {% if not user.is_authenticated() %}
-{%   include 'umber/forbidden.html' %}
+{%   include 'forbidden.html' %}
 {% else %}
 {%   if user.is_admin() and request.args.username %}
 {%     set _user = Person.by_username(request.args.username) %}

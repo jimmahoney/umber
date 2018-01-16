@@ -1,3 +1,5 @@
+{# {'read':'all' , 'write':'faculty' } #}
+{# #}
 <h1>assignments</h1>
 {% for ass in page.course.get_assignments_with_extras()  %}
   <a name="{{ ass.nth }}"></a>

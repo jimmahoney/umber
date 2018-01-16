@@ -1,0 +1,64 @@
+{# {'read':'faculty', 'write':'faculty'} #}
+<h1>users</h1>
+
+<h3>students, faculty, and guests</h3>
+
+<table class="layout">
+  <tr class="heading">
+    <td>name</td>
+    <td>username</td>
+    <td>role</td>
+    {% if dropbuttons %}
+    <td></td>
+    {% endif %}
+  </tr>
+{% for _user in page.course.get_registered() %}
+  <tr>
+    <td><a href="user?username={{ _user.username }}">{{ _user.name }}</a></td>
+    <td><a href="mailto:{{ _user.email }}">{{ _user.username }}</a></td>
+    <td>{{ page.course.username_to_role[_user.username].name }}</td>
+  </tr>
+{% endfor %}
+</table>
+
+<h2>enroll</h2>
+
+<form name="search_user_form" method="POST" action="{{ page.url }}">
+  <div>
+    Search for a person to add to the course :
+    <input type="text" name="partialname" value="" size="24" maxlength="64">
+    <input type="submit" name="submit_searchuser" value="search...">
+  </div>
+</form>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages and messages[0][0] == 'search' %}
+<div class="error">{{ messages[0][1] | safe}}</div>
+{% endif %}
+{% endwith %}
+
+{% if 'usernames' in request.args %}
+<table class="formlayout">
+  <tr class="heading"><td></td><td><b>enroll as </b></td></tr>
+  {% for _user in Person.from_comma_string(request.args['usernames']) %}
+  <tr>
+    <td>{{ _user.name }} ({{ _user.username }})</td>
+    <td>
+      <form name="enroll_form" method="POST" action="{{ page.url }}">
+	<input type="hidden" name="username" value="{{ _user.username }}">
+	<input type="submit" name="submit_enroll" value="student">
+ 	<input type="submit" name="submit_enroll" value="faculty">
+	<input type="submit" name="submit_enroll" value="guest">
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+</form>
+{% endif %}
+
+<h2>help</h2>
+<div>To add additional users to the site database or get other help,
+contact {{ g.contact_url |safe }}.</div>
+
+
+

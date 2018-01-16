@@ -1,12 +1,9 @@
-{% if not user.is_admin() %}
-{%   include 'umber/forbidden.html' %}
-{% else %}
+{# { 'read':'admin' } #}
 <h1>new user</h1>
 <form class="user" id="new_user_form" method="POST" action='{{ page.url }}'>
 <table>
   <tr>
-   <td class="userphoto"></td>
-   <img height="152"
+   <td class="userphoto"><img height="152"
 	src="{{ Person.by_username('janedoe').get_photo_url() }}"
 	alt="user photo">
    </td>
@@ -35,4 +32,3 @@
 			  value="create new user"></td></tr>
 </table>
 </form>
-{% endif %}{# -- is_admin -- #}

@@ -86,26 +86,10 @@ def before_request():
     ## stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask
     ## Test passing parameters.
     #session['test'] = 'testing session'       # request thread variable
-    #g.alpha = 'beta'                          # test global variable
 
 @app.teardown_request
 def after_request(exception=None):
     db.close()
-    
-#@app.route('/test')
-#def testroute():
-#    # The variables that Flask makes available by default within templates;
-#    # see http://flask.pocoo.org/docs/templating/ .
-#    # The global variables are :
-#    #    config, g, request, session, current_user, get_flashed_messages()
-#    # Also see @app.context_processor (above) for custom template variables.
-#    # ( I've looked at two templating engines: jinja2 & mako;
-#    #   The choice as of May 2017 is jinja2 due to better flask integration.
-#    #   mako globlas have 'context' instead of 'config'; otherwise the same.)
-#    return render_template('test/test.html',   # template 
-#                           test1 = 'George',   # variables
-#                           test2 = 'foobar'
-#        )
 
 @app.route('/' + URL_BASE + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
@@ -141,9 +125,10 @@ def mainroute(pagepath):
 
     print_debug(' mainroute: page.abspath = {}'.format(page.abspath))
 
-    # If this page isn't in a course, just return "not found".
-    if not page.course:
-        return abort(404)  # Just say "not found"
+    # If a course for the isn't found, a special 'error' course
+    # will be returned as a signal.
+    if page.course.name == 'error':
+        return abort(404)            # "not found"
 
     print_debug(' mainroute: course.name = "{}"'.format(page.course.name))
     print_debug(' mainroute: course.url = "{}"'.format(page.course.url))
@@ -159,6 +144,11 @@ def mainroute(pagepath):
         print_debug('redirecting directory to /')
         return redirect(url_for('mainroute', pagepath=pagepath) + '/')
 
+    # Redirect nonexisting nonystem editable pages to ?action=edit
+    if page.can['write'] and not page.exists and not page.action and \
+                             not page.is_sys and not page.is_dir :
+        return redirect(page.url + '?action=edit')
+    
     # Don't serve up any invisible "dot" files - reload enclosing folder.
     # This includes (.access.yaml, .keep) among possible others.
     if len(page.name) > 0 and page.name[0] == '.':
@@ -199,7 +189,7 @@ def mainroute(pagepath):
         return Response(page.content(), mimetype=page.mimetype()) 
     else:
         #
-        return render_template('umber/main.html',
+        return render_template('main.html',
                                name = 'main',
                                page = page,
                                user = page.user,
@@ -210,6 +200,8 @@ def mainroute(pagepath):
 @app.route('/' + URL_BASE + '/', methods=['GET', 'POST'])
 def mainroute_blank():
     mainroute('')
+
+# --- ajax --------------------
     
 def ajax_upload():
     """ handle ajax file upload """
@@ -255,6 +247,8 @@ def ajax_response(status, msg):
     status_code = "ok" if status else "error"
     return json.dumps(dict(status=status_code, msg=msg))
 
+# --- forms ----------------------
+
 def form_post():
     """ Process a form submission (login, edit, etc) or ajax request."""
     # The input is stored in the Flask request global.
@@ -271,7 +265,8 @@ def form_post():
                            'submit_login', 'submit_logout',
                            'submit_createfolder', 'submit_assignments',
                            'submit_done', 'submit_password',
-                           'submit_edituser', 'submit_newuser'
+                           'submit_edituser', 'submit_newuser',
+                           'submit_searchuser', 'submit_enroll'
                            ):
         print_debug(' handle_post: OOPS - illegal submit_what ');
 
@@ -284,6 +279,30 @@ def form_post():
     
     print_debug(' handle_post : submit result = "{}" '.format(result))
     return result
+
+def submit_enroll():
+    """ Enroll someone in this course. """
+    username = request.form['username']
+    rolename = request.form['submit_enroll']
+    print_debug(' submit_enroll: user={}, role={}'.format(username, rolename))
+    user = Person.by_username(username)
+    request.page.course.enroll(user, rolename,
+                               create_work=(rolename=='student'))
+    return request.page.url
+
+def submit_searchuser():
+    """ The user clicked "search" looking for some users.
+        Return the result as ?usernames=... in the URL. """
+    partialname = request.form['partialname']
+    maxresults = 24
+    usernames = Person.searchname(partialname, maxresults=maxresults)
+    if len(usernames) == 0:
+        flash('No results found for name="{}".'.format(partialname), 'search')
+        return request.page.url
+    if len(usernames) == maxresults:
+        flash("Too many results - only showing first {}.".format(maxresults),
+                  'search')
+    return request.page.url + '?usernames=' + ','.join(usernames)
 
 def submit_newuser():
     """ create new user - admin only """
@@ -350,13 +369,7 @@ def submit_createfolder():
     folderabspath = os.path.join(request.page.abspath, foldername)
     print_debug(' submit_createfolder : newfolderabspath="{}" '.format(
         folderabspath))
-    try:
-        os.mkdir(folderabspath)
-    except:
-        print_debug(' submit_createfolder: os.makedir failed')
-        return request.base_url
-    newfolder = Page.get_from_path(folderpath, user=request.page.user)
-    git.add_and_commit(newfolder)
+    Page.new_folder(folderabspath, user=request.page.user)
     return url_for('mainroute', pagepath=request.page.path, action='edit')    
 
 def submit_permissions():

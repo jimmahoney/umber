@@ -24,7 +24,7 @@
 <div markdown=1>
 * [edit assignments](~/sys/assignments?action=edit)
 * [edit navigation](~/sys/navigation?action=edit)
-* [enroll users](~/sys/registration)
+* [manage users](~/sys/users)
 </div>
 </div>
 
@@ -34,6 +34,16 @@
 * [site home](~~/site/docs/about)
 * [all courses](~~/site/sys/courses)
 * [all users](~~/site/sys/users)
+</div>
+</div>
+
+<div access='all'>
+<h5>site</h5>
+<div markdown=1>
+* [help](~~/site/docs/help)
+* [about](~~/site/docs/about)
+* [..](..)
+* [.](.)
 </div>
 </div>
 

@@ -4,9 +4,12 @@ See ../Makefile , eh?
 
 Installation instructions
 
- 1. First make sure that git is installed, which the project requires.
+ 1a. Install git and sqlite3.
+     ("brew install" on a mac; "apt-get install" on ubuntu.)
+     To check to see if they're present do
  
       $ git --version
+      $ sqlite3 --version
 
  2. Install a virtual python2.7 environment
 
@@ -24,9 +27,9 @@ Installation instructions
 
       $ pip install -r env/requirements.txt
 
- 3. Turn on that python environment with either
+ 3. For development, turn on that python environment with
 
-      $ . env/_activate_conda
+      $ . env/activate
       
     which also sets up the project environment variables.
 

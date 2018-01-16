@@ -1,34 +1,34 @@
 {# content  #}
 {# ######## #}
 {% if not page.can['read'] %}
-    {% include 'umber/forbidden.html' %}
+    {% include 'forbidden.html' %}
 {% elif page.is_sys and page.action == 'edit' and page.can['write'] %}
     {% include page.sys_edit_template %}
 {% elif page.is_sys %}
     {% include page.sys_template %}
-{% elif not page.exists and page.can['write'] %}
+{% elif not page.exists and page.action == 'edit' and page.can['write'] %}
     {% if page.is_work %}
-        {% include 'umber/edit_work.html' %}
+        {% include 'edit_work.html' %}
     {% else %}
-        {% include 'umber/edit_file.html' %}
+        {% include 'edit_file.html' %}
     {% endif %}
 {% elif not page.exists %}
-    {% include 'umber/missing.html' %}
+    {% include 'missing.html' %}
 {% elif page.is_dir and page.action == 'edit' and page.can['write'] %}
-    {% include 'umber/edit_folder.html' %}
+    {% include 'edit_folder.html' %}
 {% elif page.is_dir %}
-    {% include 'umber/folder.html' %}
+    {% include 'folder.html' %}
 {% elif page.action == 'edit' and page.can['write'] %}
     {% if page.is_work %}
-        {% include 'umber/edit_work.html' %}
+        {% include 'edit_work.html' %}
     {% else %}
-        {% include 'umber/edit_file.html' %}
+        {% include 'edit_file.html' %}
     {% endif %}
 {% elif page.action == 'history' %}
-    {% include 'umber/history_file.html' %}
+    {% include 'history_file.html' %}
 {% else %}
     {% if page.is_work %}
-        {% include 'umber/work_header.html' %}
+        {% include 'work_header.html' %}
     {% endif %}
     {{ page.content_as_html() | safe }}
 {% endif %}

@@ -136,6 +136,11 @@ hr {
   background-color: #90C0C0;
 }
 
+.hint {
+    width: 50%;
+    float:right;
+}
+
 form {
     border: none;
     margin: 0;
@@ -940,6 +945,15 @@ form.login {
   color: darkred;
 }
 
+form input[type="submit"]{
+    font-family: serif;
+    background-color: eee;
+    font-size: 0.85em;
+    margin: 0.1em 0.3em; */
+    -webkit-border-radius: 0.3em;
+    border-radius: 0.3em;
+}
+
 
 /* edit password button */
 .edit_user_form input[type="submit"]{
@@ -1085,6 +1099,35 @@ form.login {
 .userphoto {
     vertical-align: top;
     padding: 1em;
+}
+
+table.formlayout {
+    border-collapse: collapse;
+}
+.formlayout td {
+  font-family: monospace;
+  vertical-align: top;
+  padding: 6px 9px 3px 8px;           /* top right bottom left */
+  border : 1px solid #778899;         /* was 2px */
+  border-right: 1px solid #D3D3D3;    /* was 778899 */
+  border-left: 1px solid #D3D3D3;     /* was 778899 */
+  /* background: #F9F9F9; */
+}
+.formlayout .heading, .formlayout .heading td {
+  /* font-family: default; */
+  /* text-align: center; */
+  vertical-align: bottom;
+  /* color: #606060; */
+  border: none;
+  background: none;
+}
+.formlayout input[type="submit"]{
+    font-family: serif;
+    background-color: eee;
+    font-size: 0.85em;
+    margin: 0.1em 0.3em; */
+    -webkit-border-radius: 0.3em;
+    border-radius: 0.3em;
 }
 
 /* table with 

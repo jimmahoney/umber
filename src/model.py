@@ -52,7 +52,7 @@ from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
      git, Time, stringify_access, print_debug
 from settings import OS_DB, UMBER_URL, PROTOCOL, SERVER_NAME, \
-    OS_COURSES, PHOTOS_URL, URL_BASE, DEBUG
+    OS_ROOT, OS_COURSES, PHOTOS_URL, URL_BASE, DEBUG
 
 db = SqliteDatabase(OS_DB)
 
@@ -90,6 +90,20 @@ class Person(BaseModel):
     _by_username = {} # cache
     _admins = None
 
+    @staticmethod
+    def from_comma_string(comma_string):
+        """ Return list of people from a string of usernames e.g. "john,mary" """
+        return map(Person.by_username, comma_string.split(','))
+    
+    @staticmethod
+    def searchname(partialname, maxresults=32):
+        """ search for a name or username - returning up to a given number """
+        people = Person.select().where( \
+                    Person.name.contains(partialname) | \
+                    Person.username.contains(partialname)) \
+                    .order_by(Person.username).limit(maxresults)
+        return [p.username for p in people]
+    
     @staticmethod
     def new_user(username, name, email, password):
         with db.atomic():
@@ -195,13 +209,18 @@ class Person(BaseModel):
         return PHOTOS_URL + '/' + self.username + '.jpg'
 
     @staticmethod
+    def generic_photo_url():
+        return PHOTOS_URL + '/generic_student.png'
+    
+    @staticmethod
     def by_username(username):
+        """ Returns anonymous person if not found """
         if username not in Person._by_username:
             try:
                 person = Person.select() \
                                .where(Person.username==username).first()
             except:
-                return None
+                return Person.get_anonymous()
             Person._by_username[username] = person
         return Person._by_username[username]
         
@@ -239,6 +258,7 @@ class Course(BaseModel):
     start_date = TextField()
 
     _umber_site = None  # course for site data
+    _errorcourse = None
 
     @staticmethod
     def get_all():
@@ -247,6 +267,13 @@ class Course(BaseModel):
         result.sort(key=lambda c: c.start_date + ' ' + c.name)
         result.reverse()
         return result
+
+    @staticmethod
+    def get_errorcourse():
+        """ return special course-not-found error """
+        if not Course._errorcourse:
+            Course._errorcourse = Course.get(name='error')
+        return Course._errorcourse
     
     @staticmethod
     def umber_site():
@@ -441,9 +468,10 @@ class Course(BaseModel):
             reg.date = datestring
             reg.save()
 
-    def enroll(self, person, rolename, datestring=None):
+    def enroll(self, person, rolename, datestring=None, create_work=False):
         """ Enroll a person in this course. """
-        # And also make sure they're in the "Umber" course .. if this isn't the Umber course'
+        # And also make sure they're in the "Umber" course if this isn't that.
+        # Optionally create their work folder (if it doesn't already exist)
         if not datestring:
             datestring = str(Time())
         with db.atomic():
@@ -455,6 +483,17 @@ class Course(BaseModel):
             reg.save()
             if not self.name == 'Umber':
                 Course.enroll_site(person, datestring=datestring)
+        if create_work:
+            # Build the absolute path for their student work folder:
+            # e.g. course/students/johnsmith/    with its .access.yaml
+            #   &  course/students/johnsmith/work/
+            student_abspath = os.path.join(self.os_path(),
+                                           'students', person.username)
+            Page.new_folder(student_abspath, user=person,
+                            accessdict= {'read':person.username,
+                                         'write':person.username})
+            work_abspath = os.path.join(student_abspath, 'work')
+            Page.new_folder(work_abspath, user=person)
     
 class Page(BaseModel):
 
@@ -506,33 +545,67 @@ class Page(BaseModel):
                              db_column='course_id',
                              to_field='course_id')
 
+    @staticmethod
+    def new_folder(abspath, accessdict=None, user=None):
+        """ Create a new folder with the given abspath.
+            Add it into the github repo. 
+            Optionally create its .access.yaml file. """
+        if os.path.exists(abspath):
+            # bail without doing anything of this already exists
+            # print_debug(' new_folder {} already exists '.format(abspath))
+            return None
+        try:
+            os.makedirs(abspath)  # makes intermediate folders if need be.
+        except:
+            # bail with error message if the OS system won't do it.
+            print_debug(' os.makdir("{}") failed '.format(abspath))
+            return None
+        path = os.path.relpath(abspath, OS_COURSES)
+        folder = Page.get_from_path(path, user=user)
+        git.add_and_commit(folder)
+        if accessdict:
+            folder.write_access_file(accessdict)
+        return folder
+    
     @classmethod
     def get_from_path(cls, path, revision=None, action=None, user=None):
         """ Get or create a Page and set up all its internal data 
             i.e. course, file info, user permissions, etc """
         (page, iscreated) = Page.get_or_create(path=path)
+        if user == None:
+            user = Person.get_anonymous()
         page.user = user
         page.action = action
         page.revision = revision
         page._setup_file_properties()           # sets page.isfile etc
         page.gitpath = os.path.join(OS_COURSES, page.path_with_ext)
-        course = page.get_course()
-        if not course:
-            if DEBUG:                            # Drop into degger.
-                raise Exception("Oops - course not found.")
-            return page     # This will throw a 404 - not found.
-        page.course = course
-        page.relpath = page.path[len(page.course.path):] # i.e. within course
+        page.course = page.get_course()
+        if page.course.name == 'error':
+            ### Unexpected (to me anyway) behavior here :
+            ###     page.course = None
+            ###     if page.course:        # This throws an error!
+            ###        ...
+            ### Apparently the peewee database code has put hooks into
+            ### the Page object to do tricky stuff for "page.course",
+            ### seems to drop into peewee and complain.
+            ### I've avoided the issue by creating a special "error" course
+            return page     # In umber.py will turn into a 404 - not found.
+        page.relpath = page._get_relpath()
+        page._setup_sys()                   # do this before .get_access()
         page.access = page.get_access()     # gets .access.yaml property.
-        if user:
-            page._setup_user_permissions()  # sets page.can['read'] etc
+        page._setup_user_permissions()      # sets page.can['read'] etc
         if revision or action=='history':
             page._setup_revision_data()     # sets page.history etc
-        page._setup_sys()         # sets .is_sys etc ... may override access
-        page._setup_attachments() # sets .has_attachments
-        page._setup_work()        # 
+        page._setup_attachments()           # sets .has_attachments
+        page._setup_work()                  # 
         return page
 
+    def _get_relpath(self):
+        """ Return path of page relative to course path, 
+            e.g. notes/home for path=demo/notes/home in course 'demo' """
+        # self.course must be already set.
+        return self.path[len(self.course.path)+1:]
+    
     def attachments_folder(self):
         return self.abspath.replace(self.ext, '.attachments')
     
@@ -547,7 +620,7 @@ class Page(BaseModel):
         else:
             self.attachments = []
             self.has_attachments = False
-    
+            
     def _setup_work(self):
         """ see if this is a students/<name>/work/<number> student work page; 
             define .is_work and .work, set up .work for html display,
@@ -584,48 +657,46 @@ class Page(BaseModel):
                 self.work.save()
         else:
             self.is_work = False
-            self.work = None
-            self.work_assignment = None
-            self.work_person = None
-            self.work_due = ''
-            self.work_submitted = ''
-            self.work_is_late = False
-            self.work_grade = ''
+            #self.work = None
+            #self.work_assignment = None
+            #self.work_person = None
+            #self.work_due = ''
+            #self.work_submitted = ''
+            #self.work_is_late = False
+            #self.work_grade = ''
     
     def _setup_sys(self):
-        """ see if this is a sys/* page : 
-            define .relpath , .is_sys, .sys_template """
+        """ define .is_sys.
+            if it is, also define .sys_template, ./sys_edit_template """
         # If relpath is 'sys/assignments', then is_sys will be true,
         # the template will be 'umber/sys/assignments.html'
-        # and the edit template will be 'umber/sys/edit_assignments.html'
-        if len(self.relpath) > 0 and self.relpath[0] == '/':
-            self.relpath = self.relpath[1:]
+        # and the edit template will be 'umber/sys/edit_assignments.html',
+        # (and the access permissions will be in the first line of the template.)
         self.is_sys = self.relpath[:4] == 'sys/'
         # -- default values for sys templates for all pages --
         if self.is_sys:
-            template = self.relpath[4:]
-        else:
-            template = 'error'
-        if template == '':
-            template = 'folder'
-        if template not in Page.system_pages:
-            template = 'error'
-        self.sys_template = 'umber/sys/' + template + '.html'
-        self.sys_edit_template = 'umber/sys/editerror.html'
-        if self.is_sys:
-            if template in Page.editable_system_pages:
-                self.sys_edit_template = 'umber/sys/edit_' + template + '.html'
-            if self.sys_edit_template == 'umber/sys/editerror.html':
-                if hasattr(self, 'can'):
-                    self.can['write'] = False
+            which = self.relpath[4:]
+            if which == '':
+                which = 'folder'
+            if which not in Page.system_pages:
+                which = 'error'
+            self.sys_template = 'sys/' + which + '.html'
+            if which in Page.editable_system_pages:
+                self.sys_edit_template = 'sys/edit_' + which + '.html'
+            else:
+                self.sys_edit_template = 'sys/editerror.html'
+                
+            #if self.sys_edit_template == 'umber/sys/editerror.html':
+            #    if hasattr(self, 'can'):
+            #        self.can['write'] = False
             ## ---- special cases ----
             # students can edit their passwords
-            if self.relpath == 'sys/user' and \
-              self.user_rank >= Role.name_rank['member']:
-                self.can['write'] = True         
+            #if self.relpath == 'sys/user' and \
+            #  self.user_rank >= Role.name_rank['member']:
+            #    self.can['write'] = True         
             # public can see assignments
-            if self.relpath == 'sys/assignments':
-                self.can['read'] = True
+            #if self.relpath == 'sys/assignments':
+            #    self.can['read'] = True
 
     def get_course(self):
         """ return this page's course """  # TODO : cache in sql database ??
@@ -646,7 +717,7 @@ class Page(BaseModel):
         if courses:
             return max(courses, key=lambda c: len(c.path))
         else:
-            return None   # couldn't find a course.
+            return Course.get_errorcourse() 
 
     def write_access_file(self, accessdict):
         """ Given an access dict from user input e.g. 
@@ -657,26 +728,46 @@ class Page(BaseModel):
         accessfile = open(accesspath, 'w')     # open or create
         accessfile.write(yaml.dump(accessdict)) # replace yaml permissions
         accessfile.close()
+        git.add_and_commit(self, accesspath)
         return accesspath
     
     def get_access(self):
-        """ Return .access dict from .access.yaml in an enclosing folder """
+        """ Return .access dict from .access.yaml in an enclosing folder 
+            or from the first line of a sys_template
+        """
         # e.g. {'read': ['janedoe', 'johnsmith'], 'write': 'faculty'}
         #access_dict = {'read':'all', 'write':'faculty'}  # default if we don't find it.
-        if self.is_dir:
-            abspath = self.abspath
+        if self.is_sys:
+            ## navigation is a special case : since it's a faculty editable file,
+            ## I'll fill it it manually and not require that it have the {# #} first line.
+            if self.relpath == 'sys/navigation' or \
+               self.relpath == 'sys/navigation.md':
+                access_dict = {'read':'member', 'write':'faculty'}
+            else:
+                ## all other system files have an access spec as their first line
+                ## e.g.  {# {'read':'all', 'write':'faculty' #}
+                template = os.path.join(OS_ROOT, 'templates', self.sys_template)
+                firstline = open(template).readline()
+                access_dict = eval(firstline.replace('{#','').replace('#}',''))
         else:
-            abspath = os.path.dirname(self.abspath)
-        while len(abspath) >= len(OS_COURSES):
-            accesspath = os.path.join(abspath, '.access.yaml')
-            if os.path.exists(accesspath):
-                accessfile = open(accesspath)
-                access_dict = yaml.load(accessfile)
-                accessfile.close()
-                if type(access_dict) == type({}):
-                    # OK, we found an access dict, so stop here.
-                    break
-            abspath = os.path.dirname(abspath) # i.e. "cd .."
+            if self.is_dir:
+                abspath = self.abspath
+            else:
+                abspath = os.path.dirname(self.abspath)
+            while len(abspath) >= len(OS_COURSES):
+                accesspath = os.path.join(abspath, '.access.yaml')
+                if os.path.exists(accesspath):
+                    accessfile = open(accesspath)
+                    access_dict = yaml.load(accessfile)
+                    accessfile.close()
+                    if type(access_dict) == type({}):
+                        # OK, we found an access dict, so stop here.
+                        break
+                abspath = os.path.dirname(abspath) # i.e. "cd .."
+        if 'read' not in access_dict:
+            access_dict['read'] = ''
+        if 'write' not in access_dict:
+            access_dict['write'] = ''
         # clean up for display :
         self.read_access = stringify_access(access_dict['read'])
         self.write_access = stringify_access(access_dict['write'])
@@ -695,20 +786,18 @@ class Page(BaseModel):
         self.user_role = self.course.person_to_role(self.user)
         self.user_rank = self.user_role.rank
         #
-        if self.user_role.name == 'faculty':
-            self.can = {'read': True, 'write': True}
-            return
-        #
         if self.user.is_admin():
-            self.can = {'read': True, 'write': True}
             self.user_role = Role.by_name('admin')
             self.user_rank = Role.by_name('admin').rank
+        
+        if self.user_role.name in ('faculty', 'admin') and not self.is_sys:
+            self.can = {'read': True, 'write': True}
             return
-        #
+        
         self.can = {'read':False, 'write':False} # default is deny access
         for permission in ('read', 'write'):
-            access_needed = Role.by_name('faculty').rank  # faculty can 
             yaml_rights = self.access[permission]
+            access_needed = 10  # i.e. more than anyone has by default
             # can be list e.g. ['faculty', 'bob'] or string 'students'
             if type(yaml_rights) == type(''):
                 yaml_rights = [ yaml_rights ]
@@ -717,7 +806,7 @@ class Page(BaseModel):
                     self.can[permission] = True
                     break
                 elif name_or_role in Role.name_alias:
-                    access_needed = min(access_needed,
+                    access_needed = min(access_needed, \
                                         Role.by_name(name_or_role).rank)
             if self.user_rank >= access_needed:
                 self.can[permission] = True
@@ -1177,19 +1266,26 @@ def populate_database():
         faculty = Role.by_name('faculty')
         
         (democourse, created) = Course.get_or_create(
-                name = 'Demo Course',
-                name_as_title = 'Demo<br>Course',
-                path = 'demo',
-                start_date = '2018-01-01')
+            name = 'Demo Course',
+            name_as_title = 'Demo<br>Course',
+            path = 'demo',
+            start_date = '2018-01-01')
 
+        # special "no such course" for reporting course-not-found errors.
+        (errorcourse, created) = Course.get_or_create(
+            name = 'error',
+            name_as_title = 'error',     # Never used, I hope.
+            path = '*error*',            # Never used, I hope.
+            start_date = '1901-01-01')
+         
         # for site resoruces i.e. help files, user id photos etc.
         # (With .access.yaml by folder, can set differing rights.)
         # See #column-one h1 a div in umber.csss for display properties.
         (sitecourse, created) = Course.get_or_create(
-                name = 'Umber',
-                name_as_title = 'Umber<div>a course<br>managment<br>system</div>',
-                path = 'site',
-                start_date = '2018-01-01')
+            name = 'Umber',
+            name_as_title = 'Umber<div>a course<br>managment<br>system</div>',
+            path = 'site',
+            start_date = '2018-01-01')
          
         (jane, created) = Person.get_or_create(
             username = 'janedoe',
@@ -1220,10 +1316,10 @@ def populate_database():
         adam.set_password('test')
         
         default_date = '2018-01-02'
-        democourse.enroll(john, 'student', default_date)
-        democourse.enroll(jane, 'student', default_date)
-        democourse.enroll(ted,  'faculty', default_date)
-        sitecourse.enroll(adam, 'admin',   default_date)
+        democourse.enroll(john, 'student', default_date, create_work=False)
+        democourse.enroll(jane, 'student', default_date, create_work=False)
+        democourse.enroll(ted,  'faculty', default_date, create_work=False)
+        sitecourse.enroll(adam, 'admin',   default_date, create_work=False)
         
         (assign1, created) = Assignment.get_or_create(
             course=democourse,

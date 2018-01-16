@@ -1,22 +1,27 @@
-
+{# {'read':'member' , 'write':'member'} #}
+{# #}
 {% if not user.is_authenticated() %}
-{%   include 'umber/forbidden.html' %}
+{%   include 'forbidden.html' %}
 {% else %}
-{%   if request.args.username and page.course.has_username(request.args.username) %}
-{%     set _user = Person.by_username(request.args.username) %}
+{%   if request.args.username %}
+{%     set username = request.args.username  %}
+{%     if page.course.has_username(username) %}
+{%       set _user = Person.by_username(username) %}
+{%     else %}
+{%       set _user = None %}
+{%     endif %}
 {%   else %}
 {%     set _user = user %}
 {%   endif %}
-
 <h1>user profile</h1>
 {%   if _user == None %}
-<div class="error"><b>OOPS</b> : user not found </div>
+<div class="error"><b>OOPS</b
+   > : there is no username "{{ username }}" in this course. </div>
 {% else %}
 <table>
   <tr>
-   <td class="userphoto">
-     <img height="152" src="{{ _user.get_photo_url() }}" alt="user photo">
-   </td>
+   <td class="userphoto"><img height="152"
+       src="{{ _user.get_photo_url() }}" alt="user photo"></td>
    <td>
      <table class="layout">
        <tr>

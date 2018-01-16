@@ -17,7 +17,7 @@
 import os, sys
 from pprint import pprint as pp
 from flask import request, url_for
-from settings import OS_ROOT, URL_BASE
+from settings import *
 
 # Make sure that umber.py is in python's import path
 sys.path.insert(0, os.path.join(OS_ROOT, 'src'))

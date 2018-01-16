@@ -5,7 +5,7 @@
 >{{ page.content() }}</textarea>
 {% else %}
 >
-{% include 'umber/default_navigation.md' %}
+{% include 'default_navigation.md' %}
 </textarea>
 {% endif %}
 <input type="submit" name="submit_edit" value="save page" />
@@ -16,6 +16,6 @@
 defining which links are visible for visitors, students, and faculty.
 Copy and paste the following example as a starting point.</div>
 <textarea readonly rows=2>
-{% include 'umber/default_navigation.md' | escape %}
+{% include 'default_navigation.md' | escape %}
 </textarea>
 </div>
