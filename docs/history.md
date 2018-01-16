@@ -2,7 +2,8 @@
 
 ## Jan 15
 
- Time to try to deploy this. 
+ Time to try to deploy this.
+ commit 06dad3177f6e5266cebc4444546e6a70d32b6bbb
 
  TODO
 
