@@ -4,7 +4,8 @@
 """
 import os, urlparse, sh, arrow, string, re
 from markdown2 import markdown
-from settings import URL_BASE,DEBUG, LOCALTIMEZONE, LOCALTIMEZONEOFFSET, OS_GIT
+from settings import URL_BASE,DEBUG, TMPLOG, \
+    LOCALTIMEZONE, LOCALTIMEZONEOFFSET, OS_GIT, TMPLOG
 from flask import url_for
 import parsedatetime, pytz
 
@@ -12,7 +13,7 @@ TMP = {'file': None}
 def print_debug(message):
     if DEBUG:
         print message
-    else:
+    if TMPLOG:
         if not TMP['file']:
             TMP['file'] = open('/tmp/umberlog.txt', 'a')
         TMP['file'].write(message + "\n")

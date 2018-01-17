@@ -20,10 +20,14 @@ from settings import OS_ROOT, URL_BASE, \
      UMBER_URL, CONTACT_URL, ABOUT_URL, HELP_URL, SITE_URL
 import safe
 
+print "==> umber.py "
+
 app = Flask('umber',
             static_folder=os.path.join(OS_ROOT, 'static'),
             template_folder=os.path.join(OS_ROOT, 'templates'))
 app.config.from_pyfile(os.path.join(OS_ROOT, 'src', 'settings.py'))
+
+print "==> app={}".format(app)
 
 login_manager = LoginManager()
 login_manager.anonymous_user = Person.get_anonymous
@@ -62,14 +66,20 @@ def template_context():
                )
 
 @app.before_request
-def before_request():
+def do_before_request():
     """ initialize database and session """
+
+    print "==> before_request() - start "
 
     # See http://docs.peewee-orm.com/en/latest/peewee/database.html .
     # This gives "connection already open" error if in console.
     # The current (kludgy) fix is to test for the console explicitly.
     if not in_console():
         db.connect()
+
+    print " db={}".format(db)
+    print " request={}".format(request)
+    print " Flask.url_map {}".format(Flask.url_map)
 
     # See PERMANENT_SESSION_LIFETIME in env/settings.py
     session.permanent = True
@@ -81,6 +91,8 @@ def before_request():
     g.umber_url = UMBER_URL
     g.site_url = SITE_URL
     g.now = Time()
+
+    print "==> before_request() - end "
     
     ## Set information to be passed to the template engine as in
     ## stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask
@@ -88,15 +100,21 @@ def before_request():
     #session['test'] = 'testing session'       # request thread variable
 
 @app.teardown_request
-def after_request(exception=None):
+def do_after_request(exception=None):
+    print "==> after reqest "
     db.close()
 
+print "==> registering hello "
 @app.route('/hello')
 def hello():
+    print "==> route hello "
     return "umber test hello ..."
-    
+
+print "==> registering mainroute "
 @app.route('/' + URL_BASE + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
+
+    print "==> route mainroute "
 
     print_debug('- '*30)
     print_debug(' mainroute: pagepath = "{}"'.format(pagepath))
@@ -205,6 +223,14 @@ def mainroute(pagepath):
 def mainroute_blank():
     mainroute('')
 
+print "==> registering catchall "
+# catch-all for debugging
+@app.route('/', defaults={'path':''})
+@app.route('/<path:path>')
+def catchall(path):
+    print "==> route catchall "
+    return "umber catchall path : '{}'".format(path)
+    
 # --- ajax --------------------
     
 def ajax_upload():

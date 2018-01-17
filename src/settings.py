@@ -41,6 +41,7 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     OS_GIT = OS_COURSES
 
     DEBUG = True
+    TMPLOG = True
     TESTING = True
     SECRET_KEY = 'seekrit'
     SESSION_COOKIE_NAME = 'umber_development'
@@ -61,6 +62,7 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     OS_GIT = '/var/www/cours'                                          #  i
                                                                        #  z
     DEBUG = False                                                      #  e
+    TMPLOG = False                                                     #
     TESTING = False                                                    #
     SECRET_KEY = os.environ['UMBER_SECRET_KEY']                        #
     SESSION_COOKIE_NAME = 'umber_marlboro'                             #
