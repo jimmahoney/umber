@@ -1,7 +1,7 @@
-# flask hello world - sort of
+# flask hello world - sort of. For debugging.
 
 from flask import Flask
-app = Flask(__name__)
+app = Flask('hello')
 
 print "==>  hello.py"
 print "==>  app={}".format(app)

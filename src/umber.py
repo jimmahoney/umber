@@ -16,18 +16,14 @@ from utilities import in_console, split_url, static_url, size_in_bytes, \
      git, is_clean_folder_name, parse_access_string, parse_assignment_data, \
      print_debug
 from werkzeug import secure_filename
-from settings import OS_ROOT, URL_BASE, \
-     UMBER_URL, CONTACT_URL, ABOUT_URL, HELP_URL, SITE_URL
+from settings import umber_flask_configure, umber_url, contact_url, \
+     help_url, about_url, site_url, url_base, os_root
 import safe
 
-print "==> umber.py "
-
 app = Flask('umber',
-            static_folder=os.path.join(OS_ROOT, 'static'),
-            template_folder=os.path.join(OS_ROOT, 'templates'))
-app.config.from_pyfile(os.path.join(OS_ROOT, 'src', 'settings.py'))
-
-print "==> app={}".format(app)
+            static_folder=os.path.join(os_root, 'static'),
+            template_folder=os.path.join(os_root, 'templates'))
+umber_flask_configure(app)
 
 login_manager = LoginManager()
 login_manager.anonymous_user = Person.get_anonymous
@@ -69,30 +65,25 @@ def template_context():
 def do_before_request():
     """ initialize database and session """
 
-    print "==> before_request() - start "
-
     # See http://docs.peewee-orm.com/en/latest/peewee/database.html .
     # This gives "connection already open" error if in console.
     # The current (kludgy) fix is to test for the console explicitly.
     if not in_console():
         db.connect()
 
-    print " db={}".format(db)
-    print " request={}".format(request)
-    print " Flask.url_map {}".format(Flask.url_map)
+    #print " db={}".format(db)
+    #print " request={}".format(request)
 
     # See PERMANENT_SESSION_LIFETIME in env/settings.py
     session.permanent = True
 
     # site settings
-    g.contact_url = CONTACT_URL
-    g.about_url = ABOUT_URL
-    g.help_url = HELP_URL
-    g.umber_url = UMBER_URL
-    g.site_url = SITE_URL
+    g.contact_url = contact_url
+    g.about_url = about_url
+    g.help_url = help_url
+    g.umber_url = umber_url
+    g.site_url = site_url
     g.now = Time()
-
-    print "==> before_request() - end "
     
     ## Set information to be passed to the template engine as in
     ## stackoverflow.com/questions/13617231/how-to-use-g-user-global-in-flask
@@ -101,20 +92,10 @@ def do_before_request():
 
 @app.teardown_request
 def do_after_request(exception=None):
-    print "==> after reqest "
     db.close()
 
-print "==> registering hello "
-@app.route('/hello')
-def hello():
-    print "==> route hello "
-    return "umber test hello ..."
-
-print "==> registering mainroute "
-@app.route('/' + URL_BASE + '/<path:pagepath>', methods=['GET', 'POST'])
+@app.route('/' + url_base + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
-
-    print "==> route mainroute "
 
     print_debug('- '*30)
     print_debug(' mainroute: pagepath = "{}"'.format(pagepath))
@@ -133,7 +114,7 @@ def mainroute(pagepath):
     (basepath, extension) = os.path.splitext(pagepath)
     if extension ==  '.md':
         (ignore1, ignore2, query) = split_url(request.url)
-        redirect_url = '/' + URL_BASE + '/' + basepath
+        redirect_url = '/' + url_base + '/' + basepath
         if query:
             redirect_url += '?' + query
         print_debug('redirecting to "{}"'.format(redirect_url))
@@ -199,6 +180,7 @@ def mainroute(pagepath):
         not page.ext in ('.md') and
         page.can['read'] and
         page.exists):
+        
         # readable pages that shouldn't be in umber's window pane :
         # just serve up their content.
         # (If the page isn't readable, then render_template(main.html) below
@@ -207,7 +189,8 @@ def mainroute(pagepath):
         # TODO: Handle what was _html for .py and .html
         #       with ?something (?html , ?source, ?pretty) ?
         # TODO: forward these sorts of requests to apache or other server??
-        # TODO: handle unknown mimetype better, perhaps don't send file at all? 
+        # TODO: handle unknown mimetype better, perhaps don't send file at all?
+        
         return Response(page.content(), mimetype=page.mimetype()) 
     else:
         #
@@ -219,18 +202,18 @@ def mainroute(pagepath):
                                debug = True
                                )
 
-@app.route('/' + URL_BASE + '/', methods=['GET', 'POST'])
+@app.route('/' + url_base + '/', methods=['GET', 'POST'])
 def mainroute_blank():
     mainroute('')
 
-print "==> registering catchall "
-# catch-all for debugging
-@app.route('/', defaults={'path':''})
-@app.route('/<path:path>')
-def catchall(path):
-    print "==> route catchall "
-    return "umber catchall path : '{}'".format(path)
-    
+## debugging route : any url
+#@app.route('/', defaults={'path':''})
+#@app.route('/<path:path>')
+#def catchall(path):
+#    print "==> route catchall "
+#    return "umber catchall path : '{}'".format(path)
+
+
 # --- ajax --------------------
     
 def ajax_upload():
@@ -345,7 +328,7 @@ def submit_newuser():
            'username={} name="{}" email={} password=""'.format(
             username, name, email, password))
         Person.new_user(username, name, email, password)
-    return URL_BASE + '/site/sys/user?username=' + username
+    return url_base + '/site/sys/user?username=' + username
 
 def submit_edituser():
     """ edit existing user - admin only """
@@ -471,10 +454,5 @@ def submit_login():
     else:
         user.logged_in = True
         login_user(user)
-
-        # TODO: do I need to handle this case?
-        # next = request.args.get('next')
-        # print ' submit_login: next request = {}'.format(next)
-        #
         return url_for('mainroute', pagepath=request.page.path)
 

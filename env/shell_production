@@ -1,27 +1,26 @@
 # env/shell_production
 #
-# Defintions for the shell environment variables - production version
+# Definitions for the shell environment variables - production version
+# 
+# There or something like them needs to be into a production server.
 #
-# These definitions are loaded directly into apache2
-# by copying the guts directly to the end of /etc/apache2/envvars 
-#
-# Also see src/settings.py , src/umber.wsgi
-# and the config files in /etc/apache2/sites-available
+# Also see
+#   src/settings.py
+#   src/umber.wsgi
+#   bin/umber_gunicorn
+#   /etc/apache2/envvars
+#   /etc/apache2/sites-available/*
 #############################################################
 
-# PRODUCTION or DEVELOPMENT
+# Set this to PRODUCTION or DEVELOPMENT
 export UMBER_CONFIG=PRODUCTION
 
 # Define the project directory path
 export UMBER_ROOT='/var/www/umber'
 
-# Prepend this project's ./bin/ and ./src/ folders to the PATH
-# so that (console, init_db, test, server, umber.py) can be found 
-# export PATH=$UMBER_ROOT/bin:$PATH
+# Make sure that the project python files are visible to python.
+export PYTHONPATH=$UMBER_ROOT/src
 
-# Used by the command line "flask" tool as of flask v0.11
-# export FLASK_APP=src/umber.py
-
-# Use this to generate a session crypto key:
+# Generate and define a session crypto key, for example with
 # >>> import os, binasci; binascii.hexlify(os.urandom(24))
-# export UMBER_SECRET_KEY=...........................
+export UMBER_SECRET_KEY=0a1b2c3d45e6f7g8h9ijk

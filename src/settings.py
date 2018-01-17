@@ -1,80 +1,72 @@
 """
  settings.py
 
- (1) Edit env/set_shell_variables to set the UMBER_CONFIG shell variable :
+ Edit these to match your situation.
 
-       $ export UMBER_CONFIG = DEVELOPMENT | PRODUCTION
+ The environment variables 
+    UMBER_CONFIG        (either DEVELOPMENT or PRODUCTION)
+    UMBER_SECRET_KEY    (sesstion crypto key)
+ must be defined elsewhere before this runs.
 
- (2) Edit the variables marked with "customize" to fit your situation.
+ See ../env/shell_* .
 
- ------------------------------------------------------
+ ------------------------------------------------------------
  
  The urls have this form :
                              
-        PROTOCOL  SERVER_NAME    URL_BASE    page_path
+        protocol  hostname       url_base    page_path
    e.g. https://  umber.cc:433 / umber    /  demo/home
 
- The OS_* variables are absolute operating system paths, 
+ The os_* variables are absolute operating system paths, 
  without a trailing slash e.g. /var/www/umber
 
- See the Page class in model.py for more details for urls and paths.
-
- This file is loaded from umber.py with app.config_from_file(),
- and its defined constants are ALL_CAPS to be consistent with Flask.
+ See the Page class in models.py for more details.
 
 """
 import os, sys, datetime
 from os.path import realpath, join, dirname
 
-OS_ROOT = realpath(join(dirname(realpath(__file__)), '..'))
+os_root = realpath(join(dirname(realpath(__file__)), '..'))
+
+localtimezone = 'US/Eastern'
+localtimezoneoffset = '-05:00'
+
+def umber_flask_configure(app):
+    """ Configure some of Flask's internal settings. """
+    app.config['DEBUG'] = (os.environ['UMBER_CONFIG'] == 'DEVELOPMENT')
+    app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=1)
+    app.config['SESSION_COOKIE_NAME'] = 'umber'
+    app.config['SECRET_KEY'] = os.environ['UMBER_SECRET_KEY']
 
 if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
-
-    PROTOCOL = 'http://'
-    SERVER_NAME = '127.0.0.1:5000'
-    URL_BASE = 'umber'
-    CONTACT_URL = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
-    SITE_URL = 'http://127.0.0.1:5000/umber/demo/home'
+    debug = True
+    protocol = 'http://'
+    hostname = '127.0.0.1:5000'
+    url_base = 'umber'
+    contact_url = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
+    site_url = 'http://127.0.0.1:5000/umber/demo/home'
+    os_courses = os.path.join(os_root, 'courses')
+    os_git = os_courses
+    os_db = os.path.join(os_root, 'database', 'umber.db')
     
-    OS_COURSES = os.path.join(OS_ROOT, 'courses')
-    OS_DB = os.path.join(OS_ROOT, 'database', 'umber.db')
-    OS_GIT = OS_COURSES
-
-    DEBUG = True
-    TMPLOG = True
-    TESTING = True
-    SECRET_KEY = 'seekrit'
-    SESSION_COOKIE_NAME = 'umber_development'
-    PERMANENT_SESSION_LIFETIME = datetime.timedelta(days=1)
-    LOCALTIMEZONE = 'US/Eastern'
-    LOCALTIMEZONEOFFSET = '-05:00'
-
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
-                                                                       #
-    PROTOCOL = 'https://'                                              # 
-    SERVER_NAME = 'cs.marlboro.college'                                #  
-    URL_BASE = 'cours'                                                 #  c
-    CONTACT_URL = '<a href="mailto:jim@mahoney.cc">Jim Mahoney</a>'    #  u
-    SITE_URL = 'https://cs.marlboro.edu'                               #  s
-                                                                       #  t
-    OS_DB = '/var/www/cours/umber_mboro.sql'                           #  o
-    OS_COURSES = '/var/www/cours'                                      #  m
-    OS_GIT = '/var/www/cours'                                          #  i
-                                                                       #  z
-    DEBUG = False                                                      #  e
-    TMPLOG = False                                                     #
-    TESTING = False                                                    #
-    SECRET_KEY = os.environ['UMBER_SECRET_KEY']                        #
-    SESSION_COOKIE_NAME = 'umber_marlboro'                             #
-    PERMANENT_SESSION_LIFETIME = datetime.timedelta(days=1)            #
-    LOCALTIMEZONE = 'US/Eastern'                                       #
-    LOCALTIMEZONEOFFSET = '-05:00'                                     #
-    
+    debug = False
+    protocol = 'https://'
+    hostname = 'cs.marlboro.college'
+    url_base = 'cours'
+    contact_url = '<a href="mailto:jim@mahoney.cc">Jim Mahoney</a>'
+    site_url = 'https://cs.marlboro.edu'
+    os_db = '/var/www/cours/umber_mboro.sql'
+    os_courses = '/var/www/cours'
+    os_git = '/var/www/cours'
+
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')
 
-UMBER_URL = PROTOCOL + SERVER_NAME + '/' + URL_BASE
-ABOUT_URL = UMBER_URL + '/site/docs/about'
-HELP_URL = UMBER_URL + '/site/docs/help'
-PHOTOS_URL = UMBER_URL + '/site/photos'
+umber_url = protocol + hostname + '/' + url_base
+about_url = umber_url + '/site/docs/about'
+help_url = umber_url + '/site/docs/help'
+photos_url = umber_url + '/site/photos'
+
+debug_logfilename = None
 

@@ -20,14 +20,14 @@ from flask import request, url_for
 from settings import *
 
 # Make sure that umber.py is in python's import path
-sys.path.insert(0, os.path.join(OS_ROOT, 'src'))
+sys.path.insert(0, os.path.join(os_root, 'src'))
 
 from umber import *
 from utilities import markdown2html
 
 # Set context for a typical page request.
 # ( adapted from http://flask.pocoo.org/docs/0.11/shell/ )
-democoursehomeurl = '/' + URL_BASE + '/demo/home'
+democoursehomeurl = '/' + url_base + '/demo/home'
 request_context = app.test_request_context(democoursehomeurl)
 request_context.push()        # make it active
 app.preprocess_request()      # code that runs before request

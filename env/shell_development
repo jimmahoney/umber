@@ -2,11 +2,13 @@
 #
 # Set the shell's environment variables - development version
 
-# UMBER_CONFIG should be either DEVELPMENT or PRODUCTION.
-# See src/settings.py.
-# (Or comment this out and set it elsewhere.)     ** EDIT UMBER_CONFIG ***
+# UMBER_CONFIG should be either DEVELPMENT or PRODUCTION;
+# see src/settings.py.
 export UMBER_CONFIG=DEVELOPMENT
 #echo "env/shell : UMBER_CONFIG = "$UMBER_CONFIG
+
+# session cryptographic key
+export UMBER_SECRET_KEY='seekrit'
 
 # Define the project directory path
 export UMBER_ROOT=`pwd`
@@ -21,7 +23,7 @@ export PATH=$UMBER_ROOT/bin:$PATH
 export FLASK_APP=src/umber.py
 #echo "env/shell : FLASK_APP="$FLASH_APP
 
-# These should be COMMENTED OUT FOR PRODUCTION !!
+# These should be not be enabled for production.
 export FLASK_DEBUG=1
 export WERKZEUG_DEBUG_PIN=off
 #echo "env/shell : FLASK_DEBUG = "$FLASK_DEBUG

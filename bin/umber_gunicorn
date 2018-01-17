@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# invoke gunicorn server, everything explicitly on the command line
+# invoke hello_world with gunicorn server
+# with everything defined explicitly on the command line
 #
 
 # Is the project environment setup?
@@ -12,12 +13,10 @@ pkill -f gunicorn
 
 gunicorn 								\
   --bind        	127.0.0.1:4000					\
-  --workers     	1       					\
-  --chdir		/Users/mahoney/sugar/academics/umber		\
+  --workers     	4       					\
   --pythonpath		/Users/mahoney/sugar/academics/umber/src	\
   --env			UMBER_CONFIG=DEVELOPMENT			\
   --env			UMBER_ROOT=/Users/mahoney/sugar/academics/umber \
-  --env			FLASK_APP=src/umber.py				\
   --env			FLASK_DEBUG=1					\
   --env			WERKZEUG_DEBUG_PIN=off				\
   --capture-output							\

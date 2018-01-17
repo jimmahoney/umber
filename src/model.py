@@ -51,10 +51,10 @@ from bs4 import BeautifulSoup
 from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
      git, Time, stringify_access, print_debug
-from settings import OS_DB, UMBER_URL, PROTOCOL, SERVER_NAME, \
-    OS_ROOT, OS_COURSES, PHOTOS_URL, URL_BASE, DEBUG
+from settings import os_db, umber_url, protocol, hostname, \
+    os_root, os_courses, photos_url, url_base
 
-db = SqliteDatabase(OS_DB)
+db = SqliteDatabase(os_db)
 
 class BaseModel(Model):
     class Meta:
@@ -206,11 +206,11 @@ class Person(BaseModel):
             return unicode(self.username)
 
     def get_photo_url(self):
-        return PHOTOS_URL + '/' + self.username + '.jpg'
+        return photos_url + '/' + self.username + '.jpg'
 
     @staticmethod
     def generic_photo_url():
-        return PHOTOS_URL + '/generic_student.png'
+        return photos_url + '/generic_student.png'
     
     @staticmethod
     def by_username(username):
@@ -295,7 +295,7 @@ class Course(BaseModel):
         self.assignments = self._get_assignments()
         self.semester = Time(self.start_date).semester()
         # url without request though that info is also in request
-        self.url = UMBER_URL + '/' + self.path
+        self.url = umber_url + '/' + self.path
                    
     def _get_assignments(self):
         return list(Assignment.select() \
@@ -329,7 +329,7 @@ class Course(BaseModel):
         return [{'email':person.email, 'name':person.name} for person in self.faculty]
     
     def os_path(self):
-        return os.path.join(OS_COURSES, self.path)
+        return os.path.join(os_courses, self.path)
 
     def grade_data_list(self, student):
         """ return student's view grade list for templates/grades.html """
@@ -499,13 +499,13 @@ class Page(BaseModel):
 
     #  --- path, filename, url definitions ---
     #  With settings on my laptop development machine as
-    #    OS_COURSES    /Users/mahoney/academics/umber/courses
+    #    os_courses    /Users/mahoney/academics/umber/courses
     #  then for the 'notes/week1' file within a course at 'fall/math' ,
     #  the parts are
     #    url:  http://127.0.0.1:5000/  umber    /  fall/math / notes/week1
-    #          PROTOCOL  SERVER_NAME   URL_BASE    path...................
+    #          protocol  hostname   url_base    path...................
     #    file: /Users/mahoney/academics/umber/courses / fall/math / notes/week1
-    #          OS_COURSES                               path...................
+    #          os_courses                               path...................
     #  Following python's os.path phrasing, other terms used here are
     #    basename     last word in address (same as os.path.basename)
     #    abspath      e.g. /Users/mahoney/.../fall/math/notes/week1
@@ -560,7 +560,7 @@ class Page(BaseModel):
             # bail with error message if the OS system won't do it.
             print_debug(' os.makdir("{}") failed '.format(abspath))
             return None
-        path = os.path.relpath(abspath, OS_COURSES)
+        path = os.path.relpath(abspath, os_courses)
         folder = Page.get_from_path(path, user=user)
         git.add_and_commit(folder)
         if accessdict:
@@ -578,7 +578,7 @@ class Page(BaseModel):
         page.action = action
         page.revision = revision
         page._setup_file_properties()           # sets page.isfile etc
-        page.gitpath = os.path.join(OS_COURSES, page.path_with_ext)
+        page.gitpath = os.path.join(os_courses, page.path_with_ext)
         page.course = page.get_course()
         if page.course.name == 'error':
             ### Unexpected (to me anyway) behavior here :
@@ -746,7 +746,7 @@ class Page(BaseModel):
             else:
                 ## all other system files have an access spec as their first line
                 ## e.g.  {# {'read':'all', 'write':'faculty' #}
-                template = os.path.join(OS_ROOT, 'templates', self.sys_template)
+                template = os.path.join(os_root, 'templates', self.sys_template)
                 firstline = open(template).readline()
                 access_dict = eval(firstline.replace('{#','').replace('#}',''))
         else:
@@ -754,7 +754,7 @@ class Page(BaseModel):
                 abspath = self.abspath
             else:
                 abspath = os.path.dirname(self.abspath)
-            while len(abspath) >= len(OS_COURSES):
+            while len(abspath) >= len(os_courses):
                 accesspath = os.path.join(abspath, '.access.yaml')
                 if os.path.exists(accesspath):
                     accessfile = open(accesspath)
@@ -842,7 +842,7 @@ class Page(BaseModel):
         if abspath == '':
             abspath = self.abspath
         try:
-            path = os.path.relpath(abspath, OS_COURSES)
+            path = os.path.relpath(abspath, os_courses)
             for name in os.listdir(abspath):
                 if name[0] == '.':  # skip invisible files e.g. .access.yaml
                     continue
@@ -900,7 +900,7 @@ class Page(BaseModel):
             including self.absfilename, self.exists, self.is_file, self.is_dir,
             self.lastmodified, self.breadcrumbs
          """
-        self.abspath = os.path.join(OS_COURSES, self.path)
+        self.abspath = os.path.join(os_courses, self.path)
         self.path_with_ext = self.path  # default, unless modified below
         if not os.path.exists(self.abspath):
             for ext in ['.md', '.html']:
@@ -939,15 +939,15 @@ class Page(BaseModel):
             self.lastmodified = None
             self.size = None
         # -- build url links for page breadcrumbs --
-        url_list = [URL_BASE] + self.path.split('/')
-        urlsofar = PROTOCOL + SERVER_NAME 
+        url_list = [url_base] + self.path.split('/')
+        urlsofar = protocol + hostname 
         self.breadcrumbs = '<a href="{}">{}</a>'.format(urlsofar, urlsofar)
         while url_list:
             pathpart = '/' + url_list.pop(0)
             urlsofar += pathpart
             self.breadcrumbs += '&nbsp;' + '<a href="{}">{}</a>'.format(
                 urlsofar, pathpart)
-        self.url = UMBER_URL + '/' + self.path
+        self.url = umber_url + '/' + self.path
         self.url_for_print_version = self.url + '?print=1'
         self.bytesize = size_in_bytes(self.size)
 

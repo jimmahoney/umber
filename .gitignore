@@ -13,6 +13,9 @@
 .DS_Store/*
 nul
 
+# backup stuff
+.unison*
+
 # virtual python environment
 venv
 

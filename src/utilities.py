@@ -4,19 +4,19 @@
 """
 import os, urlparse, sh, arrow, string, re
 from markdown2 import markdown
-from settings import URL_BASE,DEBUG, TMPLOG, \
-    LOCALTIMEZONE, LOCALTIMEZONEOFFSET, OS_GIT, TMPLOG
-from flask import url_for
+from settings import url_base, debug_logfilename, \
+    localtimezone, localtimezoneoffset, os_git, debug
+from flask import url_for, app
 import parsedatetime, pytz
 
-TMP = {'file': None}
+debug_log = {'file': None}
 def print_debug(message):
-    if DEBUG:
+    if debug:
         print message
-    if TMPLOG:
-        if not TMP['file']:
-            TMP['file'] = open('/tmp/umberlog.txt', 'a')
-        TMP['file'].write(message + "\n")
+    if debug_logfilename:
+        if not debug_log['file']:
+            debug_log['file'] = open(debug_logfilename, 'a')
+        debug_log['file'].write(message + "\n")
 
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
@@ -51,7 +51,7 @@ class Time(object):
             date_time_string += ' ' + Time.defaulttime
         datetime = parsedatetime.Calendar().parseDT(
            datetimeString=date_time_string,
-           tzinfo=pytz.timezone(LOCALTIMEZONE))[0]
+           tzinfo=pytz.timezone())[0]
         return Time(datetime)
         
     def __init__(self, *args, **kwargs):
@@ -72,9 +72,9 @@ class Time(object):
             if re.match('^\d+-\d+-\d+$', args[0]):
                     # i.e. '2018-02-04'
                 args = (args[0] + 'T' + Time.default24time + \
-                        LOCALTIMEZONEOFFSET ,)
+                        localtimezoneoffset ,)
         try:
-            self.arrow = arrow.get(*args, **kwargs).to(LOCALTIMEZONE)
+            self.arrow = arrow.get(*args, **kwargs).to(localtimezone)
         except:
             self.arrow = arrow.get() # use current time if all else fails.
     def __lt__(self, other):
@@ -183,7 +183,7 @@ class Git:
     """ a wrapper around sh.git """
     
     def __init__(self):
-        self._git = sh.git.bake(_cwd=OS_GIT, _tty_out=False)
+        self._git = sh.git.bake(_cwd=os_git, _tty_out=False)
 
     def rm_and_commit(self, page, abspaths):
         """ remove files and folders (absolute paths) & commit changes """
@@ -314,7 +314,7 @@ def size_in_bytes(n):
 def link_translate(course, html):
     """ return html string with ~/ and ~~/ links translated
         into the appropriate course and site urls """
-    html = html.replace('~~/', '/' + URL_BASE + '/')
+    html = html.replace('~~/', '/' + url_base + '/')
     html = html.replace('~/', course.url + '/')
     return html
 
@@ -375,10 +375,9 @@ def split_url(urlpath):
     return (base, ext, query)
 
 def in_console():
-    """ Return True if current environement is the flask console """
+    """ Return True if current environment is the flask console """
     # See $UMBER_ROOT/bin/umber_console
     return os.environ.has_key('UMBER_CONSOLE')
-
 
 if __name__ == '__main__':
     import doctest
