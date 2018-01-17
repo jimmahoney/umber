@@ -5,13 +5,13 @@
 import os, urlparse, sh, arrow, string, re
 from markdown2 import markdown
 from settings import url_base, debug_logfilename, \
-    localtimezone, localtimezoneoffset, os_git, debug
+    localtimezone, localtimezoneoffset, os_git, umber_debug
 from flask import url_for, app
 import parsedatetime, pytz
 
 debug_log = {'file': None}
 def print_debug(message):
-    if debug:
+    if umber_debug:
         print message
     if debug_logfilename:
         if not debug_log['file']:

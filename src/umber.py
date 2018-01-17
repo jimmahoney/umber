@@ -16,8 +16,8 @@ from utilities import in_console, split_url, static_url, size_in_bytes, \
      git, is_clean_folder_name, parse_access_string, parse_assignment_data, \
      print_debug
 from werkzeug import secure_filename
-from settings import umber_flask_configure, umber_url, contact_url, \
-     help_url, about_url, site_url, url_base, os_root
+from settings import umber_flask_configure, umber_url, contact_url, help_url, \
+     about_url, site_url, url_base, os_root, umber_debug, route_prefix
 import safe
 
 app = Flask('umber',
@@ -78,6 +78,7 @@ def do_before_request():
     session.permanent = True
 
     # site settings
+    g.debug = umber_debug
     g.contact_url = contact_url
     g.about_url = about_url
     g.help_url = help_url
@@ -94,7 +95,11 @@ def do_before_request():
 def do_after_request(exception=None):
     db.close()
 
-@app.route('/' + url_base + '/<path:pagepath>', methods=['GET', 'POST'])
+@app.route(route_prefix + '/', methods=['GET', 'POST'])
+def mainroute_blank():
+    return mainroute('')
+    
+@app.route(route_prefix + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
 
     print_debug('- '*30)
@@ -202,9 +207,6 @@ def mainroute(pagepath):
                                debug = True
                                )
 
-@app.route('/' + url_base + '/', methods=['GET', 'POST'])
-def mainroute_blank():
-    mainroute('')
 
 ## debugging route : any url
 #@app.route('/', defaults={'path':''})

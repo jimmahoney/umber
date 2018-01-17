@@ -39,10 +39,11 @@ def umber_flask_configure(app):
     app.config['SECRET_KEY'] = os.environ['UMBER_SECRET_KEY']
 
 if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
-    debug = True
+    umber_debug = True
     protocol = 'http://'
     hostname = '127.0.0.1:5000'
-    url_base = 'umber'
+    url_base = 'umber'            # used for generating URLs
+    route_prefix = '/umber'       # used for route match of URL
     contact_url = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
     site_url = 'http://127.0.0.1:5000/umber/demo/home'
     os_courses = os.path.join(os_root, 'courses')
@@ -50,13 +51,14 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     os_db = os.path.join(os_root, 'database', 'umber.db')
     
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
-    debug = False
+    umber_debug = False
     protocol = 'https://'
     hostname = 'cs.marlboro.college'
-    url_base = 'cours'
+    url_base = 'cours'      
+    route_prefix = ''  # in apache wsgi config route already has /cours/
     contact_url = '<a href="mailto:jim@mahoney.cc">Jim Mahoney</a>'
     site_url = 'https://cs.marlboro.edu'
-    os_db = '/var/www/cours/umber_mboro.sql'
+    os_db = '/var/www/cours/umber_mboro.db'
     os_courses = '/var/www/cours'
     os_git = '/var/www/cours'
 

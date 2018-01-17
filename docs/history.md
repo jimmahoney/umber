@@ -1,8 +1,49 @@
 # umber development history #
 
-## Jan 15
+## Jan 17
 
- 
+  - spent way too much time trying to get this deployed,
+    first with apache mod_wsgi, then as a gunicorn proxy.
+    Both were giving "Page not found" apparently no matter what.
+    Eventually managed to track down the issue with
+    a gunicorn server (i.e. 127.0.0.1:4000 on my home mac,
+    with the bin/umber_gunicorn script) with lots of print
+    statements in it, comparing with hello_gunicorn which
+    had the same configuration. before_request() was running,
+    after_request() was running, but the route was not
+    being found. Very weird. Apparently the issue was that
+    I was using app.config_from_file() with a file that
+    had a lot of stuff defined in it it in addition to
+    the stuff that Flask wanted. At least one of those
+    definitions, SERVER_NAME I think, conflicted with
+    other config stuff (i.e. the gunicorn options).
+    With that cleared up, I went back to apache mod_wsgi
+    just because I have more experience with apache
+    and the ssl certificates were already in place.
+
+    The apache configs I'm using are
+
+       # --- in /etc/apache2/envvar
+       export UMBER_ROOT=/var/www/umber
+       export UMBER_CONFIG=PRODUCTION
+       export PYTHONPATH=$PYTHONPATH:$UMBER_ROOT/src
+       # session key generated with python
+       # >>> import os, binasci; binascii.hexlify(os.urandom(24))
+       export UMBER_SECRET_KEY=..............
+
+       # --- in /etc/apache2/sites-available/cs.marlboro.college.conf
+       WSGIDaemonProcess umber
+       WSGIScriptAlias /cours /var/www/umber/src/umber.wsgi
+       <Directory /var/www/umber/src>
+         WSGIProcessGroup umber
+         WSGIApplicationGroup %{GLOBAL}
+         Require all granted
+       </Directory>
+
+    I'm going to commit this as "wsgi deployed"
+    and save a "version 0.1" branch 
+
+## Jan 15
 
  ##### trying to deploy ... failed.
 
