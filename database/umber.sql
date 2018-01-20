@@ -11,8 +11,7 @@
 --       Registration        FK Person, FK Course, FK Role
 --       Work 		     FK Person, FK Assignment, FK Page
 --
---   To create the database :          ./init_db
---   To create & populate it:          ./reset_db
+--   To create the database :          ../bin/umber_init_db
 --   To create an ERD diagram of it:   ./erd/make_png
 
 -- In the previous wikiacademia system, authentication

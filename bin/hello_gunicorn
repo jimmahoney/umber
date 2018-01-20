@@ -5,7 +5,7 @@
 #
 
 # Is the project environment setup?
-: ${UMBER_ROOT:?"Setup environment with '. env/activate' first."}
+: ${UMBER_ROOT:?"Setup umber environment with '. env/activate' first."}
 cd $UMBER_ROOT   # Set the working folder to the project root.
 
 # stop the old ones
@@ -17,8 +17,11 @@ gunicorn 								\
   --pythonpath		/Users/mahoney/sugar/academics/umber/src	\
   --env			UMBER_CONFIG=DEVELOPMENT			\
   --env			UMBER_ROOT=/Users/mahoney/sugar/academics/umber \
+  --env                 UMBER_DATA=/Users/mahoney/sugar/academics/umber/database/umber.db \
   --env			FLASK_DEBUG=1					\
   --env			WERKZEUG_DEBUG_PIN=off				\
   --capture-output							\
   --log-file 		-						\
   hello:app
+
+

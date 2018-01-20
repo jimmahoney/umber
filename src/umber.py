@@ -152,6 +152,13 @@ def mainroute(pagepath):
         print_debug('redirecting directory to /')
         return redirect(url_for('mainroute', pagepath=pagepath) + '/')
 
+    # Redirect directories to index.md or index.html if either exists.
+    if page.is_dir:
+        for index in ('index.md', 'index.html'):
+            if os.path.exists(os.path.join(page.abspath, index)):
+                    indexpath = os.path.join(pagepath, index)
+                    return redirect(url_for('mainroute', pagepath=indexpath))
+    
     # Redirect nonexisting nonystem editable pages to ?action=edit
     if page.can['write'] and not page.exists and not page.action and \
                              not page.is_sys and not page.is_dir :
@@ -326,10 +333,10 @@ def submit_newuser():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
-        print_debug(' new_user: ' + \
+        print_debug(' create_person: ' + \
            'username={} name="{}" email={} password=""'.format(
             username, name, email, password))
-        Person.new_user(username, name, email, password)
+        Person.create_person(username, name, email, password)
     return url_base + '/site/sys/user?username=' + username
 
 def submit_edituser():
@@ -342,7 +349,7 @@ def submit_edituser():
         print_debug(' submit_edituser: ' + \
             'username={} name="{}" email={} password=""'.format(
             username, name, email, password))
-        Person.edit_user(username, name, email, password)
+        Person.edit_person(username, name, email, password)
     return request.base_url + '?username=' + username
 
 def submit_password():
@@ -420,6 +427,7 @@ def submit_edit():
     #  }
     #
     # If this is a work page, then update the Work database object.
+    # (The Work object is created in Page.get_from_path)
     if request.page.is_work:
         now = str(Time())  # string with current time
         with db.atomic():

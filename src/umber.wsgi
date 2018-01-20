@@ -1,6 +1,9 @@
 """
- umber.wsgi - production runner for apache2 wsgi
- See ../env/shell_production
+ umber.wsgi - apache2 wsgi production python
+
+ This version is for umber source files in /var/www/umber
+ with its vitualenv python environment in /var/www/umber/venv/ .
+ See the notes in ../env/shell_production - the paths need to be consistent.
 """
 activate_this = '/var/www/umber/venv/bin/activate_this.py'
 execfile(activate_this, dict(__file__=activate_this))

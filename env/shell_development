@@ -14,6 +14,9 @@ export UMBER_SECRET_KEY='seekrit'
 export UMBER_ROOT=`pwd`
 #echo "env/shell : UMBER_ROOT = "$UMBER_ROOT
 
+# Define the database absolute path.
+export UMBER_DATA=$UMBER_ROOT/database/umber.db
+
 # Prepend this project's ./bin/ and ./src/ folders to the PATH
 # so that (console, init_db, test, server, umber.py) can be found 
 export PATH=$UMBER_ROOT/bin:$PATH

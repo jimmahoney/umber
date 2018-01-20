@@ -43,7 +43,7 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-import os, subprocess, yaml, re, mimetypes
+import os, subprocess, yaml, re, mimetypes, shutil
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
@@ -52,7 +52,7 @@ from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
      git, Time, stringify_access, print_debug
 from settings import os_db, umber_url, protocol, hostname, \
-    os_root, os_courses, photos_url, url_base
+    os_root, os_courses, photos_url, url_base, os_generic_course
 
 db = SqliteDatabase(os_db)
 
@@ -105,17 +105,18 @@ class Person(BaseModel):
         return [p.username for p in people]
     
     @staticmethod
-    def new_user(username, name, email, password):
+    def create_person(username, name, email, password='', is_admin=False):
         with db.atomic():
             (user, created) = Person.get_or_create(username=username)
             user.name = name
             user.email = email
             user.set_password(password)
             user.save()
-            Course.enroll_site(user)
+        Course.enroll_site(user, is_admin=is_admin)
+        return user
 
     @staticmethod
-    def edit_user(username, name, email, password):
+    def edit_person(username, name, email, password):
         try:
             with db.atomic():
                 user = Person.by_username(username)
@@ -217,8 +218,9 @@ class Person(BaseModel):
         """ Returns anonymous person if not found """
         if username not in Person._by_username:
             try:
-                person = Person.select() \
-                               .where(Person.username==username).first()
+                person = Person.get(username = username)
+                #person = Person.select() \
+                #               .where(Person.username==username).first()
             except:
                 return Person.get_anonymous()
             Person._by_username[username] = person
@@ -257,36 +259,8 @@ class Course(BaseModel):
     path = TextField(unique=True)
     start_date = TextField()
 
-    _umber_site = None  # course for site data
-    _errorcourse = None
+    _site_course = None  # course for site data
 
-    @staticmethod
-    def get_all():
-        """ Return all but the 'Umber' course, sorted by semester """
-        result = [c for c in Course.all() if not c.name == 'Umber']
-        result.sort(key=lambda c: c.start_date + ' ' + c.name)
-        result.reverse()
-        return result
-
-    @staticmethod
-    def get_errorcourse():
-        """ return special course-not-found error """
-        if not Course._errorcourse:
-            Course._errorcourse = Course.get(name='error')
-        return Course._errorcourse
-    
-    @staticmethod
-    def umber_site():
-        """ return site admin course 'Umber' """
-        if not Course._umber_site:
-            Course._umber_site = Course.get(name='Umber')
-        return Course._umber_site
-    
-    def person_to_role(self, person):
-        """ Return role of person in course, or visitor """
-        return self.username_to_role.get(person.username,
-                                         Role.by_name('visitor'))
-    
     def prepared(self):
         """ setup this instance after it's attributes are set """
         # This method is essentially __init__ for these database objects.
@@ -296,6 +270,66 @@ class Course(BaseModel):
         self.semester = Time(self.start_date).semester()
         # url without request though that info is also in request
         self.url = umber_url + '/' + self.path
+        self.abspath = os.path.join(os_courses, self.path)
+    
+    @staticmethod
+    def get_all():
+        """ Return all but the 'Umber' course, sorted by semester """
+        result = [c for c in Course.all() if not c.name == 'Umber']
+        result.sort(key=lambda c: c.start_date + ' ' + c.name)
+        result.reverse()
+        return result
+
+    @staticmethod
+    def create_course(name, path, start='', name_as_title='',
+                      copy_generic=False):
+        if name_as_title == '':
+            name_as_title = name
+        if start == '':
+            now = str(Time())
+            now_year = now[:4]
+            now_month = now[5:7]
+            if now_month < '06':
+                start = now_year + '-' + '01-01'  # spring
+            elif now_month < '09':
+                start = now_year + '-' + '06-01'  # summer
+            else:
+                start = now_year + '-' + '09-01'  # fall
+        with db.atomic():
+            (course, created) = Course.get_or_create(
+                name = name,
+                path = path,
+                start_date = start,
+                name_as_title = name_as_title
+                )
+        if copy_generic:
+            shutil.copytree(os_generic_course, course.abspath)
+        return course
+    
+    @staticmethod
+    def get_site():
+        """ return site admin course 'Umber' """
+        if not Course._site_course:
+            Course._site_course = Course.get(name='Umber')
+        return Course._site_course
+
+    @staticmethod
+    def create_site():
+        """ create site couse 'Umber' """
+        # for site resoruces i.e. help files, user id photos etc.
+        with db.atomic():
+            (sitecourse, created) = Course.get_or_create(
+                name = 'Umber',
+                name_as_title = 'Umber<div>a course<br>managment<br>system</div>',
+                path = '',
+                start_date = '2018-01-01')
+        return sitecourse
+    
+    def person_to_role(self, person):
+        """ Return role of person in course, or visitor """
+        return self.username_to_role.get(person.username,
+                                         Role.by_name('visitor'))
+    
                    
     def _get_assignments(self):
         return list(Assignment.select() \
@@ -327,9 +361,6 @@ class Course(BaseModel):
     def get_faculty_data(self):
         """ return {'email', 'name'} of faculty """
         return [{'email':person.email, 'name':person.name} for person in self.faculty]
-    
-    def os_path(self):
-        return os.path.join(os_courses, self.path)
 
     def grade_data_list(self, student):
         """ return student's view grade list for templates/grades.html """
@@ -405,7 +436,8 @@ class Course(BaseModel):
         """ Update course assignments from 
             a dict of assignments_data[nth][name, due, blurb] """
         # Note: passed argument is *not* made up of Assignment objects.
-        db_assignments = {a.nth : a for a in self.get_assignments}
+        # Note: this is designed to update *all* assignments.
+        db_assignments = {a.nth : a for a in self._get_assignments()}
         with db.atomic():
             for nth in assignments_data:
                 if nth not in db_assignments:
@@ -446,8 +478,8 @@ class Course(BaseModel):
         #       (otherwise, pages in courses without sys/navigation.md will crash.)
         # TODO: should this be cached to self._nav_page ?
         # (Need it for both displaying and editing course's navigation page.)
-        return Page.get_from_path(self.path + '/sys/' + 'navigation.md',
-                                  user=user)
+        return Page.get_from_path(os.path.join(self.path,
+                            'sys', 'navigation.md'), user=user)
     
     def nav_html(self, user, page):
         """ Return html for course's navigation menu 
@@ -455,22 +487,28 @@ class Course(BaseModel):
         return self.nav_page(user).nav_content_as_html(page)
 
     @staticmethod
-    def enroll_site(person, datestring=None):
-        """ enroll a person as a member in the default site course """
+    def enroll_site(person, datestring=None, is_admin=False):
+        """ enroll a person in the site course """
+        # All users should be in this course.
         if not datestring:
             datestring = str(Time())
-        sitecourse = Course.umber_site()
+        site_course = Course.get_site()
+        if is_admin:
+            site_role = Role.by_name('admin')
+        else:
+            site_role = Role.by_name('member')
         with db.atomic():
             (reg, created) = Registration.get_or_create(
                 person = person,
-                course = sitecourse,
-                role = Role.by_name('member'))
+                course = site_course,
+                role = site_role)
             reg.date = datestring
             reg.save()
 
     def enroll(self, person, rolename, datestring=None, create_work=False):
         """ Enroll a person in this course. """
-        # And also make sure they're in the "Umber" course if this isn't that.
+        # And put them in the site couse if they aren't already
+        # and if this isn't the site course itself.
         # Optionally create their work folder (if it doesn't already exist)
         if not datestring:
             datestring = str(Time())
@@ -487,7 +525,7 @@ class Course(BaseModel):
             # Build the absolute path for their student work folder:
             # e.g. course/students/johnsmith/    with its .access.yaml
             #   &  course/students/johnsmith/work/
-            student_abspath = os.path.join(self.os_path(),
+            student_abspath = os.path.join(self.abspath,
                                            'students', person.username)
             Page.new_folder(student_abspath, user=person,
                             accessdict= {'read':person.username,
@@ -717,7 +755,7 @@ class Page(BaseModel):
         if courses:
             return max(courses, key=lambda c: len(c.path))
         else:
-            return Course.get_errorcourse() 
+            return Course.get_site()
 
     def write_access_file(self, accessdict):
         """ Given an access dict from user input e.g. 
@@ -1241,121 +1279,90 @@ class Work(BaseModel):
                 else:
                     grade = self.grade
         return (grade, css_class)
-    
-def populate_database():
-    """ Create (and commit) the default database objects """
-    #
-    # This puts initial data into the database tables:
-    # Roles, Course 'demo' and its example Persons,
-    # Registrations, Assignments, and Works.
-    #
-    # The Roles data must be in place for the login system to work.
-    # And the Umber course must exist for user photos and site docs.
-    # The rest of this is just for examples and tests.
-    #
-    # The sqlite database must already exist before this is run;
-    # the .../database/init_db will create the database and run this.
 
-    print "* Populating database with default data."
-    
+def init_db():
+    """ Create base database objects """
+    # i.e. roles & site course.
+    # The Roles data must be in place for the login system to work.
+    # And the Umber course must exist for user photos and site docs
+    # and admin user role.
+    # The sql database must already exist; see bin/init_db .
+    # All these are "get_or_create", so running 'em multiple times won't hurt.
     Role.create_defaults()
+    Course.create_site()
+    
+def populate_db():
+    """ Create test & example development objects """
+    # i.e. democourse, jane, ted, john, adam; examples and tests.
+    #print "Populating development database."
     
     with db.atomic():
-        
         student = Role.by_name('student')
         faculty = Role.by_name('faculty')
-        
-        (democourse, created) = Course.get_or_create(
+
+        democourse = Course.create_course(
             name = 'Demo Course',
             name_as_title = 'Demo<br>Course',
             path = 'demo',
-            start_date = '2018-01-01')
-
-        # special "no such course" for reporting course-not-found errors.
-        (errorcourse, created) = Course.get_or_create(
-            name = 'error',
-            name_as_title = 'error',     # Never used, I hope.
-            path = '*error*',            # Never used, I hope.
-            start_date = '1901-01-01')
+            start = '2018-01-01' )
          
-        # for site resoruces i.e. help files, user id photos etc.
-        # (With .access.yaml by folder, can set differing rights.)
-        # See #column-one h1 a div in umber.csss for display properties.
-        (sitecourse, created) = Course.get_or_create(
-            name = 'Umber',
-            name_as_title = 'Umber<div>a course<br>managment<br>system</div>',
-            path = 'site',
-            start_date = '2018-01-01')
-         
-        (jane, created) = Person.get_or_create(
+        jane = Person.create_person(
             username = 'janedoe',
             name = 'Jane Q. Doe',
-            email = 'janedoe@fake.address')
+            email = 'janedoe@fake.address',
+            password = 'test' )
         
-        (john, created) = Person.get_or_create(
+        john = Person.create_person(
             username = 'johnsmith',
             name = 'Johnny Smith',
-            email = 'johnsmith@fake.address')
+            email = 'johnsmith@fake.address',
+            password = 'test' )
         
-        (ted, created)  = Person.get_or_create(
+        ted = Person.create_person(
             username = 'tedteacher',
             name = 'Ted Teacher',
-            email = 'ted@fake.address')
+            email = 'ted@fake.address',
+            password = 'test' )
 
-        (adam, created)  = Person.get_or_create(
+        adam = Person.create_person(
             username = 'adamadmin',
             name = 'Adam Administrator',
-            email = 'adam@fake.address')
-         
-        # The hashed seeded passwords are different each time,
-        # so they shouldn't be put in args to find_or_create. Otherwise, the
-        # new passwords won't be found and duplicate people would be created. 
-        jane.set_password('test')
-        john.set_password('test')
-        ted.set_password('test')
-        adam.set_password('test')
+            email = 'adam@fake.address',
+            password = 'test',
+            is_admin = True )
         
         default_date = '2018-01-02'
         democourse.enroll(john, 'student', default_date, create_work=False)
         democourse.enroll(jane, 'student', default_date, create_work=False)
         democourse.enroll(ted,  'faculty', default_date, create_work=False)
-        sitecourse.enroll(adam, 'admin',   default_date, create_work=False)
-        
-        (assign1, created) = Assignment.get_or_create(
-            course=democourse,
-            nth=1)
-        assign1.name = 'week 1'
-        assign1.due = '2018-01-23T23:59:00-05:00' # default 1min to midnight
-        assign1.blurb = 'Do chap 1 exercises 1 to 10.'
-        assign1.save()
-        
-        (assign2, created) = Assignment.get_or_create(
-            course_id = democourse,
-            nth = 2)
-        assign2.name = 'week 2'
-        assign2.due = '2018-01-30T23:59:00-05:00',
-        assign2.blurb = 'Write a four part fugue.'
-        assign2.save()
-        
-        (work1_john, created) = Work.get_or_create(
-            person = john,
-            assignment = assign1,
-            submitted = '2018-01-22T18:20:23-05:00',      # on time
-            grade = 'B')
-        work1_john.student_seen = work1_john.submitted
-        work1_john.student_modified = work1_john.submitted
-        work1_john.faculty_seen = '2018-01-28T16:00:00-05:00'
-        work1_john.faculty_modified = work1_john.faculty_seen
-        work1_john.save()
-        
-        (work1_jane, created) = Work.get_or_create(
-            person = jane,
-            assignment = assign1,
-            submitted = '2018-02-04T22:23:24-05:00',     # past due
-            grade = '')                                  # ungraded
-        work1_jane.student_seen = work1_jane.submitted
-        work1_jane.student_modified = work1_jane.submitted
-        work1_jane.save()
+
+        # Assignments are set with a dict {nth: {name, due, blurb}.
+        assignments_data = {
+            1: {'name': 'week 1',
+                'due': '2018-01-23T23:59:00-05:00', # default 1min to midnight
+                'blurb': 'Do chap 1 exercises 1 to 10.'},
+            2: {'name': 'week 2',
+                'due': '2018-01-30T23:59:00-05:00',
+                'blurb': 'Write a four part fugue.'}
+            }
+        democourse.update_assignments(assignments_data)
+        assign1 = democourse.get_assignment_by_nth(1)
+
+        johns_work = assign1.get_work(john)
+        johns_work.grade = 'B'
+        johns_work.submitted = '2018-01-22T18:20:23-05:00'      # on time
+        johns_work.student_seen = johns_work.submitted
+        johns_work.student_modified = johns_work.submitted
+        johns_work.faculty_seen = '2018-01-28T16:00:00-05:00'
+        johns_work.faculty_modified = johns_work.faculty_seen
+        johns_work.save()
+
+        janes_work = assign1.get_work(jane)
+        janes_work.submitted = '2018-02-04T22:23:24-05:00',     # past due
+        # janes_work.grade = ''                                 # not graded yet
+        janes_work.student_seen = janes_work.submitted
+        janes_work.student_modified = janes_work.submitted
+        janes_work.save()
 
 if __name__ == '__main__':
     import doctest

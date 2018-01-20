@@ -51,7 +51,7 @@ class Time(object):
             date_time_string += ' ' + Time.defaulttime
         datetime = parsedatetime.Calendar().parseDT(
            datetimeString=date_time_string,
-           tzinfo=pytz.timezone())[0]
+           tzinfo=pytz.timezone(localtimezone))[0]
         return Time(datetime)
         
     def __init__(self, *args, **kwargs):

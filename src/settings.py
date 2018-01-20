@@ -28,6 +28,8 @@ from os.path import realpath, join, dirname
 
 os_root = realpath(join(dirname(realpath(__file__)), '..'))
 
+os_db = os.environ['UMBER_DATA']
+
 localtimezone = 'US/Eastern'
 localtimezoneoffset = '-05:00'
 
@@ -47,8 +49,8 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     contact_url = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
     site_url = 'http://127.0.0.1:5000/umber/demo/home'
     os_courses = os.path.join(os_root, 'courses')
+    os_generic_course = os.path.join(os_root, 'courses/demo')
     os_git = os_courses
-    os_db = os.path.join(os_root, 'database', 'umber.db')
     
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     umber_debug = False
@@ -58,9 +60,9 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     route_prefix = ''  # in apache wsgi config route already has /cours/
     contact_url = '<a href="mailto:jim@mahoney.cc">Jim Mahoney</a>'
     site_url = 'https://cs.marlboro.edu'
-    os_db = '/var/www/cours/umber_mboro.db'
     os_courses = '/var/www/cours'
     os_git = '/var/www/cours'
+    os_generic_course = '/var/www/cours/generic'
 
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')
@@ -71,4 +73,3 @@ help_url = umber_url + '/site/docs/help'
 photos_url = umber_url + '/site/photos'
 
 debug_logfilename = None
-

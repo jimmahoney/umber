@@ -1,17 +1,10 @@
 """
- console.py
+ console.py -  interactive flask shell console 
 
- user's interactive flash shell console 
- initialization with flask's python packages and variables
- for development debugging and testing
-
- called from bin/umber_console 
-
-   $ umber_console
-   ...
-   >>> jane
-   Person(username=u'janedoe', ...)
-
+    $ umber_console     # This is invoked from bin/umber_console.
+    ...
+    >>> jane
+    Person(username=u'janedoe', ...)
 """
 
 import os, sys
@@ -25,20 +18,18 @@ sys.path.insert(0, os.path.join(os_root, 'src'))
 from umber import *
 from utilities import markdown2html
 
-# Set context for a typical page request.
-# ( adapted from http://flask.pocoo.org/docs/0.11/shell/ )
-democoursehomeurl = '/' + url_base + '/demo/home'
-request_context = app.test_request_context(democoursehomeurl)
-request_context.push()        # make it active
-app.preprocess_request()      # code that runs before request
+# Set a context for a page request (see flask.pocoo.org/docs/0.11/shell/).
+request_context = app.test_request_context('')
+request_context.push()        # Make it active.
+app.preprocess_request()      # Run the pre-requrest code.
 
-# variables for interactive tests
-democourse = Course.get(name='Demo Course')
-homepage = Page.get_from_path('demo/home')
-jane = Person.get(username='janedoe')
+print "== Umber console | flask shell | {} ==".format(
+    os.environ['UMBER_CONFIG'].lower())
+print "Database file is {}".format(os_db)
+print "To see all defined names : pp(vars()) ."
 
-print "== Umber console | flask shell =="
-print "Available variables include (democourse, homepage, jane, app, request)."
-print "For formatted output of all defined names : >>> pp(vars())."
-
-
+if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
+    democourse = Course.get(name='Demo Course')
+    homepage = Page.get_from_path('demo/home')
+    jane = Person.get(username='janedoe')
+    print "Variables include (democourse, homepage, jane, app, request)."

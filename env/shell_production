@@ -2,7 +2,11 @@
 #
 # Definitions for the shell environment variables - production version
 # 
-# There or something like them needs to be into a production server.
+# These or something like them needs to be put into the production server,
+# for example by copying them to /etc/apache2/envvar for apache2+wsgi,
+# or by putting them into a gunicorn config for a gunicorn proxy setup.
+#
+# There are more settings in src/settings.py
 #
 # Also see
 #   src/settings.py
@@ -15,12 +19,16 @@
 # Set this to PRODUCTION or DEVELOPMENT
 export UMBER_CONFIG=PRODUCTION
 
-# Define the project directory path
+# Define the absolute path to the project's source files.
 export UMBER_ROOT='/var/www/umber'
 
-# Make sure that the project python files are visible to python.
+# Define the absolute path to the sqlite3 database.
+export UMBER_DATA='/var/www/cours/etc/umber_marlboro.db'
+
+# Make the project's python files loadable from python.
 export PYTHONPATH=$UMBER_ROOT/src
 
-# Generate and define a session crypto key, for example with
+# Define the session crypto key.
+# *Don't* just copy-paste this; generate one with for example
 # >>> import os, binasci; binascii.hexlify(os.urandom(24))
 export UMBER_SECRET_KEY=0a1b2c3d45e6f7g8h9ijk
