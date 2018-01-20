@@ -36,3 +36,10 @@ export PYTHONPATH=$UMBER_ROOT/src
 # with the production database has something defined
 # or for a fake interactive session.)
 export UMBER_SECRET_KEY=0a1b2c3d45e6f7g8h9ijk
+
+# --- for interactive console stuff with the production db
+
+# Used by the flask console.
+export FLASK_APP=src/umber.py
+export PATH=$UMBER_ROOT/bin:$PATH
+
