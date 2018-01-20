@@ -59,7 +59,7 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     url_base = 'cours'      
     route_prefix = ''  # in apache wsgi config route already has /cours/
     contact_url = '<a href="mailto:jim@mahoney.cc">Jim Mahoney</a>'
-    site_url = 'https://cs.marlboro.edu'
+    site_url = 'https://cs.marlboro.college'
     os_courses = '/var/www/cours'
     os_git = '/var/www/cours'
     os_generic_course = '/var/www/cours/generic'

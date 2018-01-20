@@ -352,6 +352,13 @@ class Course(BaseModel):
                             for reg in registrations}
         return (students, guests, faculty, username_to_role)
 
+    def get_profile_url(self):
+        # site course ends with / ; others don't ... slightly different behavior.
+        if self.url[-1] == '/':
+            return self.url + 'sys/user'
+        else:
+            return self.url + '/sys/user'
+    
     def get_registered(self):
         return self.students + self.guests + self.faculty
 

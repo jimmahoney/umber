@@ -8,7 +8,7 @@
     {% if page.relpath == 'sys/user' %}
     <li class="rest thispage">profile</li>
     {% else %}
-    <li class="rest"><a href="{{ page.course.url ~ '/sys/user' }}">profile</a></li>
+    <li class="rest"><a href="{{ page.course.get_profile_url() }}">profile</a></li>
     {% endif %}
     <li class="rest"><input name="submit_logout" type="submit" value="log out"/></li>
   {% elif page.action == 'login' %}

@@ -315,7 +315,12 @@ def link_translate(course, html):
     """ return html string with ~/ and ~~/ links translated
         into the appropriate course and site urls """
     html = html.replace('~~/', '/' + url_base + '/')
-    html = html.replace('~/', course.url + '/')
+    # for site course, url ends with / ; for others, it doesn't.
+    if course.url[-1] == '/':
+        course_url_with_slash = course.url
+    else:
+        course_url_with_slash = course.url + '/'
+    html = html.replace('~/', course_url_with_slash)
     return html
 
 def whitestrip(x):
