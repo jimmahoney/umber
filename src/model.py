@@ -659,7 +659,7 @@ class Page(BaseModel):
         """ Return path of page relative to course path, 
             e.g. notes/home for path=demo/notes/home in course 'demo' """
         # self.course must be already set.
-        return self.path[len(self.course.path)+1:]
+        return os.path.relpath(self.path, self.course.path)
     
     def attachments_folder(self):
         return self.abspath.replace(self.ext, '.attachments')
