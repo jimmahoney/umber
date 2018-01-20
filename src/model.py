@@ -500,14 +500,23 @@ class Course(BaseModel):
         with db.atomic():
             (reg, created) = Registration.get_or_create(
                 person = person,
-                course = site_course,
-                role = site_role)
-            reg.date = datestring
-            reg.save()
+                course = site_course)
+            if created:
+                reg.role = site_role
+                reg.date = datestring
+                reg.save()
+            else:
+                # if we're upgrading to admin, make the change.
+                # otherwise, leave old site registration unmodified.
+                if is_admin:
+                    reg.role = site_role
+                    reg.state = datestring
+                    reg.save()
 
     def enroll(self, person, rolename, datestring=None, create_work=False):
-        """ Enroll a person in this course. """
-        # And put them in the site couse if they aren't already
+        """ Enroll a person in this course with this role. """
+        # If ther is an existing registration for the course&person, modify it.
+        # Also enroll this person in the site couse if they aren't already
         # and if this isn't the site course itself.
         # Optionally create their work folder (if it doesn't already exist)
         if not datestring:
@@ -515,14 +524,15 @@ class Course(BaseModel):
         with db.atomic():
             (reg, created) = Registration.get_or_create(
                 person = person,
-                course = self,
-                role = Role.by_name(rolename))
+                course = self)
+            reg.role = Role.by_name(rolename))
             reg.date = datestring
             reg.save()
             if not self.name == 'Umber':
                 Course.enroll_site(person, datestring=datestring)
         if create_work:
-            # Build the absolute path for their student work folder:
+            # Create folder for student work within the course folder.
+            # The absolute path for their student work folder is
             # e.g. course/students/johnsmith/    with its .access.yaml
             #   &  course/students/johnsmith/work/
             student_abspath = os.path.join(self.abspath,
@@ -825,7 +835,7 @@ class Page(BaseModel):
         self.user_rank = self.user_role.rank
         #
         if self.user.is_admin():
-            self.user_role = Role.by_name('admin')
+            #self.user_role = Role.by_name('admin')
             self.user_rank = Role.by_name('admin').rank
         
         if self.user_role.name in ('faculty', 'admin') and not self.is_sys:
