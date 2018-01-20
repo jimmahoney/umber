@@ -525,7 +525,7 @@ class Course(BaseModel):
             (reg, created) = Registration.get_or_create(
                 person = person,
                 course = self)
-            reg.role = Role.by_name(rolename))
+            reg.role = Role.by_name(rolename)
             reg.date = datestring
             reg.save()
             if not self.name == 'Umber':
