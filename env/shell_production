@@ -31,4 +31,8 @@ export PYTHONPATH=$UMBER_ROOT/src
 # Define the session crypto key.
 # *Don't* just copy-paste this; generate one with for example
 # >>> import os, binasci; binascii.hexlify(os.urandom(24))
+# (This is *not* the web server's session key;
+# it's here only so using the console to interact
+# with the production database has something defined
+# or for a fake interactive session.)
 export UMBER_SECRET_KEY=0a1b2c3d45e6f7g8h9ijk
