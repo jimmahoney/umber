@@ -28,8 +28,11 @@ development & testing
 production
 ----------
 
-   ... coming ...
+Like any Flask app, it can be deployed with wsgi. 
+See src/umber.wsgi and env/shell_production for more.
 
-https://github.com/jimmahoney/umber
+Its github repo is at https://github.com/jimmahoney/umber .
+
 ----------------------------------------------------------
+
 Jim Mahoney | cs.marlboro.edu | Jan 2018 | MIT License
