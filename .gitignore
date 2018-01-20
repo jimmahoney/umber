@@ -21,4 +21,5 @@ venv
 
 # development database binary
 database/umber.db
+database/umber.db.backup*
 

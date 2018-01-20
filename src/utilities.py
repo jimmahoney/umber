@@ -345,8 +345,23 @@ def parse_access_string(access):
     return names
     
 def markdown2html(string, extras=True):
+    """ Convert markdown-formatted text to html 
+        >> markdown2html(r'Formula \\( \\frac{1}{x} \\)')
+        u'<p>Formula \\( \\frac{1}{x} \\)</p>\n'
+    """
     # See https://github.com/trentm/python-markdown2
     #     https://github.com/trentm/python-markdown2/wiki/Extras
+    # I want to be able to have \( \[  \)  \] remain as-is,
+    # since they're used by MathJax which I want.
+    # So I'm replacing all those with |( versions which
+    # are not altered by this markdown() call.
+    mathjax = { r'\(':r'|(',
+                r'\)':r'|)',
+                r'\[':r'|[',
+                r'\]':r'|]'}
+    mathjaxinv = {value:key for (key,value) in mathjax.iteritems()}
+    for key in mathjax:
+        string = string.replace(key, mathjax[key])
     if extras:
         output = markdown(string,
                     extras=['code-friendly', 'fenced-code-blocks',
@@ -354,6 +369,8 @@ def markdown2html(string, extras=True):
                             'cuddled-lists', 'markdown-in-html'])
     else:
         output = markdown(string)
+    for key in mathjaxinv:
+        output = output.replace(key, mathjaxinv[key])
     # ---
     # markdown2 bug fix :
     #   query string & should not be escaped to &amp;
