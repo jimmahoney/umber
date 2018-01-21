@@ -1,5 +1,11 @@
 # umber development history #
 
+## Jan 21
+
+OK, it's up and running at cs.marlboro.college.
+Been doing a few bug fixes but nothing too extreme.
+
+
 ## Jan 17
 
   - spent way too much time trying to get this deployed,
