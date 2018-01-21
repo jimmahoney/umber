@@ -160,8 +160,10 @@ def mainroute(pagepath):
                     return redirect(url_for('mainroute', pagepath=indexpath))
     
     # Redirect nonexisting nonystem editable pages to ?action=edit
+    # ... but not if this is the POST that is trying to create it.
     if page.can['write'] and not page.exists and not page.action and \
-                             not page.is_sys and not page.is_dir :
+                             not page.is_sys and not page.is_dir and \
+                             not request.method == 'POST' :
         return redirect(page.url + '?action=edit')
     
     # Don't serve up any invisible "dot" files - reload enclosing folder.
@@ -442,6 +444,7 @@ def submit_edit():
             request.page.work.save()
     # Save the page content to a file and to git.
     bytes_written = request.page.write_content(request.form['edit_text'])
+    print_debug(' submit_edit: bytes_written = {}'.format(bytes_written))
     git.add_and_commit(request.page)
     return request.base_url  # ... and reload it without ?action=edit
     
