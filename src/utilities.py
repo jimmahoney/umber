@@ -174,9 +174,10 @@ def parse_assignment_data(request_form):
         m = regex_expression.match(key)
         if m:
             (which, nth) = (m.group(1), int(m.group(2)))
-            if not assignment_data.has_key(nth) and request_form[key]:
-                assignment_data[nth] = {}
-            assignment_data[nth][which] = request_form[key]
+            if request_form[key] != "":              # Ignore blank assignments.
+                if not assignment_data.has_key(nth):
+                    assignment_data[nth] = {}
+                assignment_data[nth][which] = request_form[key]
     return assignment_data
     
 class Git:
