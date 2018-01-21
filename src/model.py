@@ -362,6 +362,9 @@ class Course(BaseModel):
     def get_registered(self):
         return self.students + self.guests + self.faculty
 
+    def email_everyone_html(self):
+        return "mailto:" + ','.join([p.email for p in self.get_registered()])
+    
     def has_username(self, username):
         return username in self.username_to_role
     
