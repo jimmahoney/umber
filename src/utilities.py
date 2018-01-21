@@ -178,6 +178,15 @@ def parse_assignment_data(request_form):
                 if not assignment_data.has_key(nth):
                     assignment_data[nth] = {}
                 assignment_data[nth][which] = request_form[key]
+    # Only keep well-formed assignments which have (name, due, blurb)
+    bad = []
+    for nth in assignment_data:
+        if not assignment_data[nth].has_key('name') or \
+           not assignment_data[nth].has_key('due') or \
+           not assignment_data[nth].has_key('blurb'):
+             bad.append(nth)
+    for nth in bad:
+        del assignment_data[nth]
     return assignment_data
     
 class Git:
