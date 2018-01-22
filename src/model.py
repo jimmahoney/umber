@@ -358,7 +358,10 @@ class Course(BaseModel):
             return self.url + 'sys/user'
         else:
             return self.url + '/sys/user'
-    
+
+    def get_home_url(self):
+        return os.path.join(self.url, 'home')
+
     def get_registered(self):
         return self.students + self.guests + self.faculty
 

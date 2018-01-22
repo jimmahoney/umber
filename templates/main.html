@@ -24,7 +24,7 @@
 </div>
 {% include 'actions.html' %} 
 <div id="column-one">
- <h1><a href="{{ course.url }}"> {{ course.name_as_title }} </a></h1>
+ <h1><a href="{{ course.get_home_url() }}"> {{ course.name_as_title }} </a></h1>
  {% if not page.course.name == 'Umber' %} 
  <div><div id="semester"> {{ course.semester }} </div></div>
  {% endif %}
