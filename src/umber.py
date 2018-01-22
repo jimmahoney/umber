@@ -102,6 +102,9 @@ def mainroute_blank():
 @app.route(route_prefix + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
 
+    if pagepath == '':
+        return redirect('/' + url_base + '/home')
+    
     print_debug('- '*30)
     print_debug(' mainroute: pagepath = "{}"'.format(pagepath))
     print_debug(' mainroute: request.url = "{}"'.format(request.url))
