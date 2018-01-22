@@ -486,6 +486,11 @@ form.login {
   /* border: 1px solid yellow; */
 }
 
+/* smaller fonts for indented bullet */
+#column-one ul ul {
+    font-size: 85%;
+}
+
 /* course title */
 
 /*****
