@@ -33,11 +33,11 @@ image
 
 Images can be inserted with
 
-![Jim and Cindy](/images/jim_n_cin.jpeg) 
+![Jim and Cindy](https://cs.marlboro.college/images/jim_n_cin.jpeg) 
 
 or since I allow html
 
-<img src="/images/jim_n_cin.jpeg" alt="Jim and Cindy">
+<img src="https://cs.marlboro.college/images/jim_n_cin.jpeg" alt="Jim and Cindy">
 
 text
 ----
