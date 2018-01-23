@@ -527,7 +527,7 @@ class Course(BaseModel):
                     reg.save()
 
     def make_student_work_folders(self):
-        for student in self.students:
+        for person in self.students:
             student_abspath = os.path.join(self.abspath,
                                            'students', person.username)
             if not os.path.exists(student_abspath):
