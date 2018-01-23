@@ -28,6 +28,16 @@ define foo(x){
       Four spaces at the   front
      of each      line.
 
+image
+-----
+
+Images can be inserted with
+
+![Jim and Cindy](/images/jim_n_cin.jpeg) 
+
+or since I allow html
+
+<img src="/images/jim_n_cin.jpeg" alt="Jim and Cindy">
 
 text
 ----
