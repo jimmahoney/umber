@@ -51,7 +51,7 @@ from bs4 import BeautifulSoup
 from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
      git, Time, stringify_access, print_debug
-from settings import os_db, umber_url, protocol, hostname, \
+from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
     os_root, os_courses, photos_url, url_base, os_generic_course
 
 db = SqliteDatabase(os_db)
@@ -380,7 +380,7 @@ class Course(BaseModel):
         # See the description below for the faculty grid.
         result = list(self.get_assignments_with_extras())
         for ass in result:
-            # Hmmm - not sure why this needs .person_id here, but it gives error without.
+            # Hmmm - not sure why this needs .person_id here, but errors without.
             # Maybe something about how the jinja2 template treats variables?
             # Or because the assignment has had its fields modified??
             ass.work = ass.get_work(student.person_id)
@@ -526,9 +526,21 @@ class Course(BaseModel):
                     reg.state = datestring
                     reg.save()
 
+    def make_student_work_folders(self):
+        for student in self.students:
+            student_abspath = os.path.join(self.abspath,
+                                           'students', person.username)
+            if not os.path.exists(student_abspath):
+                Page.new_folder(student_abspath, user=person,
+                                accessdict= {'read':person.username,
+                                         'write':person.username})
+            work_abspath = os.path.join(student_abspath, 'work')
+            if not os.path.exists(work_abspath):
+                Page.new_folder(work_abspath, user=person)
+                    
     def enroll(self, person, rolename, datestring=None, create_work=False):
         """ Enroll a person in this course with this role. """
-        # If ther is an existing registration for the course&person, modify it.
+        # If there is an existing registration for the course&person, modify it.
         # Also enroll this person in the site couse if they aren't already
         # and if this isn't the site course itself.
         # Optionally create their work folder (if it doesn't already exist)
@@ -605,6 +617,8 @@ class Page(BaseModel):
     course = ForeignKeyField(rel_model=Course,
                              db_column='course_id',
                              to_field='course_id')
+
+    _mime_types = None
 
     @staticmethod
     def new_folder(abspath, accessdict=None, user=None):
@@ -797,10 +811,12 @@ class Page(BaseModel):
             or from the first line of a sys_template
         """
         # e.g. {'read': ['janedoe', 'johnsmith'], 'write': 'faculty'}
-        #access_dict = {'read':'all', 'write':'faculty'}  # default if we don't find it.
+        # default if we don't find it.
+        #access_dict = {'read':'all', 'write':'faculty'}  
         if self.is_sys:
             ## navigation is a special case : since it's a faculty editable file,
-            ## I'll fill it it manually and not require that it have the {# #} first line.
+            ## I'll fill it it manually and not require that it have
+            ## the {# #} first line.
             if self.relpath == 'sys/navigation' or \
                self.relpath == 'sys/navigation.md':
                 access_dict = {'read':'member', 'write':'faculty'}
@@ -872,11 +888,14 @@ class Page(BaseModel):
             if self.user_rank >= access_needed:
                 self.can[permission] = True
 
-    def mimetype(self):
+    def get_mimetype(self):
         """ Return e.g. 'image/jpeg' for '.jpg' file """
-        if not mimetypes.init:
+        if not Page._mime_types:
             mimetypes.init()
-        return mimetypes.types_map.get(self.ext, 'application/octet-stream')
+            Page._mime_types = mimetypes.types_map.copy()
+            for key in umber_mime_types:
+                Page._mime_types[key] = umber_mime_types[key]
+        return Page._mime_types.get(self.ext, 'application/octet-stream')
 
     def keep(self):
         """ for folders, essentially 'touch .keep' at the command line """
@@ -1381,8 +1400,8 @@ def populate_db():
         johns_work.save()
 
         janes_work = assign1.get_work(jane)
-        janes_work.submitted = '2018-02-04T22:23:24-05:00',     # past due
-        # janes_work.grade = ''                                 # not graded yet
+        janes_work.submitted = '2018-02-04T22:23:24-05:00',   # past due
+        # janes_work.grade = ''                               # not graded yet
         janes_work.student_seen = janes_work.submitted
         janes_work.student_modified = janes_work.submitted
         janes_work.save()

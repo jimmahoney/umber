@@ -158,8 +158,11 @@ class Time(object):
         return str(self)
 
 def parse_assignment_data(request_form):
-    """ Return a dict assignments_data[nth][name, due, blurb] from request form data 
-        >>> data = {'assignment_name_2':'readings', 'assignment_due_2':'2017-02-03'}
+    """ Return a dict assignments_data[nth][name, due, blurb] 
+        from request form data 
+        >>> data = {'assignment_name_2':'readings', 
+        ...         'assignment_due_2':'2017-02-03',
+        ...         'assignment_blurb_2':'do some stuff' }
         >>> p = parse_assignment_data(data)
         >>> (p[2]['name'], p[2]['due'])
         ('readings', '2017-02-03')

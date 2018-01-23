@@ -1,0 +1,2 @@
+/* hello.js */
+alert("Hello!");

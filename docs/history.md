@@ -1,10 +1,18 @@
 # umber development history #
 
+## Jan 23
+
+Created css file for code syntax coloring; 
+see https://github.com/trentm/python-markdown2/wiki/fenced-code-blocks
+
+  $ pygmentize -S default -f html -a .codehilite static/styles/pygment.css
+
+and loaded that from the main template.
+
 ## Jan 21
 
 OK, it's up and running at cs.marlboro.college.
 Been doing a few bug fixes but nothing too extreme.
-
 
 ## Jan 17
 

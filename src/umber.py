@@ -207,8 +207,11 @@ def mainroute(pagepath):
         #       with ?something (?html , ?source, ?pretty) ?
         # TODO: forward these sorts of requests to apache or other server??
         # TODO: handle unknown mimetype better, perhaps don't send file at all?
-        
-        return Response(page.content(), mimetype=page.mimetype()) 
+
+        print_debug( 'mainroute: returning response mimetype={} for page.path={}'.format(
+            page.get_mimetype(), page.path))
+        return Response(page.content(), mimetype=page.get_mimetype())
+    
     else:
         #
         return render_template('main.html',

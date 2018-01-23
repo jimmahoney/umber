@@ -72,4 +72,9 @@ about_url = umber_url + '/site/docs/about'
 help_url = umber_url + '/site/docs/help'
 photos_url = umber_url + '/site/photos'
 
+# custom mime-types for files within courses (does not include static files)
+umber_mime_types = {x:'text/plain' for x in
+    ('.py', '.c', '.cc', '.cpp', '.c++', '.c#', '.dot', '.lisp',
+     '.java', '.hs', '.clisp', '.pl', '.tex' )}
+
 debug_logfilename = None
