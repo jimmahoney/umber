@@ -34,6 +34,8 @@ text
 
 Text with *one asterisk* or _one underscore_ or **two asterisks** or __two underscores__ .
 
+Literal \* asterisks can be put in with backslash.
+
 
 links
 -----
