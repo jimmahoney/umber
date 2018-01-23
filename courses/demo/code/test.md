@@ -22,3 +22,8 @@ define foo(x){
     return bar(x+1)
 }
 ```
+
+    This is an indented block.
+      Four spaces at the   front
+     of each      line.
+
