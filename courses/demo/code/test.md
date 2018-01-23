@@ -29,6 +29,12 @@ define foo(x){
      of each      line.
 
 
+text
+----
+
+Text with *one asterisk* or _one underscore_ or **two asterisks** or __two underscores__ .
+
+
 links
 -----
 
