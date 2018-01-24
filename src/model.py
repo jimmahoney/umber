@@ -50,7 +50,7 @@ from peewee import SqliteDatabase, Model, \
 from bs4 import BeautifulSoup
 from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
-     git, Time, stringify_access, print_debug
+     git, Time, stringify_access, print_debug, clean_access_dict
 from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
     os_root, os_courses, photos_url, url_base, os_generic_course
 
@@ -801,7 +801,9 @@ class Page(BaseModel):
         assert self.is_dir  # this page should be a folder
         accesspath = os.path.join(self.abspath, '.access.yaml')
         accessfile = open(accesspath, 'w')     # open or create
-        accessfile.write(yaml.dump(accessdict)) # replace yaml permissions
+        # replace yaml permissions
+        # (yaml.dump turns u'string' into ugly stuff so I convert to str().
+        accessfile.write(yaml.dump(clean_access_dict(accessdict)))
         accessfile.close()
         git.add_and_commit(self, accesspath)
         return accesspath

@@ -157,6 +157,22 @@ class Time(object):
     def str(self):
         return str(self)
 
+def clean_access_dict(dict):
+    """ Return access dict with unicode replaced by str 
+        >>> dirty = {u'one': u'alpha', 'two':[u'beta', 'gamma']}
+        >>> clean = clean_access_dict(dirty)
+        >>> sorted(clean.iteritems())
+        [('one', 'alpha'), ('two', ['beta', 'gamma'])]
+    """
+    new_dict = {}
+    for (key,value) in dict.iteritems():
+        if type(value) == type([]):
+            new_value = map(str, value)
+        else:
+            new_value = str(value)
+        new_dict[str(key)] = new_value
+    return new_dict
+    
 def parse_assignment_data(request_form):
     """ Return a dict assignments_data[nth][name, due, blurb] 
         from request form data 
@@ -355,7 +371,7 @@ def parse_access_string(access):
     """ Convert a string of roles and/or usernames to a string or list """
     # 'frank' => 'frank'
     # 'frank, faculty' => ['frank', 'faculty']
-    names = re.split(r'[ ,\t]', access) # split on commas or spaces
+    names = re.split(r'\s*,\s*|\s+', access) # split on commas and/or whitespace
     names = map(whitestrip, names)
     names = filter(lambda x: len(x)>0, names)
     if len(names) == 1:
