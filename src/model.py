@@ -1322,6 +1322,8 @@ class Work(BaseModel):
                     css_class = 'brown'
                 else:
                     grade = self.grade
+        if self.grade:             # If a grade has been assigned, show it. Period.
+            grade = self.grade
         return (grade, css_class)
 
 def init_db():
