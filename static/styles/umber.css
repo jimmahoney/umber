@@ -1055,6 +1055,12 @@ form input[type="submit"]{
     font-size: 90%;
 }
 
+/* checkboxes , seen by faculty near grade submission */
+#facultychecks {
+    font-size: 66%;
+    font-weight: normal;
+}
+
 /* single grade on a student work submission page */
 .grade { 
   /* float: right; */

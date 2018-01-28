@@ -40,6 +40,12 @@ class Time(object):
     def parse(date_time_string):
         """ Return Time object from human friendly description 
             i.e. Time.parse('tomorrow') """
+        return Time(Time._parse(date_time_string))
+
+    @staticmethod
+    def _parse(date_time_string):
+        """ Return iso string from human friendly description 
+            i.e. Time._parse('tomorrow') """
         # If a time isn't given (i.e. found via regex search)
         # then it's set to the default.
         # The timezone is local - see settings.py.
@@ -49,11 +55,10 @@ class Time(object):
                                                         Time.defaulttime)
         if not re.search('am|pm|noon|morning|afternoon|evening', date_time_string):
             date_time_string += ' ' + Time.defaulttime
-        datetime = parsedatetime.Calendar().parseDT(
+        return parsedatetime.Calendar().parseDT(
            datetimeString=date_time_string,
            tzinfo=pytz.timezone(localtimezone))[0]
-        return Time(datetime)
-        
+    
     def __init__(self, *args, **kwargs):
         """ With no arguments, returns the 'now' time. """
         # If an iso date string is given without a time i.e. '2017-11-01'
@@ -64,15 +69,24 @@ class Time(object):
         # >>> Time('2017-12-02').isodate()
         # '2017-12-02'
         if len(args)==1 and isinstance(args[0], basestring):
-            #if re.match('\d+-\d+-\d+T\d+:\d+:\d+(-|+)\d+:\d+', args[0]):
-            #    # i.e. '2017-12-02T23:59:00-05:00'
-            #    pass  # just leave it alone
             if args[0] == '':
-                args[0] = None
-            if re.match('^\d+-\d+-\d+$', args[0]):
-                    # i.e. '2018-02-04'
+                args = (None, )
+                #print "None"
+            elif re.match('^\d{4}-\d{2}-\d{2}$', args[0]):  # i.e. '2018-02-04'
+                #print "match 1"
                 args = (args[0] + 'T' + Time.default24time + \
                         localtimezoneoffset ,)
+            elif re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$', args[0]):
+                #print "match 2"
+                # i.e. '2018-02-04T17:00:00'
+                args = (args[0] + localtimezoneoffset, )
+            elif re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', args[0]) \
+                and args[0][-len(localtimezoneoffset):] == localtimezoneoffset:
+                #print "match 3"
+                args = (args[0],)
+            else:
+                args = (Time._parse(args[0]), )
+        #print "args = {}", args
         try:
             self.arrow = arrow.get(*args, **kwargs).to(localtimezone)
         except:
@@ -156,6 +170,9 @@ class Time(object):
         return season + str(self.arrow.year)
     def str(self):
         return str(self)
+    def shift_minutes(self, mins):
+        self.arrow = self.arrow.shift(minutes=mins)
+        return self
 
 def clean_access_dict(dict):
     """ Return access dict with unicode replaced by str 

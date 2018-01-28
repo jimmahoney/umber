@@ -1385,10 +1385,10 @@ def populate_db():
         # Assignments are set with a dict {nth: {name, due, blurb}.
         assignments_data = {
             1: {'name': 'week 1',
-                'due': '2018-01-23T23:59:00-05:00', # default 1min to midnight
+                'due': '2018-01-23',
                 'blurb': 'Do chap 1 exercises 1 to 10.'},
             2: {'name': 'week 2',
-                'due': '2018-01-30T23:59:00-05:00',
+                'due': 'Jan 28 2018 5pm',
                 'blurb': 'Write a four part fugue.'}
             }
         democourse.update_assignments(assignments_data)

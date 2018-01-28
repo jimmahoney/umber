@@ -440,9 +440,24 @@ def submit_edit():
         now = str(Time())  # string with current time
         with db.atomic():
             if request.page.user_role.name == 'faculty':
-                request.page.work.faculty_modified = now
+                page = request.page
+                page.work.faculty_modified = now
+                # If checkbox for 'submitted' and that didn't have a value,
+                # then set it - used to mark work as submitted,
+                # i.e. student emails work & faculty submits.
+                if "submitted_checkbox" in request.form \
+                     and not page.work.submitted:
+                    due = Time(page.work_due)
+                    print_debug(" submit_edit: due = {}".format(str(due)))
+                    if "on_time_checkbox" in request.form:
+                        due.shift_minutes(-5)
+                    else:
+                        due.shift_minutes(5)
+                    page.work.submitted = str(due)
+                    print_debug(" submit_edit: submitted set to {}".format( \
+                                page.work.submitted))
                 if 'grade' in request.form:
-                    request.page.work.grade = str(request.form['grade'])
+                    page.work.grade = str(request.form['grade'])
             else:
                 request.page.work.student_modified = now
                 if not request.page.work.submitted:

@@ -2,7 +2,13 @@
 {# -- grade -- #}
 <div class="grade-h1"><span class="grade">grade: <span class="grade-black">
 {% if page.user_role.name == 'faculty' %}
-  <input type="input" name="grade" size="12" >
+ <input type="input" name="grade" size="12" value="{{ page.work_grade }}">
+{%   if page.work_submitted == "" %}
+ <span id="facultychecks">
+  &nbsp; submitted <input type="checkbox" name="submitted_checkbox" >
+  &nbsp; on time<input type="checkbox" name="on_time_checkbox" >
+ </span>
+{%   endif %}
 {% else %}  
   {{ page.work_grade }}
 {% endif %}
