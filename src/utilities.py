@@ -49,7 +49,10 @@ class Time(object):
         # If a time isn't given (i.e. found via regex search)
         # then it's set to the default.
         # The timezone is local - see settings.py.
-        date_time_string = str(date_time_string)  # convert from utf8 if needed
+        try:
+            date_time_string = str(date_time_string)  # convert utf8 if needed
+        except:
+            pass
         if 'midnight' in date_time_string:
             date_time_string = date_time_string.replace('midnight',
                                                         Time.defaulttime)
@@ -441,6 +444,23 @@ def split_url(urlpath):
     (scheme, netloc, path, query, fragment) = urlparse.urlsplit(urlpath)
     (base, ext) = os.path.splitext(path)
     return (base, ext, query)
+
+def pygmentize(code, filename=None, language=None):
+    """ return html syntax higlighted code """
+    # See  - http://pygments.org/docs/quickstart/ .
+    #      - http://pygments.org/docs/quickstart/#guessing-lexers
+    from pygments import highlight
+    from pygments.formatters import HtmlFormatter
+    from pygments.lexers import get_lexer_by_name, guess_lexer, \
+                                guess_lexer_for_filename
+    if filename:
+        lexer = guess_lexer_for_filename(filename, stripall=True)
+    elif language:
+        lexer = get_lexer_by_name(language, stripall=True)
+    else:
+        lexer = guess_lexter(code, stripall=True)
+    formatter = HtmlFormatter(linenos=False, cssclass='codehilite')
+    return highlight(code, lexer, formatter)
 
 def in_console():
     """ Return True if current environment is the flask console """

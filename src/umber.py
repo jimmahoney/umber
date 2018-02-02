@@ -14,7 +14,7 @@ from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
      git, is_clean_folder_name, parse_access_string, parse_assignment_data, \
-     print_debug
+     print_debug, pygmentize
 from werkzeug import secure_filename
 from settings import umber_flask_configure, umber_url, contact_url, help_url, \
      about_url, site_url, url_base, os_root, umber_debug, route_prefix

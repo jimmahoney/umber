@@ -1,5 +1,9 @@
 # umber development history #
 
+## Jan 31
+
+Looking at pygments source code highlights - see utilities.py.
+
 ## Jan 23
 
 Created css file for code syntax coloring; 
