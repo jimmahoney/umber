@@ -1,5 +1,20 @@
 # umber development history #
 
+=======
+## Feb 1
+
+ TODO: consider using pygit2.org for python => git ,
+       since I think it doesn't need another process (command line git)
+       and may be faster and more reliable.
+ ... but the documentation is not clear. This talks to libgit2,
+     and it's "commit" section looks complicated & confusing.
+
+ TODO: consider alternatives to apache2 + mod_wsgi ...
+       I'm not sure if that's fast enough or is causing
+       some of the errors I'm seeing.
+
+       nginx + uWSGI looks like it might be the most robust deployment.
+
 ## Jan 31
 
 Looking at pygments source code highlights - see utilities.py.
