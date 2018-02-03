@@ -6,8 +6,8 @@ Let's put in in some unicode, eh?
 
 
 
-$$ \frac{1}/{\Delta} = x $$
+$$ \frac{1}{\Delta} = x $$
 
-And some mathjax: \( \sin(x)/2 = \Beta \). Did it work?
+And some mathjax: \( \sqrt{2+x} = \beta \). Did it work?
 
 
