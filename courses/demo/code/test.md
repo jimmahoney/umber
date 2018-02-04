@@ -1,8 +1,16 @@
 markdown format tests
 =====================
 
+code links with syntax highlight
+--------------------------------
+* [hello.py](hello.py?html) | [raw](hello.py)
+* [hello.c](hello.c?html) | [raw](hello.c)
+* [hello.lisp](hello.lisp?html) | [raw](hello.lisp)
+* [hello.js](hello.js?html) | [raw](hello.js)
+* [hello.html](hello.html?html) | [raw](hello.html)
+
 code
------
+----
 
 ```python
 # Python code
@@ -15,6 +23,12 @@ for i in range(10):
 for (int i=0; i<20; i++){
   printf("The answer is %i\n", i);
 }
+```
+
+```html
+<div>
+  <p>This is html</p>.
+</div>
 ```
 
 ```
@@ -64,5 +78,3 @@ The reference-style link definitions are typically at the end.
 
 [1]: <http://www.google.com> "Google Inc"
 [marlboro]: <https://www.marlboro.edu> "Marlboro College website"
-
-
