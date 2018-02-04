@@ -1,13 +1,13 @@
-# -- coding: utf-8 --
+# -*- coding: utf-8 -*-
 """
  utilities.py
 """
+import parsedatetime, pytz, random
 import os, urlparse, sh, arrow, string, re
+from flask import url_for, app
 from markdown2 import markdown
 from settings import url_base, debug_logfilename, \
     localtimezone, localtimezoneoffset, os_git, umber_debug
-from flask import url_for, app
-import parsedatetime, pytz
 
 debug_log = {'file': None}
 def print_debug(message):
@@ -397,25 +397,47 @@ def parse_access_string(access):
     if len(names) == 1:
         names = names[0]
     return names
-    
+
+def make_marker(bits=64):
+    """ Return a unique string that , for marking boundaries in text """
+    #  i.e. '|-b1dda1c7f14cd89e-|'
+    # In python2, hex() on big numbers gives i.e. '0x3333333333L'.
+    # I'll drop the 1st two and last chars with [2:-1].
+    return '|-'+hex(random.getrandbits(64))[2:-1]+'-|'
+
+def mathjax_replace(text):
+    """ Replace substrings of text between several boundaries
+        $$...$$ ,  \(...\) , \[...\] with unique-ish boundary markers.
+        Return new text and dictionary of markers and replaced substrings.
+    """
+    replacements = {}
+    for expr in (r'\$\$.*?\$\$',       #   $$ ... $$
+                 r'\\\(.*?\\\)',       #   \( ... \)
+                 r'\\\[.*?\\\]'):      #   \[ ... \]
+        pattern = re.compile(expr)
+        while True:
+            match = re.search(pattern, text)
+            if not match:
+                break
+            substring = match.group(0)
+            m = make_marker()
+            replacements[m] = substring
+            text = text.replace(substring, m)
+    return (text, replacements)
+
+def undo_mathjax_replace(text, replacements):
+    for mark in replacements:
+        text = text.replace(mark, replacements[mark])
+    return text
+
 def markdown2html(string, extras=True):
     """ Convert markdown-formatted text to html 
         >> markdown2html(r'Formula \\( \\frac{1}{x} \\)')
         u'<p>Formula \\( \\frac{1}{x} \\)</p>\n'
     """
-    # See https://github.com/trentm/python-markdown2
-    #     https://github.com/trentm/python-markdown2/wiki/Extras
-    # I want to be able to have \( \[  \)  \] remain as-is,
-    # since they're used by MathJax which I want.
-    # So I'm replacing all those with |( versions which
-    # are not altered by this markdown() call.
-    mathjax = { r'\(':r'|(',
-                r'\)':r'|)',
-                r'\[':r'|[',
-                r'\]':r'|]'}
-    mathjaxinv = {value:key for (key,value) in mathjax.iteritems()}
-    for key in mathjax:
-        string = string.replace(key, mathjax[key])
+    #print_debug(u" markdown2html: string before replace '{}'".format(string))    
+    (string, replacements) = mathjax_replace(string)
+    #print_debug(u" markdown2html: string after replace '{}'".format(string))
     if extras:
         output = markdown(string,
                     extras=['code-friendly', 'fenced-code-blocks',
@@ -423,9 +445,11 @@ def markdown2html(string, extras=True):
                             'cuddled-lists', 'markdown-in-html'])
     else:
         output = markdown(string)
-    for key in mathjaxinv:
-        output = output.replace(key, mathjaxinv[key])
-    # ---
+    #print_debug(u" markdown2html: string after markdown '{}'".format(string))
+    #print_debug(u" markdown2html: replacemements '{}'".format(unicode(replacements)))
+    output = undo_mathjax_replace(output, replacements)
+    #print_debug(u" markdown2html: string after undo ''".format(string))  
+    #
     # markdown2 bug fix :
     #   query string & should not be escaped to &amp;
     #   semi colons should not be inserted into link
@@ -445,6 +469,21 @@ def split_url(urlpath):
     (base, ext) = os.path.splitext(path)
     return (base, ext, query)
 
+def pygment_webpage(filename, body):
+    """ Return html webpage for pygmentized code """
+    pygments_css = static_url('styles/pygment.css')
+    return """
+<html>
+<head>
+<title>{}</title>
+<link rel="stylesheet" type="text/css" href="{}">
+</head>
+<body>
+{}
+</body>
+</html>
+""".format(filename, pygments_css, body)
+
 def pygmentize(code, filename=None, language=None):
     """ return html syntax higlighted code """
     # See  - http://pygments.org/docs/quickstart/ .
@@ -454,13 +493,15 @@ def pygmentize(code, filename=None, language=None):
     from pygments.lexers import get_lexer_by_name, guess_lexer, \
                                 guess_lexer_for_filename
     if filename:
-        lexer = guess_lexer_for_filename(filename, stripall=True)
+        lexer = guess_lexer_for_filename(filename, code) # add stripall=True ?
     elif language:
-        lexer = get_lexer_by_name(language, stripall=True)
+        lexer = get_lexer_by_name(language)
     else:
-        lexer = guess_lexter(code, stripall=True)
+        lexer = guess_lexer(code)
     formatter = HtmlFormatter(linenos=False, cssclass='codehilite')
-    return highlight(code, lexer, formatter)
+    code_as_html = highlight(code, lexer, formatter)
+    return pygment_webpage(filename, code_as_html)
+
 
 def in_console():
     """ Return True if current environment is the flask console """

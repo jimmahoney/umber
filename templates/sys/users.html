@@ -1,4 +1,4 @@
-{# {'read':'faculty', 'write':'faculty'} #}
+{# {'read':'faculty'} #}
 <h1>users</h1>
 
 <h3>students, faculty, and guests</h3>
@@ -21,12 +21,17 @@
 {% endfor %}
 </table>
 
-<h2>enroll</h2>
-
+<h2>change enrollment</h2>
+{% if 'search' in request.args %}
+{% set searchstring = request.args['search'] %}
+{% else %}
+{% set searchstring = "" %}
+{% endif %}
 <form name="search_user_form" method="POST" action="{{ page.url }}">
   <div>
-    Search for a person to add to the course :
-    <input type="text" name="partialname" value="" size="24" maxlength="64">
+    <b>Add</b> someone to the course :
+    <input type="text" name="partialname" value="{{ searchstring }}"
+	   size="24" maxlength="64">
     <input type="submit" name="submit_searchuser" value="search...">
   </div>
 </form>
@@ -43,12 +48,16 @@
   <tr>
     <td>{{ _user.name }} ({{ _user.username }})</td>
     <td>
+      {% if page.course.username_is_member(_user.username) %}
+      enrolled
+      {% else %}
       <form name="enroll_form" method="POST" action="{{ page.url }}">
 	<input type="hidden" name="username" value="{{ _user.username }}">
 	<input type="submit" name="submit_enroll" value="student">
  	<input type="submit" name="submit_enroll" value="faculty">
 	<input type="submit" name="submit_enroll" value="guest">
       </form>
+      {% endif %}
     </td>
   </tr>
   {% endfor %}
@@ -56,9 +65,32 @@
 </form>
 {% endif %}
 
+<p></p>
+<form name="remove_user_form" method="POST" action="{{ page.url }}">
+  <div>
+    <b>Remove</b> someone from the course :
+    <select name="choose_remove">
+      <option value=""> </option> <!-- default : none -->
+      {% for _user in page.course.get_registered() %}
+      {% if not _user.username == user.username %}
+      <option value="{{ _user.username }}">{{ _user.name }}</option>
+      {% endif %}
+      {% endfor %}
+    </select>
+    <input type="submit" name="submit_removeuser" value="remove">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}  {# possible message here is 'OK, dropped <name>.' #}
+  {% if messages[0][0] == 'drop' %}
+    <div class="error"> {{ messages[0][1] }} </div>
+  {% endif %}
+  {% endif %}
+  {% endwith %}
+    
+  </div>
+</form>
+
 <h2>help</h2>
-<div>To add additional users to the site database or get other help,
-contact {{ g.contact_url |safe }}.</div>
-
-
-
+<div>To add additional users to the site database or get other
+     help, contact {{ g.contact_url |safe }}.
+</div>
