@@ -923,6 +923,8 @@ class Page(BaseModel):
             Page._mime_types = mimetypes.types_map.copy()
             for key in umber_mime_types:
                 Page._mime_types[key] = umber_mime_types[key]
+        if self.ext == '':
+            return 'text/plain'
         return Page._mime_types.get(self.ext, 'application/octet-stream')
 
     def keep(self):

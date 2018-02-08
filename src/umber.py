@@ -194,7 +194,7 @@ def mainroute(pagepath):
             return redirect(reload_url)
         
     if (not page.is_dir and
-        not page.ext in ('.md') and
+        (page.ext == '' or not page.ext in ('.md')) and
         page.can['read'] and
         page.exists):
         
