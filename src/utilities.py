@@ -472,6 +472,10 @@ def split_url(urlpath):
 def pygment_webpage(filename, body):
     """ Return html webpage for pygmentized code """
     pygments_css = static_url('styles/pygment.css')
+    try:
+        body = body.encode('utf8')
+    except:
+        pass
     return """
 <html>
 <head>
