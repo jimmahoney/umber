@@ -953,7 +953,7 @@ class Page(BaseModel):
             abspath = self.abspath
         try:
             path = os.path.relpath(abspath, os_courses)
-            for name in os.listdir(abspath):
+            for name in sorted(os.listdir(abspath)):
                 if name[0] == '.':  # skip invisible files e.g. .access.yaml
                     continue
                 result.append(Page.get_from_path(os.path.join(path, name), user=self.user))
