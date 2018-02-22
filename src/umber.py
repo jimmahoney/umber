@@ -1,4 +1,4 @@
-# -- coding: utf-8 --
+# -*- coding: utf-8 -*-
 """
  umber.py
  
@@ -199,7 +199,7 @@ def mainroute(pagepath):
             return redirect(reload_url)
         
     if (not page.is_dir and
-        not page.ext in ('.md') and
+        (page.ext == '' or not page.ext in ('.md')) and
         page.can['read'] and
         page.exists):
         
@@ -213,12 +213,22 @@ def mainroute(pagepath):
         # TODO: forward these sorts of requests to apache or other server??
         # TODO: handle unknown mimetype better, perhaps don't send file at all?
 
-        print_debug( 'mainroute: returning response mimetype={} for page.path={}'.format(
-            page.get_mimetype(), page.path))
-        return Response(page.content(), mimetype=page.get_mimetype())
-    
+        print_debug(' -- mainroute - raw-ish content ')
+        print_debug('   mimetype={}'.format(page.get_mimetype()))
+        print_debug('   page.name_with_ext = {}'.format(page.name_with_ext))
+        print_debug('   page.path = {}'.format(page.path))
+        print_debug('   request.args = {}'.format(str(request.args)))
+        _content = page.content()
+        _mimetype = page.get_mimetype()
+        if 'html' in request.args:
+            print_debug('   pygmentizing ...')
+            _content = pygmentize(_content, filename=page.name_with_ext)
+            _mimetype = 'text/html'
+        return Response(_content, mimetype=_mimetype)
+
     else:
-        #
+
+        # umber page : folder or *.md or sys/* 
         return render_template('main.html',
                                name = 'main',
                                page = page,
@@ -295,12 +305,19 @@ def form_post():
     submit_what = keys_named_submit[0]
     print_debug(' handle_post : submit_what = "{}" '.format(submit_what))
 
-    if submit_what not in ('submit_delete', 'submit_edit',
-                           'submit_login', 'submit_logout',
-                           'submit_createfolder', 'submit_assignments',
-                           'submit_done', 'submit_password',
-                           'submit_edituser', 'submit_newuser',
-                           'submit_searchuser', 'submit_enroll'
+    if submit_what not in ('submit_delete',
+                           'submit_edit',
+                           'submit_login',
+                           'submit_logout',
+                           'submit_createfolder',
+                           'submit_assignments',
+                           'submit_done',
+                           'submit_password',
+                           'submit_edituser',
+                           'submit_newuser',
+                           'submit_searchuser',
+                           'submit_enroll',
+                           'submit_removeuser'
                            ):
         print_debug(' handle_post: OOPS - illegal submit_what ');
 
@@ -324,6 +341,16 @@ def submit_enroll():
                                create_work=(rolename=='student'))
     return request.page.url
 
+def submit_removeuser():
+    """ The user clicked "remove" on the sys/users page """
+    print_debug(' submit_removeuser: ' + str(request.form))
+    username = request.form['choose_remove']
+    if username :
+        message = request.page.course.drop(username)
+        if message:
+            flash(message, 'drop')
+    return request.page.url
+
 def submit_searchuser():
     """ The user clicked "search" looking for some users.
         Return the result as ?usernames=... in the URL. """
@@ -336,7 +363,7 @@ def submit_searchuser():
     if len(usernames) == maxresults:
         flash("Too many results - only showing first {}.".format(maxresults),
                   'search')
-    return request.page.url + '?usernames=' + ','.join(usernames)
+    return request.page.url + '?search=' + partialname + '&usernames=' + ','.join(usernames)
 
 def submit_newuser():
     """ create new user - admin only """

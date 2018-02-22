@@ -1,4 +1,4 @@
-# -- coding: utf-8 --
+# -*- coding: utf-8 -*-
 """
  model.py
  
@@ -264,13 +264,29 @@ class Course(BaseModel):
     def prepared(self):
         """ setup this instance after it's attributes are set """
         # This method is essentially __init__ for these database objects.
-        (self.students, self.guests,
-         self.faculty, self.username_to_role) = self._get_users()
+        self._set_users()
         self.assignments = self._get_assignments()
         self.semester = Time(self.start_date).semester()
         # url without request though that info is also in request
         self.url = umber_url + '/' + self.path
         self.abspath = os.path.join(os_courses, self.path)
+
+    def _set_users(self):
+        """ define self.students, .faculty, .guests, .username_to_role """
+        registrations = list(Registration.select(Registration.person,
+                                                 Registration.role)
+                                         .where((Registration.course == self)
+                                          &  (Registration.status != 'drop')))
+        self.students = [reg.person for reg in registrations
+                               if reg.role == Role.by_name('student')]
+        self.faculty = [reg.person for reg in registrations
+                               if reg.role == Role.by_name('faculty')]
+        self.guests = [reg.person for reg in registrations
+                               if reg.role == Role.by_name('guest')]
+        self.students.sort(key=lambda s: s.name)
+        self.faculty.sort(key=lambda s: s.name)
+        self.username_to_role = {reg.person.username : reg.role
+                                 for reg in registrations}
     
     @staticmethod
     def get_all():
@@ -330,27 +346,35 @@ class Course(BaseModel):
         return self.username_to_role.get(person.username,
                                          Role.by_name('visitor'))
     
-                   
+    def username_is_member(self, username):
+        return username in self.username_to_role
+    
     def _get_assignments(self):
         return list(Assignment.select() \
                               .where(Assignment.course == self) \
                               .order_by(Assignment.nth))
-                   
-    def _get_users(self):
-        registrations = list(Registration.select(Registration.person,
-                                                 Registration.role)
-                                         .where(Registration.course == self))
-        students = [reg.person for reg in registrations
-                               if reg.role == Role.by_name('student')]
-        faculty = [reg.person for reg in registrations
-                               if reg.role == Role.by_name('faculty')]
-        guests = [reg.person for reg in registrations
-                               if reg.role == Role.by_name('guest')]
-        students.sort(key=lambda s: s.name)
-        faculty.sort(key=lambda s: s.name)
-        username_to_role = {reg.person.username : reg.role
-                            for reg in registrations}
-        return (students, guests, faculty, username_to_role)
+    def drop(self, user):
+        """ Drop user (Person or username) from this course """
+        # (Students who are registered may have submitted work.
+        # Rather than delete their files and database records,
+        # I'm just changing their status to 'drop', and ignoring
+        # those people in _set_users
+        try:
+            person = user
+            name = person.name                 # Is this a Person object?
+        except AttributeError:
+            person = Person.by_username(user)  # No - treat it as a username.
+            name = person.name
+        if name == 'anonymous' or name == '':
+            return "error in drop with user '{}'".format(str(user))
+        with db.atomic():
+            registration = Registration.get(person=person, course=self)
+            registration.status = 'drop'
+            registration.date = str(Time())
+            registration.save()
+        # refresh course data
+        self._set_users()
+        return "OK, dropped {}.".format(name)
 
     def get_profile_url(self):
         # site course ends with / ; others don't ... slightly different behavior.
@@ -514,17 +538,12 @@ class Course(BaseModel):
             (reg, created) = Registration.get_or_create(
                 person = person,
                 course = site_course)
-            if created:
+            if created or is_admin:   # update role & date
                 reg.role = site_role
                 reg.date = datestring
-                reg.save()
-            else:
-                # if we're upgrading to admin, make the change.
-                # otherwise, leave old site registration unmodified.
-                if is_admin:
-                    reg.role = site_role
-                    reg.state = datestring
-                    reg.save()
+            reg.status = ''
+            reg.save()
+        site_course._set_users()
 
     def make_student_work_folders(self):
         for person in self.students:
@@ -551,6 +570,7 @@ class Course(BaseModel):
                 person = person,
                 course = self)
             reg.role = Role.by_name(rolename)
+            reg.status = ''     # if re-enrolling would have been 'drop'
             reg.date = datestring
             reg.save()
             if not self.name == 'Umber':
@@ -567,7 +587,9 @@ class Course(BaseModel):
                                          'write':person.username})
             work_abspath = os.path.join(student_abspath, 'work')
             Page.new_folder(work_abspath, user=person)
-    
+        # refresh students
+        self._set_users()
+
 class Page(BaseModel):
 
     #  --- path, filename, url definitions ---
@@ -864,15 +886,19 @@ class Page(BaseModel):
         assert self.user != None    #
         self.user_role = self.course.person_to_role(self.user)
         self.user_rank = self.user_role.rank
-        #
-        if self.user.is_admin():
-            #self.user_role = Role.by_name('admin')
-            self.user_rank = Role.by_name('admin').rank
         
         if self.user_role.name in ('faculty', 'admin') and not self.is_sys:
+            # faculty & admin can read or write anything 
+            # ... but not system pages - I don't want 'edit' tab on all pages.
             self.can = {'read': True, 'write': True}
             return
         
+        if self.user.is_admin():
+            # Let site admins do what they want in any course.
+            # But don't change their display name.
+            # self.user_role = Role.by_name('admin')
+            self.user_rank = Role.by_name('admin').rank
+    
         self.can = {'read':False, 'write':False} # default is deny access
         for permission in ('read', 'write'):
             yaml_rights = self.access[permission]
@@ -897,6 +923,8 @@ class Page(BaseModel):
             Page._mime_types = mimetypes.types_map.copy()
             for key in umber_mime_types:
                 Page._mime_types[key] = umber_mime_types[key]
+        if self.ext == '':
+            return 'text/plain'
         return Page._mime_types.get(self.ext, 'application/octet-stream')
 
     def keep(self):
@@ -925,7 +953,7 @@ class Page(BaseModel):
             abspath = self.abspath
         try:
             path = os.path.relpath(abspath, os_courses)
-            for name in os.listdir(abspath):
+            for name in sorted(os.listdir(abspath)):
                 if name[0] == '.':  # skip invisible files e.g. .access.yaml
                     continue
                 result.append(Page.get_from_path(os.path.join(path, name), user=self.user))
@@ -1040,21 +1068,31 @@ class Page(BaseModel):
         return html_with_links
 
     def content(self):
-        """ Return data from page or revision of page """
+        """ Return file or github (revision) data for a page """
         # TODO: should this be cached as self._content ?
         if self.exists and self.is_file:
             if self.revision:
-                return git.get_revision(self)
+                text = git.get_revision(self)
             else:
                 with open(self.abspath, 'r') as _file:
-                    return _file.read()
+                    text = _file.read()
+                    try:
+                        text = text.decode('utf8')
+                    except:
+                        pass    # i.e. jpg image files
         else:
-            return ''
+            text = u''
+        #print_debug(" page.content : page.action = '{}'".format(page.action))
+        return text
 
     def write_content(self, new_content):
         """ Write new data to page's file; return number of bytes written """
         if self.can['write']:  # shouldn't get here without this anyway
             with open(self.abspath, 'w') as _file:
+                try:
+                    new_content = new_content.encode('utf8')
+                except:
+                    pass
                 bytes_written = _file.write(new_content)
         return bytes_written
 
@@ -1109,7 +1147,7 @@ class Page(BaseModel):
             mstring = markdown2html(contents)
             insides.append(mstring)
             divm.string = marker
-        html = str(parser)
+        html = unicode(parser) # convert beautiful soup object to formatted unicode
         while insides:
             inside = insides.pop(0)
             html = html.replace(marker, inside, 1)
@@ -1130,7 +1168,7 @@ class Page(BaseModel):
             span['class'] = 'thispage'
             span.string = anchor.string
             parser.find('a', href=page.url).replace_with(span)
-        html = str(parser)
+        html = unicode(parser)
         return html
     
 class Assignment(BaseModel):

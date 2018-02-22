@@ -6,6 +6,40 @@ File upload needs to be done right - it's a core functionality,
 and I'm going too many guessing games about what works or doesn't.
 
 Maybe https://github.com/blueimp/jQuery-File-Upload ?
+=======
+
+## Feb 2,3
+
+ getting sys/user student to work ... I'm now setting
+ registration status to 'drop' for students who were
+ registered but are removed from the course. The idea
+ is to leave them in as objects in the database so
+ that their database work objects don't need to be
+ deleted, and so that the ids are still valid.
+
+ Also did some patching of mathjax processing in markdown2html
+
+ jinja2 isn't handling utf8 in the way I would expect.
+ My first kludgey fix was to force text to ascii with
+ str(), but that fails badly when someone submits (say)
+ curly quotes when editing.
+
+ I found https://groups.google.com/forum/#!topic/pocoo-libs/6-zlF-YS8Ag
+ from 2012, but jinja2 has changed since this "monkeypatch".
+
+## Feb 1
+
+ TODO: consider using pygit2.org for python => git ,
+       since I think it doesn't need another process (command line git)
+       and may be faster and more reliable.
+ ... but the documentation is not clear. This talks to libgit2,
+     and it's "commit" section looks complicated & confusing.
+
+ TODO: consider alternatives to apache2 + mod_wsgi ...
+       I'm not sure if that's fast enough or is causing
+       some of the errors I'm seeing.
+
+       nginx + uWSGI looks like it might be the most robust deployment.
 
 ## Jan 31
 
