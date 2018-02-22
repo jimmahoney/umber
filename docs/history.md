@@ -1,5 +1,12 @@
 # umber development history #
 
+## Feb 8
+
+File upload needs to be done right - it's a core functionality,
+and I'm going too many guessing games about what works or doesn't.
+
+Maybe https://github.com/blueimp/jQuery-File-Upload ?
+
 ## Jan 31
 
 Looking at pygments source code highlights - see utilities.py.

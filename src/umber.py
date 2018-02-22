@@ -95,6 +95,11 @@ def do_before_request():
 def do_after_request(exception=None):
     db.close()
 
+### TESTING ###
+@app.route('/uploadtest', methods=['GET', 'POST'])
+def upload():
+    return render_template('uploadtest.html')
+
 @app.route(route_prefix + '/', methods=['GET', 'POST'])
 def mainroute_blank():
     return mainroute('')
@@ -221,7 +226,6 @@ def mainroute(pagepath):
                                course = page.course,
                                debug = True
                                )
-
 
 ## debugging route : any url
 #@app.route('/', defaults={'path':''})

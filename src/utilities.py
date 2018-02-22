@@ -7,7 +7,9 @@ from markdown2 import markdown
 from settings import url_base, debug_logfilename, \
     localtimezone, localtimezoneoffset, os_git, umber_debug
 from flask import url_for, app
-import parsedatetime, pytz
+
+from dateutil.parser import parse as dateutil_parse
+# import parsedatetime, pytz # BUGGY!
 
 debug_log = {'file': None}
 def print_debug(message):
@@ -18,6 +20,16 @@ def print_debug(message):
             debug_log['file'] = open(debug_logfilename, 'a')
         debug_log['file'].write(message + "\n")
 
+def myparsethedatetime(date_time_string):
+    return str(dateutil_parse(date_time_string))
+    # OOPS : 
+    #return parsedatetime.Calendar().parseDT(
+    #    datetimeString=date_time_string,
+    #    tzinfo=pytz.timezone(localtimezone))[0]
+    # >>> myparsethedatetime('2018-03-31T23:59:00-04:00')
+    # datetime.datetime(2018, 2, 22, 4, 0,
+    # tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)
+        
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
         including a timezone-aware (as specified in settings.py) offset.
@@ -58,12 +70,16 @@ class Time(object):
                                                         Time.defaulttime)
         if not re.search('am|pm|noon|morning|afternoon|evening', date_time_string):
             date_time_string += ' ' + Time.defaulttime
-        return parsedatetime.Calendar().parseDT(
-           datetimeString=date_time_string,
-           tzinfo=pytz.timezone(localtimezone))[0]
+        #
+        return myparsethedatetime(date_time_string)
     
     def __init__(self, *args, **kwargs):
-        """ With no arguments, returns the 'now' time. """
+        """ With no arguments, returns the 'now' time. 
+            >>> str(Time('2018-03-22'))
+            '2018-03-23T00:59:00-04:00'
+            >>> str(Time('2018-03-23T00:59:00-04:00'))
+            '2018-03-23T00:59:00-04:00'
+        """
         # If an iso date string is given without a time i.e. '2017-11-01'
         # then the time will be set to the default 23:59:00 local.
         # I'm checking for that explicit case here and adjusting accordingly.
@@ -71,23 +87,27 @@ class Time(object):
         # '2017-12-02T23:59:00-05:00'   where -5 is US/Eastern localtimezone
         # >>> Time('2017-12-02').isodate()
         # '2017-12-02'
+        # 
+        # 
         if len(args)==1 and isinstance(args[0], basestring):
             if args[0] == '':
+                #print "args match None"
                 args = (None, )
-                #print "None"
             elif re.match('^\d{4}-\d{2}-\d{2}$', args[0]):  # i.e. '2018-02-04'
-                #print "match 1"
+                #print "args match match 1"
                 args = (args[0] + 'T' + Time.default24time + \
                         localtimezoneoffset ,)
             elif re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$', args[0]):
-                #print "match 2"
+                #print "args match match 2"
                 # i.e. '2018-02-04T17:00:00'
                 args = (args[0] + localtimezoneoffset, )
             elif re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', args[0]) \
                 and args[0][-len(localtimezoneoffset):] == localtimezoneoffset:
-                #print "match 3"
+                #print "args match 3"
                 args = (args[0],)
             else:
+                #print "args match 4"
+                #print "args[0] = ", args[0]
                 args = (Time._parse(args[0]), )
         #print "args = {}", args
         try:
