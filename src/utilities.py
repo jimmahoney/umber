@@ -7,11 +7,9 @@ import os, urlparse, sh, arrow, string, re
 from flask import url_for, app
 from markdown2 import markdown
 from settings import url_base, debug_logfilename, \
-    localtimezone, localtimezoneoffset, os_git, umber_debug
+    localtimezone, os_git, umber_debug
 from flask import url_for, app
-
 from dateutil.parser import parse as dateutil_parse
-# import parsedatetime, pytz # BUGGY!
 
 debug_log = {'file': None}
 def print_debug(message):
@@ -23,15 +21,21 @@ def print_debug(message):
         debug_log['file'].write(message + "\n")
 
 def myparsethedatetime(date_time_string):
-    return str(dateutil_parse(date_time_string))
-    # OOPS : 
-    #return parsedatetime.Calendar().parseDT(
-    #    datetimeString=date_time_string,
-    #    tzinfo=pytz.timezone(localtimezone))[0]
-    # >>> myparsethedatetime('2018-03-31T23:59:00-04:00')
-    # datetime.datetime(2018, 2, 22, 4, 0,
-    # tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)
-        
+    """ Return a date time string without timezone information
+        that arrow() can understand, given a human-friendly 
+        description.
+    """
+    return str(dateutil_parse(date_time_string, ignoretz=True))
+
+def is_iso_utc(date_time_string):
+    """ Return true if this is e.g. '2018-03-03T19:00:00-05:00' 
+        which is the ISO time-zone-aware 
+        way that I'm storing date-times in the database """
+    return bool(re.match(
+        r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}',
+        #  2018 - 03  - 03  T 19  : 00  : 00   -   05  : 00
+        date_time_string))
+
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
         including a timezone-aware (as specified in settings.py) offset.
@@ -39,6 +43,7 @@ class Time(object):
         2013-01-01T12:24:52-05:00
     """
     # Uses the python Arrow library; see http://crsmithdev.com/arrow/  .
+    #
     # For time differences, subtract two of these (given a datetime.timedelta)
     # and then use .seconds, .total_seconds(), .resolution etc.
     #
@@ -52,70 +57,55 @@ class Time(object):
     
     @staticmethod
     def parse(date_time_string):
-        """ Return Time object from human friendly description 
-            i.e. Time.parse('tomorrow') """
+        """ Return Time object from human-ish description 
+            i.e. Time.parse('Tuesday') """
         return Time(Time._parse(date_time_string))
 
     @staticmethod
     def _parse(date_time_string):
-        """ Return iso string from human friendly description 
-            i.e. Time._parse('tomorrow') """
-        # If a time isn't given (i.e. found via regex search)
-        # then it's set to the default.
-        # The timezone is local - see settings.py.
-        try:
-            date_time_string = str(date_time_string)  # convert utf8 if needed
-        except:
-            pass
-        if 'midnight' in date_time_string:
-            date_time_string = date_time_string.replace('midnight',
-                                                        Time.defaulttime)
-        if not re.search('am|pm|noon|morning|afternoon|evening', date_time_string):
-            date_time_string += ' ' + Time.defaulttime
-        #
-        return myparsethedatetime(date_time_string)
-    
-    def __init__(self, *args, **kwargs):
-        """ With no arguments, returns the 'now' time. 
-            >>> str(Time('2018-03-22'))
-            '2018-03-23T00:59:00-04:00'
-            >>> str(Time('2018-03-23T00:59:00-04:00'))
-            '2018-03-23T00:59:00-04:00'
+        """ Return a date time string from a human-ish description.
+            >>> Time._parse('April 1 2018')
+            '2018-04-01 23:59:00'
+            >>> Time._parse('April 1 2018 5:01pm')
+            '2018-04-01 17:01:00'
+            >>> Time._parse('2018-01-01')
+            '2018-01-01 23:59:00'
+            >>> Time._parse('03/19/18 9:00')
+            '2018-03-19 09:00:00'
         """
-        # If an iso date string is given without a time i.e. '2017-11-01'
-        # then the time will be set to the default 23:59:00 local.
-        # I'm checking for that explicit case here and adjusting accordingly.
-        # >>> str(Time('2017-12-02'))
-        # '2017-12-02T23:59:00-05:00'   where -5 is US/Eastern localtimezone
-        # >>> Time('2017-12-02').isodate()
-        # '2017-12-02'
-        # 
-        # 
-        if len(args)==1 and isinstance(args[0], basestring):
-            if args[0] == '':
-                #print "args match None"
-                args = (None, )
-            elif re.match('^\d{4}-\d{2}-\d{2}$', args[0]):  # i.e. '2018-02-04'
-                #print "args match match 1"
-                args = (args[0] + 'T' + Time.default24time + \
-                        localtimezoneoffset ,)
-            elif re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$', args[0]):
-                #print "args match match 2"
-                # i.e. '2018-02-04T17:00:00'
-                args = (args[0] + localtimezoneoffset, )
-            elif re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', args[0]) \
-                and args[0][-len(localtimezoneoffset):] == localtimezoneoffset:
-                #print "args match 3"
-                args = (args[0],)
-            else:
-                #print "args match 4"
-                #print "args[0] = ", args[0]
-                args = (Time._parse(args[0]), )
-        #print "args = {}", args
         try:
-            self.arrow = arrow.get(*args, **kwargs).to(localtimezone)
+            result = str(dateutil_parse(date_time_string, ignoretz=True))
         except:
-            self.arrow = arrow.get() # use current time if all else fails.
+            result = str(Time())  # If it can't be parsed, use "now" time.
+        if re.search(r'00:00:00', result):
+            # rather than use the start of the day (midnight), use the end.
+            #print "found zeros"
+            try:
+                date_time_string += ' ' + Time.default24time
+                result = str(dateutil_parse(date_time_string, ignoretz=True))
+            except:
+                pass
+        return result
+            
+    def __init__(self, datetimestring=None):
+        try:
+            if datetimestring == None or datetimestring == '':
+                # use the "now" time.
+                self.arrow = arrow.get()
+            elif is_iso_utc(datetimestring):
+                # matches the database ISO8601 format with timezone,
+                # so don't send it through the parser - just use it.
+                self.arrow = arrow.get(datetimestring)
+            else:
+                parsed = Time._parse(datetimestring)
+                parsed = re.sub(r'\.\d+', '', parsed) # remove decimal seconds
+                self.arrow = arrow.get(parsed)
+        except:
+            # if all else fails, use current time
+            self.arrow = arrow.get() 
+        # Set timezone.
+        self.arrow = self.arrow.replace(tzinfo=localtimezone)
+        
     def __lt__(self, other):
         try:
             return self.arrow < other.arrow

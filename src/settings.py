@@ -32,7 +32,10 @@ os_root = realpath(join(dirname(realpath(__file__)), '..'))
 os_db = os.environ['UMBER_DATA']
 
 localtimezone = 'US/Eastern'
-localtimezoneoffset = '-05:00'
+# is EST (eastern standard time) UTC-05:00  in autumn & winter
+# is EDT (eastern daylight time) UTC-04:00  in spring & summer
+# This timezone designation must be understood by the python arrow library;
+# see http://arrow.readthedocs.io/en/latest & arrow.get().to(localtimezone) .
 
 def umber_flask_configure(app):
     """ Configure some of Flask's internal settings. """

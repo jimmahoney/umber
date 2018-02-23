@@ -1,12 +1,24 @@
 # umber development history #
 
+## Feb 22
+
+Weird library bug in what I was using to parse
+the datetime strings, namely parsedatetime -
+perhaps becuase of an issue with daylight savings, EST vs EDT or some such.
+When given a string like 'March 29' it was giving
+me a Febuary date ...
+
+I've completely rewritten my Time() class,
+now using the dateutil library instead and
+(correctly I think) using arrow.replace(tzinfo=...)
+rather than (inappropriately) using arrow.to(timezone).
+
 ## Feb 8
 
 File upload needs to be done right - it's a core functionality,
 and I'm going too many guessing games about what works or doesn't.
 
 Maybe https://github.com/blueimp/jQuery-File-Upload ?
-=======
 
 ## Feb 2,3
 
