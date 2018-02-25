@@ -244,7 +244,6 @@ def mainroute(pagepath):
 #    print "==> route catchall "
 #    return "umber catchall path : '{}'".format(path)
 
-
 # --- ajax --------------------
     
 def ajax_upload():
@@ -320,6 +319,8 @@ def form_post():
                            'submit_removeuser'
                            ):
         print_debug(' handle_post: OOPS - illegal submit_what ');
+        # TODO: handle this error in a better way.
+        return request.base_url
 
     if submit_what == 'submit_done':
         # done editing folder; just reload page
