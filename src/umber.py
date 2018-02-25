@@ -292,45 +292,10 @@ def ajax_response(status, msg):
 
 # --- forms ----------------------
 
-def form_post():
-    """ Process a form submission (login, edit, etc) or ajax request."""
-    # The input is stored in the Flask request global.
-    # Each submitted form has an input field named 'submit_X' for some X,
-    # and is handled by a corresponding function submit_X().
 
-    keys_named_submit = filter(lambda s: re.match('submit', s),
-                               request.form.keys())
-    print_debug(' handle_post : submit keys = "{}" '.format(keys_named_submit))
-    submit_what = keys_named_submit[0]
-    print_debug(' handle_post : submit_what = "{}" '.format(submit_what))
-
-    if submit_what not in ('submit_delete',
-                           'submit_edit',
-                           'submit_login',
-                           'submit_logout',
-                           'submit_createfolder',
-                           'submit_assignments',
-                           'submit_done',
-                           'submit_password',
-                           'submit_edituser',
-                           'submit_newuser',
-                           'submit_searchuser',
-                           'submit_enroll',
-                           'submit_removeuser'
-                           ):
-        print_debug(' handle_post: OOPS - illegal submit_what ');
-        # TODO: handle this error in a better way.
-        return request.base_url
-
-    if submit_what == 'submit_done':
-        # done editing folder; just reload page
-        return request.base_url
-        
-    # invoke submit_X handler
-    result = globals()[submit_what]()
-    
-    print_debug(' handle_post : submit result = "{}" '.format(result))
-    return result
+def submit_done():
+    # just reload the page
+    return request.base_url
 
 def submit_enroll():
     """ Enroll someone in this course. """
@@ -522,3 +487,47 @@ def submit_login():
         login_user(user)
         return url_for('mainroute', pagepath=request.page.path)
 
+form_handlers = {
+    'submit_delete' : submit_delete,
+    'submit_edit' : submit_edit,
+    'submit_login' : submit_login,
+    'submit_logout' : submit_logout,
+    'submit_createfolder' : submit_createfolder,
+    'submit_assignments' : submit_assignments,
+    'submit_done' : submit_done,
+    'submit_password' : submit_password,
+    'submit_edituser' : submit_edituser,
+    'submit_newuser' : submit_newuser,
+    'submit_searchuser' : submit_searchuser,
+    'submit_enroll' : submit_enroll,
+    'submit_removeuser' : submit_removeuser
+    }
+
+def form_post():
+    """ Process a form submission (login, edit, etc) or ajax request."""
+    # The input is stored in the Flask request global.
+    # Each submitted form has an input field named 'submit_X' for some X,
+    # and is handled by a corresponding function submit_X().
+
+    keys_named_submit = filter(lambda s: re.match('submit', s),
+                               request.form.keys())
+    print_debug(' handle_post : submit keys = "{}" '.format(keys_named_submit))
+    submit_what = keys_named_submit[0]
+    print_debug(' handle_post : submit_what = "{}" '.format(submit_what))
+    
+    if submit_what not in form_handlers:
+        print_debug(' handle_post: OOPS - illegal submit_what ');
+        # TODO: handle this error in a better way.
+        return request.base_url
+
+    # reality check : reject submit_X if user is not logged in
+    # ...except submit_login 
+    if not (submit_what == 'submit_login' or request.page.user.is_authenticated()):
+        print_debug(' handle_post: OOPS - submit_X but not logged in  ');
+        # TODO: handle this error in a better way.
+        return request.base_url
+        
+    result = form_handlers[submit_what]()
+    
+    print_debug(' handle_post : submit result = "{}" '.format(result))
+    return result

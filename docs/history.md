@@ -1,5 +1,18 @@
 # umber development history #
 
+## Feb 25
+
+Looking at form submission framework after a comment from Ben -
+I've made some small changes there, but should test more carefully
+that users have the right permissions to change things, without
+assuming that the HTTP came from a valid page.
+
+I also may want to limit setting folder permissions
+to faculty - there probably isn't a reason to open
+that up to students, and there is certainly ways
+that could mess things up.
+
+
 ## Feb 22
 
 Weird library bug in what I was using to parse
