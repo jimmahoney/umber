@@ -4,7 +4,6 @@
 # load this from the project root folder (i.e. ..) with
 #
 #     $ . env/production
-#
 
 # Define the project's environment variables.
 source env/shell_production
@@ -16,5 +15,3 @@ source venv/bin/activate
 
 # Add the project python src folder to the python load path.
 export PYTHONPATH=$PYTHONPATH:$UMBER_ROOT/src
-
-

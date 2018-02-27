@@ -6,14 +6,9 @@
 # for example by copying them to /etc/apache2/envvar for apache2+wsgi,
 # or by putting them into a gunicorn config for a gunicorn proxy setup.
 #
-# There are more settings in src/settings.py
-#
 # Also see
-#   src/settings.py
-#   src/umber.wsgi
-#   bin/umber_gunicorn
-#   /etc/apache2/envvars
-#   /etc/apache2/sites-available/*
+#   src/settings.py                     # more configuration settings
+#   src/umber.wsgi                      # an example wsgi script
 #############################################################
 
 # Set this to PRODUCTION or DEVELOPMENT
@@ -42,4 +37,3 @@ export UMBER_SECRET_KEY=0a1b2c3d45e6f7g8h9ijk
 # Used by the flask console.
 export FLASK_APP=src/umber.py
 export PATH=$UMBER_ROOT/bin:$PATH
-

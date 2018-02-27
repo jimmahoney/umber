@@ -3,6 +3,22 @@ umber
 
 a course management web app built with python Flask, sqlite3, and git.
 
+installation
+-------------
+
+    # Get the project files.
+    $ git clone https://github.com/jimimmahoney/umber.git
+    
+    # Install the system dependencies.
+    $ sudo apt-get install git sqlite3 virtualenv libapache2-mod-wsgi
+
+    # Install the python environment and its required modules.
+    $ virtualenv --python=python2.7 venv
+    $ . env/activate
+    $ pip install -r ./env/requirements.txt
+
+    # Tested on Ubuntu 16.05 with python 2.7.12.
+
 development & testing
 ---------------------
 
@@ -28,8 +44,8 @@ development & testing
 production
 ----------
 
-Like any Flask app, it can be deployed with wsgi. 
-See src/umber.wsgi and env/shell_production for more.
+Like any Flask app, this can be deployed using WSGI.  See
+src/umber.wsgi and env/production for more information.
 
 ----------------------------------------------------------
 
