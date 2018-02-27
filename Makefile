@@ -8,7 +8,6 @@
 help:
 	@echo " prereqs  install other software prerequesites"
 	@echo " env	 create devel environment (assumes python2.7 & virtualenv)"
-	@echo " deps	 install python dependencies with pip"
 
 prereqs:
 	sudo apt-get install git
@@ -17,6 +16,8 @@ prereqs:
 	sudo apt-get install libapache2-mod-wsgi
 env:
 	virtualenv --python=python2.7 venv && . env/activate && make deps
-
 deps:
-	pip install -r env/requirements
+	pip install -r ./env/requirements
+all:
+	make prereqs
+	make env
