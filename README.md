@@ -8,6 +8,7 @@ installation
 
     # Get the project files.
     $ git clone https://github.com/jimmahoney/umber.git
+    $ cd umber
     
     # Install the system dependencies.
     $ sudo apt-get install git sqlite3 virtualenv libapache2-mod-wsgi
