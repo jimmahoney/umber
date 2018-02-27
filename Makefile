@@ -6,18 +6,21 @@
 #
 
 help:
-	@echo " prereqs  install other software prerequesites"
-	@echo " env	 create devel environment (assumes python2.7 & virtualenv)"
+	@echo " prereqs       install system software prerequesites"
+	@echo " environment   install python(2.7) environment and modules"
 
 prereqs:
 	sudo apt-get install git
 	sudo apt-get install sqlite3
 	sudo apt-get install virtualenv
 	sudo apt-get install libapache2-mod-wsgi
-env:
-	virtualenv --python=python2.7 venv && . env/activate && make deps
-deps:
-	pip install -r ./env/requirements
+
+environment:
+	virtualenv --python=python2.7 venv && . env/activate && make modules
+
+modules:
+	pip install -r ./env/requirements.txt
+
 all:
 	make prereqs
-	make env
+	make environment
