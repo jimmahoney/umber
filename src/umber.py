@@ -4,21 +4,18 @@
  
  Jim Mahoney | mahoney@marlboro.edu | May 2017 | MIT License
 """
-import sys, re, os, json
-
+import sys, re, os, json, safe
 from flask import Flask, Response, request, session, g, \
-     redirect, url_for, abort, flash, get_flashed_messages
+     redirect, url_for, abort, flash, get_flashed_messages, render_template
 from flask_login import LoginManager, login_user, logout_user, current_user
-from flask import render_template
+from werkzeug import secure_filename
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
      git, is_clean_folder_name, parse_access_string, parse_assignment_data, \
      print_debug, pygmentize
-from werkzeug import secure_filename
 from settings import umber_flask_configure, umber_url, contact_url, help_url, \
      about_url, site_url, url_base, os_root, umber_debug, route_prefix
-import safe
 
 app = Flask('umber',
             static_folder=os.path.join(os_root, 'static'),
@@ -192,16 +189,15 @@ def mainroute(pagepath):
     if request.method == 'POST' and '__ajax__' in request.form:
         return ajax_upload()
     
-    if request.method == 'POST':
+    elif request.method == 'POST':
         print_debug(' mainroute: POST')
         reload_url = form_post()
-        if reload_url:
-            return redirect(reload_url)
+        return redirect(reload_url)
         
-    if (not page.is_dir and
-        (page.ext == '' or not page.ext in ('.md')) and
-        page.can['read'] and
-        page.exists):
+    elif (not page.is_dir and
+          (page.ext == '' or not page.ext in ('.md')) and
+          page.can['read'] and
+          page.exists):
         
         # readable pages that shouldn't be in umber's window pane :
         # just serve up their content.
@@ -244,8 +240,23 @@ def mainroute(pagepath):
 #    print "==> route catchall "
 #    return "umber catchall path : '{}'".format(path)
 
-# --- ajax --------------------
-    
+# ===================================
+# Flask "request context" issues ...
+#
+# I tried to move the rest of this into another file forms.py
+# which I could use from this one with "from forms import form_post, ajax_upload".
+# However, this failed when flask couldn't connect the "request" context
+# with the actual web request. In the debugger, the "request" object
+# within umber.py had the actual web request, but in the forms.py file it
+# didn't, it was instead just some sort of <Local...> thingy without any data.
+#
+# See for example http://flask.pocoo.org/docs/0.12/appcontext/#locality-of-the-context .
+# I likely need to pass the "app" variable to the forms.py file, and
+# then execute code with an app.app_context() block or some such ...
+# but for now I have just avoided the problem by leaving all the callbacks in this file.
+
+# --- ajax ---
+
 def ajax_upload():
     """ handle ajax file upload """
     page = request.page
@@ -290,7 +301,26 @@ def ajax_response(status, msg):
     status_code = "ok" if status else "error"
     return json.dumps(dict(status=status_code, msg=msg))
 
-# --- forms ----------------------
+# --- forms ---
+
+# The input to the submit_* and authorize_* handlers
+# is through the request global;
+# see http://flask.pocoo.org/docs/0.12/api/#incoming-request-data :
+#   request.form      multidict with parsed form data from POST or PUT
+#   request.args      multidict with parsed contents of url query string
+#   request.values    both .form and .args
+#   request.data
+#   request.environ   WSGI environmnet
+#   request.method
+#   request.path
+#   request.full_path
+#   request.url
+#   request.base_url
+#   request.url_root
+#   ... and others
+# I've also added to it
+#   request.page            umber Page object
+#   request.page.user       umber Person object
 
 
 def submit_done():
@@ -332,29 +362,27 @@ def submit_searchuser():
     return request.page.url + '?search=' + partialname + '&usernames=' + ','.join(usernames)
 
 def submit_newuser():
-    """ create new user - admin only """
-    if request.page.user.is_admin():
-        username = request.form['username']
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-        print_debug(' create_person: ' + \
-           'username={} name="{}" email={} password=""'.format(
-            username, name, email, password))
-        Person.create_person(username, name, email, password)
+    """ create new user """
+    username = request.form['username']
+    name = request.form['name']
+    email = request.form['email']
+    password = request.form['password']
+    print_debug(' create_person: ' + \
+                'username={} name="{}" email={} password=""'.format(
+                username, name, email, password))
+    Person.create_person(username, name, email, password)
     return url_base + '/site/sys/user?username=' + username
 
 def submit_edituser():
     """ edit existing user - admin only """
-    if request.page.user.is_admin():
-        username = request.form['username']
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-        print_debug(' submit_edituser: ' + \
-            'username={} name="{}" email={} password=""'.format(
-            username, name, email, password))
-        Person.edit_person(username, name, email, password)
+    username = request.form['username']
+    name = request.form['name']
+    email = request.form['email']
+    password = request.form['password']
+    print_debug(' submit_edituser: ' + \
+                'username={} name="{}" email={} password=""'.format(
+                username, name, email, password))
+    Person.edit_person(username, name, email, password)
     return request.base_url + '?username=' + username
 
 def submit_password():
@@ -479,7 +507,8 @@ def submit_login():
                 .format(request.form['username']))
     user = Person.by_username(request.form['username'])
     print_debug(' submit_login: user = "{}"'.format(user))
-    if user == None or not user.check_password(request.form['password']):
+    if user.is_anonymous() or \
+       not user.check_password(request.form['password']):
         flash('Oops: wrong username or password.', 'login')
         return url_for('mainroute', pagepath=request.page.path, action='login')
     else:
@@ -487,27 +516,65 @@ def submit_login():
         login_user(user)
         return url_for('mainroute', pagepath=request.page.path)
 
-form_handlers = {
-    'submit_delete' : submit_delete,
-    'submit_edit' : submit_edit,
-    'submit_login' : submit_login,
-    'submit_logout' : submit_logout,
-    'submit_createfolder' : submit_createfolder,
-    'submit_assignments' : submit_assignments,
-    'submit_done' : submit_done,
-    'submit_password' : submit_password,
-    'submit_edituser' : submit_edituser,
-    'submit_newuser' : submit_newuser,
-    'submit_searchuser' : submit_searchuser,
-    'submit_enroll' : submit_enroll,
-    'submit_removeuser' : submit_removeuser
-    }
+def authorize_is_logged_in():
+    return request.page.user.is_authenticated()
 
+def authorize_change_password():
+    users_own_password = request.page.user.username == request.form['username']
+    return users_own_password or request.page.user.is_admin()
+
+def authorize_can_write():
+    return request.page.can['write']
+
+def authorize_is_faculty():
+    return request.page.user.user_role in ('faculty', 'admin')
+
+def authorize_is_admin():
+    return request.page.user.is_admin()
+
+form_handlers = {
+    'submit_login' :      {'handler':    submit_login,
+                           'authorize':  lambda: True},
+    'submit_logout' :     {'handler':    submit_logout,
+                           'authorize':  authorize_is_logged_in},
+
+    'submit_password' :   {'handler':    submit_password,
+                           'authorize':  authorize_change_password},
+    
+    'submit_delete' :     {'handler':    submit_delete,
+                           'authorize':  authorize_can_write},
+    'submit_edit' :       {'handler':    submit_edit,
+                           'authorize':  authorize_can_write},
+    'submit_createfolder':{'handler':    submit_createfolder,
+                           'authorize':  authorize_can_write},
+    'submit_done' :       {'handler':    submit_done,
+                           'authorize':  authorize_can_write},
+    
+    'submit_assignments': {'handler':    submit_assignments,
+                           'authorize':  authorize_is_faculty},
+    'submit_permissions': {'handler':    submit_permissions,
+                           'authorize':  authorize_is_faculty},
+    
+    'submit_searchuser' : {'handler':    submit_searchuser,
+                           'authorize':  authorize_is_faculty},
+    'submit_enroll' :     {'handler':    submit_enroll,
+                           'authorize':  authorize_is_faculty},
+    'submit_removeuser' : {'handler':    submit_removeuser,
+                           'authorize':  authorize_is_faculty},
+
+    'submit_edituser' :   {'handler':    submit_edituser,
+                           'authorize':  authorize_is_admin},
+    'submit_newuser' :    {'handler':    submit_newuser,
+                           'authorize':  authorize_is_admin},
+
+    }
+    
 def form_post():
-    """ Process a form submission (login, edit, etc) or ajax request."""
-    # The input is stored in the Flask request global.
+    """ Process a form submission (login, edit, etc)."""
+    # The input is stored in Flask's request global.
     # Each submitted form has an input field named 'submit_X' for some X,
-    # and is handled by a corresponding function submit_X().
+    # and is handled by a corresponding function submit_X()
+    # if it passes its authorize_* permissions check.
 
     keys_named_submit = filter(lambda s: re.match('submit', s),
                                request.form.keys())
@@ -517,17 +584,13 @@ def form_post():
     
     if submit_what not in form_handlers:
         print_debug(' handle_post: OOPS - illegal submit_what ');
-        # TODO: handle this error in a better way.
+        flash('* incorrect form submission *', 'formerror')        
         return request.base_url
-
-    # reality check : reject submit_X if user is not logged in
-    # ...except submit_login 
-    if not (submit_what == 'submit_login' or request.page.user.is_authenticated()):
-        print_debug(' handle_post: OOPS - submit_X but not logged in  ');
-        # TODO: handle this error in a better way.
+    elif form_handlers[submit_what]['authorize']():
+        result = form_handlers[submit_what]['handler']()
+        print_debug(' handle_post : submit result = "{}" '.format(result))
+        return result
+    else:
+        print_debug(' handle_post: form submission authorization failed ');
+        flash('* authorization error *', 'formerror')
         return request.base_url
-        
-    result = form_handlers[submit_what]()
-    
-    print_debug(' handle_post : submit result = "{}" '.format(result))
-    return result

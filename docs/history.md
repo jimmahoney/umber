@@ -1,5 +1,25 @@
 # umber development history #
 
+## Mar 17 2018
+
+Added authorization checks to form handlers in umber.py.
+
+TODO:
+
+ * redo file uploads.
+
+ * maybe put in a crypto "hidden" form key for 
+   additional "this isn't a 3rd party submission" assurance ...
+   though I'm not sure that really does much that the session doesn't already.
+   
+ * implement some sort of text framework with "fuzzed" illegal inputs
+   and with "manually" constructed form submissions
+   See for example http://flask.pocoo.org/docs/0.12/testing/
+
+ * keep a log of form post interactions with user & ip & maybe browser fingerprint
+ * put more of code in "try..." blocks & make more robust
+ * move git interactions to something asynchronous
+
 ## Feb 25
 
 Looking at form submission framework after a comment from Ben -
@@ -7,11 +27,9 @@ I've made some small changes there, but should test more carefully
 that users have the right permissions to change things, without
 assuming that the HTTP came from a valid page.
 
-I also may want to limit setting folder permissions
-to faculty - there probably isn't a reason to open
-that up to students, and there is certainly ways
-that could mess things up.
-
+I also may want to limit setting folder permissions to faculty - there
+probably isn't a reason to open that up to students, and there is
+certainly ways that could mess things up.
 
 ## Feb 22
 

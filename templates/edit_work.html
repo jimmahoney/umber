@@ -1,4 +1,9 @@
 <form class="edit" name="edit" method="POST" action="{{ page.url }}">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages and messages[0][0] == 'formerror' %}
+  <div class="error"> {{ messages[0][1] |e }} </div>  
+  {% endif %}
+  {% endwith %}
 {# -- grade -- #}
 <div class="grade-h1"><span class="grade">grade: <span class="grade-black">
 {% if page.user_role.name == 'faculty' %}

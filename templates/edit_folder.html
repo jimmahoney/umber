@@ -1,36 +1,41 @@
 {# edit folder  #}
 {# ######## #}
 <h2 class='directory'>Index of {{ page.path }} </h2>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages and messages[0][0] == 'formerror' %}
+  <div class="error"> {{ messages[0][1] |e }} </div>  
+  {% endif %}
+  {% endwith %}
 <div id='dir-ls'>
 <form class='folder' name='folder' method='POST' action='{{ page.url }}'>
   <div id='dragndrop'>
   <table>
     <tr>
-      <td></td> {# checkbox column placeholder #}
       <td></td> {# icon #}
       <td>&nbsp;</td>
       <td class="heading">last modified</td>
       <td class="heading">size</td>
+      <td></td> {# checkbox column placeholder #}
     </tr>
     {# <tr><td colspan=5><hr></td></tr> #}
     {% for child in page.children() %}
     <tr>
-      <td><input type='checkbox' class='foldereditcheckbox'
-		 name='{{ child.abspath }}' value='checkboxdelete' }}'></td>
       <td><img src='{{ child.icon_url() }}' alt='TXT'></td>
       <td><b><a href='{{ child.name_with_ext }}'>{{ child.name_with_ext }}</a></b></td>
       <td>{{ child.lastmodified.datetime() }}</td>
       <td>{{ child.bytesize }}</td>
+      <td><input type='checkbox' class='foldereditcheckbox'
+		 name='{{ child.abspath }}' value='checkboxdelete' }}'></td>
     </tr>
     {% endfor %}
     <tr><td colspan=5> </td></tr>
-    <tr><td colspan=2><input type='submit'
+    <tr><td colspan=3><i>Drag and drop files here to upload them.</i></td>
+        <td colspan=2><input type='submit'
 			     name='submit_delete'
 			     id='folderdeletebutton'
 			     class='disabledbutton' 
-			     value='delete checked'
+			     value='delete'
 			     disabled></td>
-      <td colspan=3><i>Drag and drop files here to upload them.</i></td>
     </tr>
   </table>
     {# <div id="progresstrough"><div id="progressbar"><div>0%</div></div></div>
@@ -42,6 +47,9 @@
 <form class='folder' id='new_folder_form' method='POST' action='{{ page.url }}'>
   <div>
   {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages and messages[0][0] == 'formerror' %}
+    <div class="error"> {{ messages[0][1] |e }} </div>  
+  {% endif %}
   {% if messages and messages[0][0] == 'folder' %}
     New folder <input type='input' name='foldername' id='foldername' size='24'
  		      value='{{ messages[1][1] |e }}' >
@@ -56,6 +64,7 @@
   {% endwith %}
   </div>
 </form>
+{% if page.user_role.name == 'faculty' %}
 <form class='folder' id='privileges_form' method='POST' action='{{ page.url }}'>
   <div>
   Access rights <small>(one of [all, guest, students, faculty, admin] or usernames)</small><br>
@@ -65,6 +74,7 @@
   &nbsp; 
   <input type='submit' name='submit_permissions' value='set permissions'/>
 </form>
+{% endif %}
 <form method='POST' action='{{ page.url }}'>
   <input type='submit' name='submit_done' value='done editing'/>
 </form>
