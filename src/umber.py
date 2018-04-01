@@ -527,7 +527,7 @@ def authorize_can_write():
     return request.page.can['write']
 
 def authorize_is_faculty():
-    return request.page.user_role in ('faculty', 'admin')
+    return request.page.user_role.name in ('faculty', 'admin')
 
 def authorize_is_admin():
     return request.page.user.is_admin()
