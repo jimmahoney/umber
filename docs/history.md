@@ -1,5 +1,26 @@
 # umber development history #
 
+## Apr 5
+
+ peewee version changes :
+   http://docs.peewee-orm.com/en/latest/peewee/changes.html?highlight=rel_model
+   changes in 3.0 (which Leslie is trying to use)
+     BaseModel => ModelBase
+     _data     => __data__
+     db_table  => table_name
+     rel_model => model
+     db_column => column_name
+     to_field  => field
+
+## Apr 1
+
+Fixed a bug in faculty authorization.
+
+Pentest checklist that might be worth trying :
+ jdow.io/blog/2018/03/18/web-application-penetration-testing-methodology/
+ https://news.ycombinator.com/item?id=16728207
+ https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project
+
 ## Mar 17 2018
 
 Added authorization checks to form handlers in umber.py.
