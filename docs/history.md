@@ -1,5 +1,31 @@
 # umber development history #
 
+## May 16
+
+ javascript (i.e. node and web) implementation of git ...
+ https://github.com/isomorphic-git/isomorphic-git
+ discussion : https://news.ycombinator.com/item?id=17083807 
+
+## May 2018
+
+ "top 17 best free jquery file upload scripts" 2018
+ https://colorlib.com/wp/jquery-file-upload-scripts/
+
+ another file upload example
+ https://github.com/Bouni/HTML5-jQuery-Flask-file-upload
+
+## Apr 2018
+
+ crypto :
+
+ http://latacora.singles/2018/04/03/cryptographic-right-answers.html
+ https://news.ycombinator.com/item?id=16748400
+ https://pypi.python.org/pypi/PyNaCl/
+ https://pynacl.readthedocs.io/en/stable/
+
+ "just use openssl"
+ https://news.ycombinator.com/item?id=16746153
+
 ## Mar 17 2018
 
 Added authorization checks to form handlers in umber.py.
