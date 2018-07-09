@@ -1,5 +1,31 @@
 # umber development history #
 
+## July 8 2018
+
+ TODO :
+   + test upload on folder & attachments ... works in development.
+   + test delete on folder & attachments ... works in development.
+   
+   - commit & upload dropzone changes.
+   - test on server
+   - test larg file uploads
+
+## July 7 2018
+
+ looking at dropzonejs.com ... which seems to be working OK.
+ I'm using their default drop box with some minor changes to their css.
+ The ajax handler I had before is doing OK, with a returned json response.
+
+ dropzone does allow folders to be dropped, which as I'm handling things now
+ just puts all the files within into the same folder. If multiple files
+ have the same name in subfolders, the last uploaded is kept and the
+ rest are overwritten.
+
+ The configuration is set in umber.js, and the (minimal) html is in
+ edit_folder.html and attachments.html. The back-end is ajax_upload
+ in umber.py, called for a POST (dropzone's default) with a
+ 'dropzone' key set in form.args (i.e. ?dropzone=1 in url).
+
 ## May 16
 
  javascript (i.e. node and web) implementation of git ...

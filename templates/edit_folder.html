@@ -8,7 +8,7 @@
   {% endwith %}
 <div id='dir-ls'>
 <form class='folder' name='folder' method='POST' action='{{ page.url }}'>
-  <div id='dragndrop'>
+  <div id='wasdragndrop'>
   <table>
     <tr>
       <td></td> {# icon #}
@@ -29,21 +29,19 @@
     </tr>
     {% endfor %}
     <tr><td colspan=5> </td></tr>
-    <tr><td colspan=3><i>Drag and drop files here to upload them.</i></td>
-        <td colspan=2><input type='submit'
-			     name='submit_delete'
-			     id='folderdeletebutton'
-			     class='disabledbutton' 
-			     value='delete'
-			     disabled></td>
+    <tr><td colspan=4><td>
+        <td><input type='submit'
+		   name='submit_delete'
+		   id='folderdeletebutton'
+		   class='disabledbutton' 
+		   value='delete'
+		   disabled></td>
     </tr>
   </table>
-    {# <div id="progresstrough"><div id="progressbar"><div>0%</div></div></div>
-       <!-- <span id="progressblurb">upload progress &nbsp;</span> --> 
-    #}
   </div>
-  </div> <!-- dragndrop -->
+  </div>
 </form>
+<form class='dropzone' id='umberdropzone' action='{{ page.url }}?dropzone=1'></form>
 <form class='folder' id='new_folder_form' method='POST' action='{{ page.url }}'>
   <div>
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -79,3 +77,5 @@
   <input type='submit' name='submit_done' value='done editing'/>
 </form>
 </div>
+
+

@@ -185,8 +185,9 @@ def mainroute(pagepath):
     # Store the page object (and therefore page.course and page.user)
     # in the request, so that the request action handler doesn't need args.
     request.page = page
-    
-    if request.method == 'POST' and '__ajax__' in request.form:
+
+    if request.method == 'POST' and 'dropzone' in request.args:
+        print_debug('-- dropzone file upload --') # i.e. handle dropzonejs.com
         return ajax_upload()
     
     elif request.method == 'POST':
@@ -259,6 +260,9 @@ def mainroute(pagepath):
 
 def ajax_upload():
     """ handle ajax file upload """
+    # dropzone sends one ajax request per file, so this invocation is for
+    # one file even if multiple files have been dropped on the web page.
+    
     page = request.page
     print_debug(' ajax_upload ')    
     print_debug('   request.form.keys() : {}'.format(request.form.keys()))
@@ -267,8 +271,7 @@ def ajax_upload():
 
     # Make sure that this user is authorized to put files here.
     if not page.can['write']:
-        # TODO bail out in a better way
-        return ajax_response(False, 'Oops - invalid permissions.') 
+        return ajax_response(False, 'Oops - invalid permissions for file upload.') 
 
     if page.is_dir:
         abspath = page.abspath
@@ -280,21 +283,24 @@ def ajax_upload():
                 os.mkdir(abspath)
             except:
                 print_debug(' submit_createfolder: os.makedir failed')
-                return request.base_url
+                return ajax_response(False, 'error creating attachments folder') 
     
     for upload in request.files.getlist("file"):
+        # Should be only one file when using dropbox, I think.
+        
+        # TODO: send something other than success if there's a problem here,
+        # probably with a try: except: block.
+
         filename = secure_filename(upload.filename)
         print_debug('   file : "{}"'.format(filename))
         destination = os.path.join(abspath, filename)
         upload.save(destination)
-        git.add_and_commit(page, abspath=destination)
 
-    print_debug(" upload reload ")
-        
-    # Rather than return a bare ajax respose,
-    # reload the edit folder page to see the new uploaded files.
-    # return ajax_response(True, 'upload success') 
-    return redirect(page.url + '?action=edit')
+        # TODO: do the github stuff asyncronously ?        
+        git.add_and_commit(page, abspath=destination)         
+
+    print_debug(" sending ajax response ")
+    return ajax_response(True, 'upload success')
 
 def ajax_response(status, msg):
     """ Return json data for an ajax request """

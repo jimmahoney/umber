@@ -164,7 +164,6 @@ form {
     border-bottom: 1px solid #006030;
 }
 
-
 div.indent { 
     margin-left: 5em;
 }
@@ -1005,7 +1004,7 @@ form input[type="submit"]{
     height: 1px;
 }
 
-#dragndrop {
+#wasdragndrop {
     border: 3px solid transparent;
     /* in umber.js : while files dragged over this element,
           border     => 3px dashed #606000

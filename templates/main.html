@@ -11,12 +11,24 @@
   <link rel="stylesheet" type="text/css"
 	href="{{ static_url('styles/pygment.css')}}">
   <script type="text/javascript"
-	  src="{{ static_url('js/jquery-3.2.1.min.js') }}" defer></script>
+	  src="{{ static_url('js/jquery-3.3.1.min.js') }}" defer></script>
   <script type="text/javascript"
 	  src="{{ static_url('js/underscore-min.js') }}" defer></script>
-  <script type="text/javascript"
-	  src="{{ static_url('js/umber.js') }}" defer></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+  
+  {# -- mathjax -- #}
+  {# using a local mathjax is problematic - it needs fonts etc;
+     local copies have some same-origin restrictions which can get in the way;
+     see http://docs.mathjax.org/en/latest/start.html#mathjax-cdn #}
+  <script type="text/javascript" async
+   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+
+  {# -- dropzonejs.com -- drag'n'drop file uploads #}
+  <script src="{{ static_url('js/dropzone.min.js') }}" defer></script>
+  <link rel="stylesheet" href="{{ static_url('styles/dropzone_modified.css') }}">
+
+  <script type="text/javascript" src="{{ static_url('js/umber.js') }}" defer></script>
+	  
 </head>
 <body>
 <div id="header">

@@ -13,43 +13,41 @@
 {% if page.action == 'edit' and page.can['write'] %}
   {# edit attachments #}
 <form class='folder' name='folder' method='POST' action='{{ page.url }}'>
-  <div id='dragndrop'>
+  <div id='wasdragndrop'>
   <table>
     <tr>
-      <td></td> {# checkbox column placeholder #}
       <td></td> {# icon #}
       <td>&nbsp;</td>
       <td class="heading">last modified</td>
       <td class="heading">size</td>
+      <td></td> {# checkbox column placeholder #}
     </tr>
     {# <tr><td colspan=5><hr></td></tr> #}
     {% for child in page.attachments %}
     <tr>
-      <td><input type='checkbox' class='foldereditcheckbox'
-		 name='{{ child.abspath }}' value='checkboxdelete' }}'></td>
       <td><img src='{{ child.icon_url() }}' alt='TXT'></td>
       <td><b><a href='{{ page.name + '.attachments/' + child.name_with_ext }}'>{{ child.name_with_ext }}</a></b></td>
       <td>{{ child.lastmodified.datetime() }}</td>
       <td>{{ child.bytesize }}</td>
+      <td><input type='checkbox' class='foldereditcheckbox'
+		 name='{{ child.abspath }}' value='checkboxdelete' }}'></td>
     </tr>
     {% endfor %}
     {# <tr><td colspan=5><hr></td></tr> #}
     <tr><td colspan=5> </td></tr>    
-    <tr><td colspan=2><input type='submit'
-			     name='submit_delete'
-			     id='folderdeletebutton'
-			     class='disabledbutton' 
-			     value='delete checked'
-			     disabled><td>
-      <td colspan=3><i>Drag and drop files here to upload them.</i></td>
+    <tr><td colspan=4></td>
+      	<td><input type='submit'
+		   name='submit_delete'
+		   id='folderdeletebutton'
+	           class='disabledbutton' 
+		   value='delete'
+		   disabled><td>
     </tr>
   </table>
-  {# <div> Drag and drop files here to upload them.
-    <div id="progresstrough"><div id="progressbar"><div>0%</div></div></div>
-    <!-- <span id="progressblurb">upload progress &nbsp;</span> --> #}
   </div>
-  </div> <!-- dragndrop -->
+  </div>
 </form>
+<form class='dropzone' id='umberdropzone' action='{{ page.url }}?dropzone=1'></form>
 {% else %}
   {# show attachements #}
   <table>
