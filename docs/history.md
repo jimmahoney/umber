@@ -1,14 +1,48 @@
 # umber development history #
 
+## July 9 2018
+
+ Trying to move git stuff to dulwich :
+
+  https://github.com/dulwich/dulwich
+  https://www.dulwich.io/docs/
+
+    $ cd umber
+    $ . env/activate
+    (venv)$ pip install dulwich
+    (venv)$ cd env; pip freeze > requirements.txt
+
+  ... all that worked on both hardmaple & cs.marlboro.college,
+  so it seems to install OK.
+
+
+
+
 ## July 8 2018
 
  TODO :
    + test upload on folder & attachments ... works in development.
    + test delete on folder & attachments ... works in development.
    
-   - commit & upload dropzone changes.
+   + commit & upload dropzone changes.
+   
    - test on server
-   - test larg file uploads
+
+     result: file upload works, but there are a bunch of wsgi errors in the log.
+             deleting those files fails with an error page.
+             ... which upon examination seems to be caused
+                 by the failed "git commit" when the files were uploaded.
+
+     So I think that the problems I've been seeing on the deployed server
+     all have to do with the interaction of wsgi and the the way I'm
+     trying to invoke git, which is failing.
+
+  https://github.com/dulwich/dulwich ... pure-python git implementation (!)
+
+
+- test larg file uploads
+
+   learn more about https://www.docker.com/community-edition
 
 ## July 7 2018
 

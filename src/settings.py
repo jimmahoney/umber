@@ -54,8 +54,8 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     site_url = 'http://127.0.0.1:5000/umber/demo/home'
     os_courses = os.path.join(os_root, 'courses')
     os_generic_course = os.path.join(os_root, 'courses/demo')
-    os_git = os_courses
-    
+    os_git = os_root
+
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     umber_debug = False
     protocol = 'https://'

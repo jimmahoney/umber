@@ -3,7 +3,8 @@
  utilities.py
 """
 import parsedatetime, pytz, random
-import os, urlparse, sh, arrow, string, re
+import os, urlparse, arrow, string, re, StringIO
+from dulwich import porcelain
 from flask import url_for, app
 from markdown2 import markdown
 from settings import url_base, debug_logfilename, \
@@ -241,40 +242,36 @@ def parse_assignment_data(request_form):
     return assignment_data
     
 class Git:
-    """ a wrapper around sh.git """
+    """ a wrapper around www.dulwich.io - python git interface """
     
     def __init__(self):
-        self._git = sh.git.bake(_cwd=os_git, _tty_out=False)
+        pass
 
-    def rm_and_commit(self, page, abspaths):
-        """ remove files and folders (absolute paths) & commit changes """
-        # -- page is the folder from which the delete form was submitted.
-        page.keep()
-        self._git.rm('-r', *abspaths)
-        try:
-            self._git.commit('--message=user:{}'.format(page.user.username),
-                                 *abspaths)
-        except Exception as err:
-            print_debug("git rm_and_commit error '{}'".format(err))
-        
     def add_and_commit(self, page, abspath=None):
         """ commit abspath or this page or this folder to git repo """
         if not abspath:
             page.keep()                 # if folder, create ./.keep file
             abspath = page.keepabspath  # page.abspath or folder's .keep
-        self._git.add(abspath)
-        try:
-            self._git.commit('--message=user:{}'.format(page.user.username), abspath)
-        except Exception as err:
-            print_debug("git add_and_commit error '{}'".format(err))
+        porcelain.add(os_git, paths=[abspath])
+        porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
+        
+    def rm_and_commit(self, page, abspaths):
+        """ remove files and folders (absolute paths) & commit changes """
+        # -- page is the folder from which the delete form was submitted.
+        page.keep()
+        porcelain.rm(os_git, paths=abspaths)
+        porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
 
     def log(self, page):
-        # _git.log gives '(revision,date,user:who)\n(revision,date,user:who)'
-        lines = self._git.log('--date=iso-strict',
-                              '--format=(%H,%cd,%s)',
-                              page.abspath).split('\n')
-        valid_lines = filter(lambda x: len(x) > 2, lines)
-        data = map(lambda line:line[1:-1].split(','), valid_lines)
+        """ return revisions and dates of a given file """
+        buffer = StringIO.StringIO()
+        porcelain.log(os_git, paths=[page.abspath], outstream=buffer)
+        lines = buffer.getvalue().split('\n')
+        valid_lines = filter(lambda x: len(x) > 2, lines)        
+        print_debug('-- Git log for {}', page.abspath)
+        print_debug(valid_lines)
+        print_debug('--')
+        data = map(lambda line:line[1:-1].split(','), valid_lines)        
         for rev in data:
             rev[1] = Time(rev[1]).daydatetimesec()
             if (len(rev[2]) < 6) or rev[2][:5] != 'user:':
@@ -282,7 +279,14 @@ class Git:
             else:
                 rev[2] = rev[2][5:]
         return(data)
-    
+        
+        # _git.log gives '(revision,date,user:who)\n(revision,date,user:who)'
+        #lines = self._git.log('--date=iso-strict',
+        #                      '--format=(%H,%cd,%s)',
+        #                      page.abspath).split('\n')
+        #valid_lines = filter(lambda x: len(x) > 2, lines)
+        #
+        
     def get_revision(self, page):
         """ Return content from a git version of a page """
         # page.revision:     (new) current 4 3 2 1 (old) page.revision

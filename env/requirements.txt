@@ -1,10 +1,12 @@
-arrow==0.12.1
+arrow==0.12.0
 asn1crypto==0.24.0
-backports.functools-lru-cache==1.4
+backports.functools-lru-cache==1.2.1
 beautifulsoup4==4.6.0
+certifi==2018.4.16
 cffi==1.11.4
 click==6.7
 cryptography==2.1.4
+dulwich==0.19.5
 enum34==1.1.6
 Flask==0.12.2
 Flask-Login==0.4.1
@@ -17,7 +19,7 @@ idna==2.6
 ipaddress==1.0.19
 itsdangerous==0.24
 Jinja2==2.10
-ldap3==2.4.1
+ldap3==2.4
 markdown2==2.3.5
 MarkupSafe==1.0
 packaging==16.8
@@ -38,4 +40,5 @@ six==1.11.0
 smmap==0.9.0
 smmap2==2.0.3
 SQLAlchemy==1.2.1
+urllib3==1.23
 Werkzeug==0.14.1
