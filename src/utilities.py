@@ -351,6 +351,12 @@ class Git:
         page.keep()
         porcelain.rm(os_git, paths=relpaths)
         porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
+        # This porcelain.rm seems to sometimes not delete the file itself.
+        for abspath in abspaths:
+            try:
+                os.remove(abspath)
+            except:
+                pass
 
     def log(self, page):
         """ return revisions and dates of a given file as [(githash, date, author)]"""
