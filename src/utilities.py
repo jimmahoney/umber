@@ -340,14 +340,16 @@ class Git:
         if not abspath:
             page.keep()                 # if folder, create ./.keep file
             abspath = page.keepabspath  # page.abspath or folder's .keep
-        porcelain.add(os_git, paths=[abspath])
+        relpath = os.path.relpath(abspath, os_git)
+        porcelain.add(os_git, paths=[relpath])
         porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
         
     def rm_and_commit(self, page, abspaths):
         """ remove files and folders (absolute paths) & commit changes """
         # -- page is the folder from which the delete form was submitted.
+        relpaths = map(lambda x: os.path.relpath(x, os_git), abspaths)
         page.keep()
-        porcelain.rm(os_git, paths=abspaths)
+        porcelain.rm(os_git, paths=relpaths)
         porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
 
     def log(self, page):

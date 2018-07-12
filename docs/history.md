@@ -1,5 +1,17 @@
 # umber development history #
 
+## July 12
+
+ have debugged git dulwich stuff.
+ seems to be working on development.
+
+ ... but file delete crashed on deployed
+
+ ... and now I see is crashing on development.
+ - on deployed, uninstalled dulwich, reinstall with "--pure-python"
+ - changed all abspaths to relpaths in dulwich.
+
+
 ## July 9 2018
 
  Trying to move git stuff to dulwich :
