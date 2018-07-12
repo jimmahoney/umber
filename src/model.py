@@ -1190,6 +1190,10 @@ class Assignment(BaseModel):
 
     def get_url(self):
         return '{}/sys/assignments#{}'.format(self.course.url, self.nth)
+
+    def name_smaller(self):
+        """ return html version of assignment name with <br> instead of spaces """
+        return self.name.replace(' ', '<br>')
     
     def get_work(self, person):
         """ Return Work for this assignment by given student """

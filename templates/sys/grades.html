@@ -6,15 +6,15 @@
   <tr class="heading">
     <td>&nbsp;</td>
     {% for ass in page.course.assignments %}
-    <td><span class="assign-id">{{ ass.nth }}.</span> <a
-	 href="{{ ass.get_url() }}">{{ ass.name }}</a></td>
+    <td style="font-size:80%; align=center"><span class="assign-id">- {{ ass.nth }} -</span><br><a
+	 href="{{ ass.get_url() }}">{{ ass.name_smaller() | safe }}</a></td>
     {% endfor %}
   </tr>
   {% for stud in page.course.grade_data_grid() %}
   <tr>
     <td><a href="mailto:{{ stud.email  }}">{{ stud.name }}</a></td>
     {% for work in stud.works %}
-    <td><a href="{{ work.url }}"
+    <td style="font-size:80%"><a href="{{ work.url }}"
 	   ><span class="{{ work.css_grade }}"
 	   >{{ work.grade }}</span></a></td>
     {% endfor %}

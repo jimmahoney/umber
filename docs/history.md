@@ -18,7 +18,10 @@
 
  TODO: set up crontab for umber_cleanup on csmarlboro, daily I think.
 
- TODO: work on grades page: switch orientation, link for work w/out grade, editable.
+ TODO: work on grades page:
+   - smaller horizontally   DONE
+   - editable
+   
 
  TODO: review authorization stuff.
 
