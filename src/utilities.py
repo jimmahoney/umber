@@ -337,11 +337,11 @@ class Git:
 
     def add_and_commit(self, page, abspath=None):
         """ commit abspath or this page or this folder to git repo """
+        # path vs relative seems strangely picky - this one wants abspath.
         if not abspath:
             page.keep()                 # if folder, create ./.keep file
             abspath = page.keepabspath  # page.abspath or folder's .keep
-        relpath = os.path.relpath(abspath, os_git)
-        porcelain.add(os_git, paths=[relpath])
+        porcelain.add(os_git, paths=[abspath])
         porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
         
     def rm_and_commit(self, page, abspaths):
