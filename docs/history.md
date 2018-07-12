@@ -15,8 +15,15 @@
   ... all that worked on both hardmaple & cs.marlboro.college,
   so it seems to install OK.
 
+  docs: https://www.dulwich.io/apidocs/dulwich.html
 
+  https://stackoverflow.com/questions/6640546/programmatically-git-checkout-with-dulwich
+  https://github.com/mikofski/dulwichPorcelain/blob/master/checkout.py
 
+  dulwich.index.build_file_from_blob
+
+  http://www.aaronheld.com/post/using-python-dulwich-to-load-any-version-of-a-file-from-a-local-git-repo
+   
 
 ## July 8 2018
 
@@ -1644,11 +1651,6 @@ my choices
     cs.marlboro.edu => new host
 
      
-
-
-
-
-
 
 
 
