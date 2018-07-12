@@ -6,11 +6,21 @@
  seems to be working on development.
 
  ... but file delete crashed on deployed
-
  ... and now I see is crashing on development.
- - on deployed, uninstalled dulwich, reinstall with "--pure-python"
- - changed all abspaths to relpaths in dulwich.
+ ... several rounds of debugging & testing on deployed version
 
+ upgraded mod_wsgi manually on csmarlboro (see ~/history.txt &
+ ~/mod_wsgi) 
+
+ All the git & related stuff seems to now be working:
+ edit files, see revision, delete files, upload files.
+ Checked both in folders & attachments.
+
+ TODO: set up crontab for umber_cleanup on csmarlboro, daily I think.
+
+ TODO: work on grades page: switch orientation, link for work w/out grade, editable.
+
+ TODO: review authorization stuff.
 
 ## July 9 2018
 
