@@ -1,4 +1,16 @@
-home
-====
+Welcome
+=======
 
-The umber home page.
+    “Work like you don't need the money.
+     Dance like no one is watching.
+     And love like you've never been hurt.” - Mark Twain
+
+<iframe width="560" height="315"
+ src="https://www.youtube.com/embed/Z7LoSkDIjRY"
+ frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+... [my tango double-life](https://www.youtube.com/watch?v=QhdI3FNItHk&feature=youtu.be) (TED talk on youtube)
+
+-------
+
+
