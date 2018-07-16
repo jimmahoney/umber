@@ -1,2 +1,41 @@
 {# {'read':'admin'} #}
-* newcourse *
+<h1>new course</h1>
+<form class="user" id="new_course_form" method="POST" action='{{ page.url }}'>
+<table>
+  <tr>
+   <td>
+     <table class="layout">
+       <tr>
+	 <td class="heading">name</td>
+	 <td><input type="input" name="name" value=""></td>
+	 <td>e.g. "Intro Programming"</td>	 
+       </tr>
+       <tr>
+	 <td class="heading">name as html</td>
+	 <td><input type="input" name="name_as_title" value=""></td>
+	 <td>e.g. "Intro&lt;br&gt;Programming"</td>
+       </tr>
+       <tr>
+	 <td class="heading">folder</td>
+	 <td><input type="input" name="path" value=""></td>
+	 <td>e.g. "spring2016/intro_programming"</td>
+       </tr>
+       <tr>
+	 <td class="heading">semester</td>
+	 <td><input type="input" name="semester" value=""></td>
+	 <td>e.g. "Spring 2016"</td>
+       </tr>
+       <tr>
+	 <td class="heading">copy files from</td>
+	 <td><input type="input" name="copy_course" value="generic"></td>
+	 <td>e.g. "spring2015/intro_programming"</td>
+       </tr>
+     </table>
+   </td>
+  </tr>
+  <tr><td></td><td><input type="submit" name="submit_newcourse"
+			  value="create new course"></td></tr>
+</table>
+</form>
+
+

@@ -104,6 +104,7 @@ def mainroute_blank():
 @app.route(route_prefix + '/<path:pagepath>', methods=['GET', 'POST'])
 def mainroute(pagepath):
 
+    # home page for default 'umber' course 
     if pagepath == '':
         return redirect('/' + url_base + '/home')
     
@@ -377,7 +378,12 @@ def submit_newuser():
                 'username={} name="{}" email={} password=""'.format(
                 username, name, email, password))
     Person.create_person(username, name, email, password)
-    return url_base + '/site/sys/user?username=' + username
+    return url_base + '/sys/user?username=' + username
+
+def submit_newcourse():
+    """ create new course """
+    # TODO
+    return url_base + '/sys/courses'
 
 def submit_edituser():
     """ edit existing user - admin only """
@@ -432,6 +438,13 @@ def submit_createfolder():
         folderabspath))
     Page.new_folder(folderabspath, user=request.page.user)
     return url_for('mainroute', pagepath=request.page.path, action='edit')    
+
+def submit_grades():
+    """ handle setting all course grades from grid """
+    print_debug('submit grades')
+    print_debug(request.form)
+    Work.edit_grades(request.form)
+    return url_for('mainroute', pagepath=request.page.path)
 
 def submit_permissions():
     """ handle setting folder permissions - .access.yaml stuff """
@@ -560,7 +573,8 @@ form_handlers = {
                            'authorize':  authorize_is_faculty},
     'submit_permissions': {'handler':    submit_permissions,
                            'authorize':  authorize_is_faculty},
-    
+    'submit_grades':      {'handler':    submit_grades,
+                           'authorize':  authorize_is_faculty},
     'submit_searchuser' : {'handler':    submit_searchuser,
                            'authorize':  authorize_is_faculty},
     'submit_enroll' :     {'handler':    submit_enroll,
@@ -571,6 +585,8 @@ form_handlers = {
     'submit_edituser' :   {'handler':    submit_edituser,
                            'authorize':  authorize_is_admin},
     'submit_newuser' :    {'handler':    submit_newuser,
+                           'authorize':  authorize_is_admin},
+    'submit_newcourse' :  {'handler':    submit_newcourse,
                            'authorize':  authorize_is_admin},
 
     }

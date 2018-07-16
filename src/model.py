@@ -451,7 +451,8 @@ class Course(BaseModel):
                 (grade, css_grade) = work.get_grade_css(faculty_view=True)
                 works.append({'url':        work.get_url(),
                               'css_grade':  'grade-{}'.format(css_grade),
-                              'grade':      grade
+                              'grade':      grade,
+                              'id':         work.work_id
                               })
             result.append({'email': stud.email,
                            'name' : stud.name,
@@ -1312,6 +1313,23 @@ class Work(BaseModel):
                            db_column='page_id',
                            to_field='page_id')
 
+    @staticmethod
+    def edit_grades(id_grade_dict):
+        """ id_grade_dict is web form with some {'work_<id>':new_grade}
+            extract id's & change grades """
+        # the dict also has other keys i.e. 'submit_work'; ignore them.
+        try:
+            with db.atomic():
+                for key in id_grade_dict:
+                    if key[:5] == 'work_':  
+                        id = int(key[5:])
+                        work = Work.get(work_id=id)
+                        work.grade = id_grade_dict[key]
+                        work.save()
+        except:
+            print_debug('OOPS : Work.edit_grades(id_grade_dict="{}") failed' \
+                                .format(id_grade_dict))
+    
     def get_url(self):
         # Also see templates/assignments.html
         return '{}/students/{}/work/{}.md'.format(self.assignment.course.url,

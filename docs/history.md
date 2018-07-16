@@ -1,5 +1,12 @@
 # umber development history #
 
+## July 13
+
+ TODO: crontabl (daily?) for umber_cleanup DONE
+ TODO: new_course
+
+ TODO: review authorization stuff.
+
 ## July 12
 
  have debugged git dulwich stuff.
@@ -16,14 +23,9 @@
  edit files, see revision, delete files, upload files.
  Checked both in folders & attachments.
 
- TODO: set up crontab for umber_cleanup on csmarlboro, daily I think.
-
  TODO: work on grades page:
    - smaller horizontally   DONE
-   - editable
-   
-
- TODO: review authorization stuff.
+   - editable               DONE
 
 ## July 9 2018
 

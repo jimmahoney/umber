@@ -1,1 +1,35 @@
-* edit grades *
+{# {'write':'faculty' #}
+{# #}
+{% if page.user_role.name == 'faculty' %}
+<form id='edit_grades_form' method='POST' action='{{ page.url }}'>
+<h1>grades</h1>
+<div></div>
+<table class='layout'>
+  <tr class='heading'>
+    <td>&nbsp;</td>
+    {% for ass in page.course.assignments %}
+    <td style='font-size:80%; align=center'><span class='assign-id'>- {{ ass.nth }} -</span><br><a
+	 href='{{ ass.get_url() }}'>{{ ass.name_smaller() | safe }}</a></td>
+    {% endfor %}
+  </tr>
+  {% for stud in page.course.grade_data_grid() %}
+  <tr>
+    <td><a href='mailto:{{ stud.email  }}'>{{ stud.name }}</a></td>
+    {% for work in stud.works %}
+    <td style='font-size:80%'><input type='input' name='work_{{work.id}}' value='{{ work.grade }}' size='8'></td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+<div></div>
+<input type='submit' name='submit_grades' value='change grades'>
+</form>
+{% elif page.user_role.name == 'student' %}
+<h1>grades - {{ page.user.name }}</h1>
+<div>Students cannot edit grades.</div>
+{% else %}
+ <div>Only faculty and students are allowed to see grades.</div>
+{% endif %}
+ 
+ 
+
