@@ -6,11 +6,13 @@ What is this thing?
 
 It's a web application that manages course materials and student work.
 
-Jim Mahoney (computer science at Marlboro College) wrote it
-for his classes, during his Fall 2017 sabbatical. 
-A few other Marlboro faculty use it too.
+Jim Mahoney (computer science at Marlboro College)
+wrote it, mostly during his Fall 2017 sabbatical. 
+And a few other Marlboro faculty use it too. 
+You can find some of their courses hosted at
+<a href="https://cs.marlboro.college">https://cs.marlboro.college</a> .
 
-It's based on an earlier version called [Wikiacademia](https://cs.marlboro.college/courses/help/).
+An earlier version was called [Wikiacademia](https://cs.marlboro.college/courses/help/).
 
 What does the name mean?
 ------------------------
