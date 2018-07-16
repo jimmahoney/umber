@@ -17,6 +17,8 @@ Check out its <a href="https://github.com/jimmahoney/umber">github repo</a> for 
  src="https://www.youtube.com/embed/Z7LoSkDIjRY"
  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
-Yes, that's a reference to [my tango double-life](https://www.youtube.com/watch?v=QhdI3FNItHk&feature=youtu.be). - <a href="mailto:mahoney@marlboro.edu">Jim Mahoney</a>
+Yes, that's a reference to [my tango double-life](https://www.youtube.com/watch?v=QhdI3FNItHk&feature=youtu.be).
+
+<a href="mailto:mahoney@marlboro.edu">Jim Mahoney</a>
 
 -------
