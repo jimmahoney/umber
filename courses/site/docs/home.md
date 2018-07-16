@@ -1,7 +1,7 @@
 Welcome
 =======
 
-Umber is a course management software system.
+Umber is a course management software system ... but you probably already knew that. :)
 
 Formerly known as "wikiacademia", it's been in use by the natural science faculty at <a href="https://www.marlboro.edu">Marlboro College</a> since 2010 or so.
 
@@ -20,5 +20,3 @@ Check out its <a href="https://github.com/jimmahoney/umber">github repo</a> for 
 ... [my tango double-life](https://www.youtube.com/watch?v=QhdI3FNItHk&feature=youtu.be) (TED talk on youtube)
 
 -------
-
-
