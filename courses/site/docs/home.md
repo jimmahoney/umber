@@ -9,8 +9,6 @@ Check out its <a href="https://github.com/jimmahoney/umber">github repo</a> for 
 
 ------
 
-    “Work like you don't need the money.
-     Dance like no one is watching.
-     And love like you've never been hurt.” - Mark Twain
+"If you had to identify, in one word, the reason why the human race has not achieved, and never will achieve, its full potential, that word would be 'meetings'." - Dave Barry.
 
------
+
