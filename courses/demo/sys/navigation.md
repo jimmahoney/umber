@@ -31,17 +31,19 @@
 <div access='admin'>
 <h5>admin</h5>
 <div markdown=1>
-* [site home](~~/site/docs/about)
-* [all courses](~~/site/sys/courses)
-* [all users](~~/site/sys/users)
+* [all courses](~~/sys/courses)
+* [new course](~~/sys/newcourse)
+* [all users](~~/sys/users)
+* [new user](~~/sys/newuser)
 </div>
 </div>
 
 <div access='all'>
 <h5>site</h5>
 <div markdown=1>
-* [help](~~/site/docs/help)
+* [site](~~/site/docs/home)
 * [about](~~/site/docs/about)
+* [help](~~/site/docs/help)
 * [..](..)
 * [.](.)
 </div>
