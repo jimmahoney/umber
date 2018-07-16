@@ -13,12 +13,4 @@ Check out its <a href="https://github.com/jimmahoney/umber">github repo</a> for 
      Dance like no one is watching.
      And love like you've never been hurt.” - Mark Twain
 
-<iframe width="560" height="315"
- src="https://www.youtube.com/embed/Z7LoSkDIjRY"
- frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-
-Yes, that's a reference to [my tango double-life](https://www.youtube.com/watch?v=QhdI3FNItHk&feature=youtu.be).
-
-<a href="mailto:mahoney@marlboro.edu">Jim Mahoney</a>
-
--------
+-----
