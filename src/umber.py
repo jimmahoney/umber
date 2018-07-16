@@ -105,8 +105,8 @@ def mainroute_blank():
 def mainroute(pagepath):
 
     # home page for default 'umber' course 
-    if pagepath == '':
-        return redirect('/' + url_base + '/home')
+    if pagepath == '' or pagepath == 'home':
+        return redirect('/' + url_base + '/site/docs/home')
     
     print_debug('- '*30)
     print_debug(' mainroute: pagepath = "{}"'.format(pagepath))

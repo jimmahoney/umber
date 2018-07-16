@@ -51,7 +51,7 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     url_base = 'umber'            # used for generating URLs
     route_prefix = '/umber'       # used for route match of URL
     contact_url = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
-    site_url = 'http://127.0.0.1:5000/umber/demo/home'
+    site_url = 'http://127.0.0.1:5000/umber/'
     os_courses = os.path.join(os_root, 'courses')
     os_generic_course = os.path.join(os_root, 'courses/demo')
     os_git = os_root
