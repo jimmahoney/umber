@@ -134,8 +134,8 @@ class Person(BaseModel):
             as a dict with keys role,course,url,semester """
         registrations = list(Registration.select(Registration.role, Registration.course)
                                          .where(Registration.person == self))
-        registrations.sort(key=lambda r: r.course.start_date + ' ' + r.course.name)
-        registrations.reverse()  # put most recent courses first
+        registrations.sort(key=lambda r: r.course_name)
+        registrations.sort(key=lambda r: r.start_date, reverse=True)
         return [{'role':r.role.name, 'course':r.course.name,
                  'url':r.course.url, 'semester':Time(r.course.start_date).semester()}
                 for r in registrations if not r.course.name == 'Umber']
@@ -290,10 +290,10 @@ class Course(BaseModel):
     
     @staticmethod
     def get_all():
-        """ Return all but the 'Umber' course, sorted by semester """
+        """ Return all but the 'Umber' course, sorted by semester & name """
         result = [c for c in Course.all() if not c.name == 'Umber']
-        result.sort(key=lambda c: c.start_date + ' ' + c.name)
-        result.reverse()
+        result.sort(key=lambda c: c.name)
+        result.sort(key=lambda c: c.start_date, reverse=True)
         return result
 
     @staticmethod

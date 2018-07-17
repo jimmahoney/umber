@@ -3,8 +3,9 @@
 <div access='all'>
 <h5>docs</h5>
 <div markdown=1>
-* [help](~/site/docs/help)
+* [home](~/site/docs/home)
 * [about](~/site/docs/about)
+* [help](~/site/docs/help)
 </div>
 </div>
 

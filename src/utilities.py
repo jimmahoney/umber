@@ -39,6 +39,32 @@ def is_iso_utc(date_time_string):
         #  2018 - 03  - 03  T 19  : 00  : 00   -   05  : 00
         date_time_string))
 
+def path_to_startdate(path):
+    """ Given a path of the form fall2018/coursename, 
+        returns corresponding start date.
+        >>> semesterfolder_to_startdate('fall2018/coursename')
+        '2018-09-001'
+        >>> semesterfolder_to_startdate(u'fall2018')
+        '2018-09-01'
+        >>> semesterfolder_to_startdate('spring2018/foo/bar/baz')
+        '2018-01-01'
+        >>> semesterfolder_to_startdate('summer2018/any')
+        '2018-06-01'
+        >>> semesterfolder_to_startdate('anything/else')
+        ''
+    """
+    # The string before the first / should be fall|summer|spring + YYYY,
+    # else this returns the empty string.
+    s = str(semesterstring.split('/')[0])
+    if s.startswith('fall'):
+        return s[-4:] + '-09-01'
+    elif s.startswith('spring'):
+        return s[-4]: + '-01-01'
+    elif s.startswith('summer'):
+        return s[-4]: + '-06-01':
+    else:
+        return ''
+
 class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
         including a timezone-aware (as specified in settings.py) offset.
@@ -202,13 +228,16 @@ class Time(object):
             return datetime
     def semester(self):
         """ Return as e.g. 'Summer 2013' """
+        # YYYY-01-01           => Spring
+        # YYYY-06-01 or 07-01  => Summer
+        # YYYY-09-01           => Fall
         month = self.arrow.month
         if month < 6:
             season = 'Spring '
         elif month < 9:
             season = 'Summer '
         else:
-            season = 'Fall'
+            season = 'Fall '
         return season + str(self.arrow.year)
     def str(self):
         return str(self)

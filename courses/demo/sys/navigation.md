@@ -33,6 +33,9 @@
 <div markdown=1>
 * [all courses](~~/sys/courses)
 * [new course](~~/sys/newcourse)
+
+----
+
 * [all users](~~/sys/users)
 * [new user](~~/sys/newuser)
 </div>
@@ -41,7 +44,6 @@
 <div access='all'>
 <h5>site</h5>
 <div markdown=1>
-* [site](~~/site/docs/home)
 * [about](~~/site/docs/about)
 * [help](~~/site/docs/help)
 * [..](..)

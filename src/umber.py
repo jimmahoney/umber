@@ -382,6 +382,9 @@ def submit_newuser():
 
 def submit_newcourse():
     """ create new course """
+    # If name is <= 10 chars keep as title else ' ' => <br>
+    # Determine semester from folder path e.g. 'spring2016/foo'
+    # Create folder if need be. See situtils.dir_util.copy_tree.
     # TODO
     return url_base + '/sys/courses'
 
