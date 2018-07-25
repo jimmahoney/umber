@@ -16,8 +16,9 @@ demo logins
 
     username   | passwd  | role
     ----------- ---------- -----------------------------------
-    tedteacher | test    | role=faculty in umber/demo
-    janedoe    | test    | role=student in umber/demo
-    johnsmith  | test    | role=student in umber/demo
+    adamadmin  | test    | role=admin
+    tedteacher | test    | role=faculty
+    janedoe    | test    | role=student
+    johnsmith  | test    | role=student
 
 
