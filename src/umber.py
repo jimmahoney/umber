@@ -383,9 +383,13 @@ def submit_newuser():
 def submit_newcourse():
     """ create new course """
     print_debug('submit_newcourse: {}'.format(request.form))
+
+    title = 
+    
     # If name is <= 10 chars keep as title else ' ' => <br>
     # Determine semester from folder path e.g. 'spring2016/foo'
     # Create folder if need be. See situtils.dir_util.copy_tree.
+    a = 1/0
     return url_base + '/sys/courses'
 
 def submit_edituser():
