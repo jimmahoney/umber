@@ -42,26 +42,26 @@ def is_iso_utc(date_time_string):
 def path_to_startdate(path):
     """ Given a path of the form fall2018/coursename, 
         returns corresponding start date.
-        >>> semesterfolder_to_startdate('fall2018/coursename')
-        '2018-09-001'
-        >>> semesterfolder_to_startdate(u'fall2018')
+        >>> path_to_startdate('fall2018/coursename')
         '2018-09-01'
-        >>> semesterfolder_to_startdate('spring2018/foo/bar/baz')
+        >>> path_to_startdate(u'fall2018')
+        '2018-09-01'
+        >>> path_to_startdate('spring2018/foo/bar/baz')
         '2018-01-01'
-        >>> semesterfolder_to_startdate('summer2018/any')
+        >>> path_to_startdate('summer2018/any')
         '2018-06-01'
-        >>> semesterfolder_to_startdate('anything/else')
+        >>> path_to_startdate('anything/else')
         ''
     """
     # The string before the first / should be fall|summer|spring + YYYY,
     # else this returns the empty string.
-    s = str(semesterstring.split('/')[0])
+    s = str(path.split('/')[0])
     if s.startswith('fall'):
         return s[-4:] + '-09-01'
     elif s.startswith('spring'):
-        return s[-4]: + '-01-01'
+        return s[-4:] + '-01-01'
     elif s.startswith('summer'):
-        return s[-4]: + '-06-01':
+        return s[-4:] + '-06-01'
     else:
         return ''
 
