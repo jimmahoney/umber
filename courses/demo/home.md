@@ -17,8 +17,8 @@ demo logins
     username   | passwd  | role
     ----------- ---------- -----------------------------------
     adamadmin  | test    | role=admin
-    tedteacher | test    | role=faculty
-    janedoe    | test    | role=student
-    johnsmith  | test    | role=student
+    tedteacher | test    | role=faculty (in Demo Course)
+    janedoe    | test    | role=student (in Demo Course)
+    johnsmith  | test    | role=student (in Demo Course)
 
 
