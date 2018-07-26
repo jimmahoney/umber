@@ -22,9 +22,11 @@ Here's an example.
 The quick brown fox
 jumps over the lazy dog.
 
------
+Create links with brackets and parens :&#91;displayed text&#93;(url)
+------------------------------------------------
 
-* Create links with &#91;displayed text&#93;(url).
+For example, [the college homepage](https://www.marlboro.edu).
+
 * Underline headings and subheadings with equal signs and dashes.
 * Put an asterisk at the start of a line to make a bullet list. (And leave a blank line before and after the list.)
 * Text that is indented with four spaces or is between backticks is put a yellowish block withou line wrapping, `like  this    block`
