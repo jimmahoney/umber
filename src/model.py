@@ -52,7 +52,7 @@ from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
      git, Time, stringify_access, print_debug, clean_access_dict
 from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
-    os_root, os_courses, photos_url, url_base, os_generic_course
+    os_root, os_courses, photos_url, url_base, os_default_course
 
 db = SqliteDatabase(os_db)
 
@@ -298,7 +298,7 @@ class Course(BaseModel):
 
     @staticmethod
     def create_course(name, path, start='', name_as_title='',
-                      copy_generic=False):
+                      copyfrom=os_default_course):
         if name_as_title == '':
             name_as_title = name
         if start == '':
@@ -318,8 +318,11 @@ class Course(BaseModel):
                 start_date = start,
                 name_as_title = name_as_title
                 )
-        if copy_generic:
-            shutil.copytree(os_generic_course, course.abspath)
+        # copy initial course files & save into git
+        if copyfrom:
+            abspath = os.path.join(os_courses, path)
+            shutil.copytree(copyfrom, abspath)
+            git.add_abspath_admin(abspath)
         return course
     
     @staticmethod
@@ -1410,8 +1413,18 @@ def populate_db():
             name = 'Demo Course',
             name_as_title = 'Demo<br>Course',
             path = 'demo',
-            start = '2018-01-01' )
-         
+            start = '2018-01-01',
+            copyfrom = False
+            )
+
+        defaultcourse = Course.create_course(
+            name = 'Default Course',
+            name_as_title = 'default<br>Course',
+            path = 'default_course',
+            start = '2018-01-01',
+            copyfrom = False
+            )
+        
         jane = Person.create_person(
             username = 'janedoe',
             name = 'Jane Q. Doe',

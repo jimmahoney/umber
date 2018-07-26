@@ -30,6 +30,19 @@ def myparsethedatetime(date_time_string):
     """
     return str(dateutil_parse(date_time_string, ignoretz=True))
 
+def title_to_htmltitle(title):
+    """ Return an html version of a course title 
+        >>> title_to_htmltitle('123 567 9')
+        '123 567 9'
+        >>> title_to_htmltitle('123 567 9012 45')
+        '123<br>567<br>9012<br>45'
+    """
+    # If name is <= 10 chars keep as title else ' ' => <br>
+    if len(title) <= 10:
+        return title
+    else:
+        return title.replace(' ', '<br>')
+
 def is_iso_utc(date_time_string):
     """ Return true if this is e.g. '2018-03-03T19:00:00-05:00' 
         which is the ISO time-zone-aware 
@@ -364,6 +377,10 @@ class Git:
     def __init__(self):
         pass
 
+    def add_abspath_admin(self, abspath):
+        porcelain.add(os_git, paths=[abspath])
+        porcelain.commit(os_git, '--message=user:admin')
+    
     def add_and_commit(self, page, abspath=None):
         """ commit abspath or this page or this folder to git repo """
         # path vs relative seems strangely picky - this one wants abspath.

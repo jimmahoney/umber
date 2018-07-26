@@ -53,7 +53,7 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     contact_url = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
     site_url = 'http://127.0.0.1:5000/umber/'
     os_courses = os.path.join(os_root, 'courses')
-    os_generic_course = os.path.join(os_root, 'courses/demo')
+    os_default_course = os.path.join(os_root, 'courses/default_course')
     os_git = os_root
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
@@ -66,7 +66,7 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     site_url = 'https://cs.marlboro.college'
     os_courses = '/var/www/cours'
     os_git = '/var/www/cours'
-    os_generic_course = '/var/www/cours/generic'
+    os_default_course = '/var/www/cours/default_course'
 
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')

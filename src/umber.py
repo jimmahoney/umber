@@ -13,9 +13,10 @@ from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
      git, is_clean_folder_name, parse_access_string, parse_assignment_data, \
-     print_debug, pygmentize
+     print_debug, pygmentize, title_to_htmltitle, path_to_startdate
 from settings import umber_flask_configure, umber_url, contact_url, help_url, \
-     about_url, site_url, url_base, os_root, umber_debug, route_prefix
+     about_url, site_url, url_base, os_root, umber_debug, route_prefix, \
+     os_courses
 
 app = Flask('umber',
             static_folder=os.path.join(os_root, 'static'),
@@ -382,14 +383,19 @@ def submit_newuser():
 
 def submit_newcourse():
     """ create new course """
-    print_debug('submit_newcourse: {}'.format(request.form))
-
-    title = 
-    
-    # If name is <= 10 chars keep as title else ' ' => <br>
-    # Determine semester from folder path e.g. 'spring2016/foo'
-    # Create folder if need be. See situtils.dir_util.copy_tree.
-    a = 1/0
+    #print_debug('submit_newcourse: {}'.format(request.form))
+    name = request.form['name']   # e.g. "Intro Programming"
+    path = request.form['path']   # should have form term/folder e.g. fall2018/cs1
+    copyfrom = request.form['copyfrom'] # e.g. "fall2017/cs1"
+    startdate = path_to_startdate(path)
+    htmltitle = title_to_htmltitle(title)
+    print_debug(' submit_newcourse: name = "{}"'.format(name))
+    print_debug('                   path = "{}"'.format(path))
+    print_debug('                   copyfrom = "{}"'.format(copyfrom))
+    newcourse = Course.create_course(name, path,
+                                     start = startdate,
+                                     name_as_title = htmltitle,
+                                     copyfrom = copyfrom)
     return url_base + '/sys/courses'
 
 def submit_edituser():
