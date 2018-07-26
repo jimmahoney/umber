@@ -319,9 +319,11 @@ class Course(BaseModel):
                 name_as_title = name_as_title
                 )
         # copy initial course files & save into git
+        # copyfrom is e.g. 'default_course'
         if copyfrom:
             abspath = os.path.join(os_courses, path)
-            shutil.copytree(copyfrom, abspath)
+            abscopyfrom = os.path.join(os_courses, copyfrom)
+            shutil.copytree(abscopyfrom, abspath)
             git.add_abspath_admin(abspath)
         return course
     
