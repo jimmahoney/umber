@@ -10,8 +10,7 @@ The basics are:
 * Underline headings and subheadings with equal signs and dashes.
 * Put an asterisk at the start of a line to make a bullet list. (And leave a blank line before and after the list.)
 * Indent text with four spaces to put it in a yellowish block and turn off line wrapping.
-* LaTeX inline expressions go within slash parens, e.g. \ (  e^\pi \ ) .
-* LaTeX equations on their own line go within bracket parens e.g. \ [ x = \frac{1}{1+x} \ ] .
+* LaTeX inline expressions go within slash parens, e.g. \ (  e^\pi \ ), while equations on their own line go within bracket parens e.g. \ [ x = \frac{1}{1+x} \ ] . (Without the space between the slash and the parens or brackets.)
 
 Examples are given in the table below.
 
