@@ -7,7 +7,7 @@ That's described on the [about](about) page.
 
 <b>Who can use this?</b>
 
-The software itself is open source - check out the [about](about) page.
+The software itself is open source - check out the <b>[about](about)</b> page.
 
 Much of the Marlboro course content is visible to anyone, however, 
 page editing is restricted to faculty and students. 
