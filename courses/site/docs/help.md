@@ -56,7 +56,7 @@ If you have the rights to modify a page, you'll see an "edit" tab
 near the top of the window.
 
 What you can type after you click "edit" is described on the 
-[markdown syntax](markdown) help page.
+<b>[markdown syntax](markup)</b> help page.
 
 Once you're editing a file, you can drag files from your desktop onto 
 its "drop files here to upload" region to upload attachments, which
