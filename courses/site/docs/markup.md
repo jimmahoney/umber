@@ -6,7 +6,7 @@ You can edit umber pages using [markdown](https://github.com/adam-p/markdown-her
 The basics are:
 
 * Leave blank lines between paragraphs.
-* Create links with \[displayed text\](url) 
+* Create links with &#91;displayed text&#93;(url) 
 
 Examples are given in the table below.
 
