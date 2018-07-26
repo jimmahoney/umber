@@ -85,6 +85,13 @@ Starting each line with 1. gives a numbered list.
 Code Blocks
 -----------
 
+```python
+def increment(x):
+  """ add one to x """
+  return x + 1
+```
+
+
 Math LaTeX
 ----------
 
