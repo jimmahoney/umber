@@ -18,7 +18,7 @@ If you're enrolled in a course, then your faculty member or site admin
 (that's Jim at Marlboro) should have set you up with an account. Click the "log in" 
 button at the top right of the window. 
 
-<b>What can I do once I'm logged in?
+<b>What can I do once I'm logged in?</b>
 
 That depends on which course and page you're visiting, and whether you're 
 a student or faculty in that course. 
