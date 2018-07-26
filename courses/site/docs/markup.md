@@ -8,10 +8,10 @@ Plain text is wrapped. Blank lines indicate paragraphs.
 
 For example,
 
-`Here's and example.
+```Here's an example.
 
 The quick brown fox
-jumps over the lazy dog.`
+jumps over the lazy dog.```
 
 will display as
 
