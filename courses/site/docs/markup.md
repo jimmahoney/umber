@@ -57,9 +57,9 @@ Bullet Lists
 
 Leave a blank line before and after.
 
-# one
-# two
-# thre
+1. one
+1. two
+1. three
 
 
 Block Quotes
