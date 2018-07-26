@@ -376,8 +376,11 @@ class Git:
     def __init__(self):
         pass
 
-    def add_abspath_admin(self, abspath):
-        porcelain.add(os_git, paths=[abspath])
+    def add_and_commit_all(self):
+        """ add and commit all changed files as user admin """
+        # Used after creating a new course.
+        # See https://www.dulwich.io/apidocs/dulwich.porcelain.html#add
+        porcelain.add(os_git, paths=None)
         porcelain.commit(os_git, '--message=user:admin')
     
     def add_and_commit(self, page, abspath=None):

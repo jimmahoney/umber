@@ -324,7 +324,7 @@ class Course(BaseModel):
             abspath = os.path.join(os_courses, path)
             abscopyfrom = os.path.join(os_courses, copyfrom)
             shutil.copytree(abscopyfrom, abspath)
-            git.add_abspath_admin(abspath)
+            git.add_and_commit_all()
         return course
     
     @staticmethod
