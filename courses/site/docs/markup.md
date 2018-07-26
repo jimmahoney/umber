@@ -14,16 +14,53 @@ The rules are :
 * Code blocks with syntax highlights are created with triple ticks, [as on github](https://help.github.com/articles/creating-and-highlighting-code-blocks/).
 * Math LaTeX inline expressions are delimited with slash parens, e.g. `\(  e^\pi \)` while equations on their own line should be placed between bracket parens e.g. `\[ x = \frac{1}{1+x} \]`
 
-Here are some examples.
+Below are examples of these rules. 
+
+And you can see the markup which created this page at [markup.txt](markup.txt).
 
 Plain Text
 ----------
 
+This is text 
+on several lines
+which is wrapped into one   paragraph. Whitespace is adjusted as needed.
+
+And here is a second paragraph.
+
 Links
 -----
 
+Here's a link to the [Marlboro College homepage](https://www.marlboro.edu). 
+
+Markdown files end in a ".md" extension which need not be given in in url. 
+So [this](this) is a link to "this.md" in the current folder.
+
+Clicking on a link to a file that doesn't exist yet will allow you to 
+create that file if you have the rights to edit files in that folder.
+
+As usual, urls can be absolute (i.e. http://amazon.com) or relative 
+to the current folder (i.e. subfolder/file.html or ../parent). 
+
+The ~ character is used to indicate a course's home folder, so 
+for example ~/home would be the url of a course's home page.
+
+Pages may have attachments, which are placed in a corresponding folder.
+For a file "foo.md", its attachments would be put in "foo.attachments/".
+
 Bullet Lists
 ------------
+
+* one
+* two
+  * two and a half
+* three
+
+Leave a blank line before and after.
+
+# one
+# two
+# thre
+
 
 Block Quotes
 ------------
@@ -37,6 +74,6 @@ Math LaTeX
 
 ----------
 
-And the markup which created this page can be see at [markup.txt](markup.txt).
+
 
 
