@@ -50,8 +50,8 @@ create that file if you have the rights to edit files in that folder.
 As usual, urls can be absolute (i.e. http://amazon.com) or relative 
 to the current folder (i.e. subfolder/file.html or ../parent). 
 
-The ~ character is used to indicate a course's home folder, so 
-for example ~/home would be the url of a course's home page.
+The &#126; character is used to indicate a course's home folder, so 
+for example &#126;/home would be the url of a course's home page.
 
 Pages may have attachments, which are placed in a corresponding folder.
 For a file "foo.md", its attachments would be put in "foo.attachments/".
