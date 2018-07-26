@@ -85,6 +85,16 @@ Starting each line with 1. gives a numbered list.
 Code Blocks
 -----------
 
+This markup
+
+    ```python
+    def increment(x):
+      """ add one to x """
+      return x + 1
+    ```
+
+displays as this syntax highlighted code.
+
 ```python
 def increment(x):
   """ add one to x """
@@ -95,8 +105,23 @@ def increment(x):
 Math LaTeX
 ----------
 
+Expressions on one line such as \( e^{-i\pi} \) should be placed with within backslash parens.
+
+Equations on their own line are created with backslash brack or two dollar signs.
+
+For example
+
+\[ \sum_{n=1}^{\infty} \frac{1}{n} = \infty \]
+
+and
+
+$$ \frac{-b \pm \sqrt{b^2 - 4 a c}}{2 a} $$
 
 ----------
+
+You can see the plain text version of these examples at [markup.txt](markup.txt).
+
+
 
 
 
