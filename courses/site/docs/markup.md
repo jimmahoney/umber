@@ -14,4 +14,29 @@ The rules are :
 * Code blocks with syntax highlights are created with triple ticks, [as on github](https://help.github.com/articles/creating-and-highlighting-code-blocks/).
 * Math LaTeX inline expressions are delimited with slash parens, e.g. `\(  e^\pi \)` while equations on their own line should be placed between bracket parens e.g. `\[ x = \frac{1}{1+x} \]`
 
+Here are some examples.
+
+Plain Text
+----------
+
+Links
+-----
+
+Bullet Lists
+------------
+
+Block Quotes
+------------
+
+Code Blocks
+-----------
+
+Math LaTeX
+----------
+
+
+----------
+
+And the markup which created this page can be see at [markup.txt](markup.txt).
+
 
