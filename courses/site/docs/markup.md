@@ -3,47 +3,15 @@ Markup Syntax
 
 You can edit umber pages using [markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) and [html](https://en.wikipedia.org/wiki/HTML) with snips of [LaTeX](https://en.wikipedia.org/wiki/LaTeX) for math.
 
-In particular,
+The rules are :
 
 * Plain text is wrapped. Blank lines indicate paragraphs.
 * Links are made with brackets and parens :&#91;displayed text&#93;(url)
 * Heading and sub-headings are marked with either # or ## or by underlining with == or -- .
 * Bullet lists have a * for each a line - and leave a blank line before and after the list.
-* A horizontal line is set with ----- .
-
-
-Plain text is wrapped. Blank lines indicate paragraphs.
--------------------------------------------------------
-
-For example,
-
-    Here's an example.
-    
-    The quick brown fox
-    jumps over the lazy dog.```
-
-will display as
-
------
-
-Here's an example.
-
-The quick brown fox
-jumps over the lazy dog.
-
-Create links with brackets and parens :&#91;displayed text&#93;(url)
-------------------------------------------------
-
-For example, [the college homepage](https://www.marlboro.edu).
-
-* Underline headings and subheadings with equal signs and dashes.
-* Put an asterisk at the start of a line to make a bullet list. (And leave a blank line before and after the list.)
-* Text that is indented with four spaces or is between backticks is put a yellowish block withou line wrapping, `like  this    block`
-* LaTeX inline expressions go within slash parens, e.g. `\(  e^\pi \)` while equations on their own line go within bracket parens e.g. `\[ x = \frac{1}{1+x} \]`
-* Code blocks marked with triple ticks will have syntax highlights, [as on github](https://help.github.com/articles/creating-and-highlighting-code-blocks/).
-
-
-
-
+* Horizontal lines are given by ----- .
+* Block quotes in which whitespace is unchanged are indented four spaces. 
+* Code blocks with syntax highlights are created with triple ticks, [as on github](https://help.github.com/articles/creating-and-highlighting-code-blocks/).
+* Math LaTeX inline expressions are delimited with slash parens, e.g. `\(  e^\pi \)` while equations on their own line should be placed between bracket parens e.g. `\[ x = \frac{1}{1+x} \]`
 
 
