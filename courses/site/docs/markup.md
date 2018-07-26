@@ -34,7 +34,7 @@ Block Quotes
     This is a block    quote
     in which   the whitespace is left unchanged.
 
-
+Each line of a block quote starts with four spaces.
 
 Links
 -----
@@ -59,7 +59,14 @@ For a file "foo.md", its attachments would be put in "foo.attachments/".
 Bullet Lists
 ------------
 
+This markup text
 
+    * one
+    * two
+       * two and a half
+    * three
+
+displays as
 
 * one
 * two
@@ -68,13 +75,12 @@ Bullet Lists
 
 Leave a blank line before and after.
 
+Starting each line with 1. gives a numbered list.
+
 1. one
 1. two
 1. three
 
-
-Block Quotes
-------------
 
 Code Blocks
 -----------
