@@ -380,8 +380,33 @@ class Git:
         """ add and commit all changed files as user admin """
         # Used after creating a new course.
         # See https://www.dulwich.io/apidocs/dulwich.porcelain.html#add
-        porcelain.add(os_git, paths=None)
-        porcelain.commit(os_git, '--message=user:admin')
+
+        # ----- ERROR ON PRODUCTION SERVER ----------- 
+
+        #          File "/var/www/umber/src/utilities.py", line 383, in add_and_commit_all 
+        # [Mon Jul 30 16:40:17.271596 2018] [wsgi:error] [pid 8695:tid 140399248512768] [remote 174.62.144.60:53043]     porcelain.add(os_git, paths=None) 
+        # [Mon Jul 30 16:40:17.271599 2018] [wsgi:error] [pid 8695:tid 140399248512768] [remote 174.62.144.60:53043]   File "/var/www/umber/venv/lib/python2.7/site-packages/dulwich/porcelain.py", line 363, in add 
+        # [Mon Jul 30 16:40:17.271601 2018] [wsgi:error] [pid 8695:tid 140399248512768] [remote 174.62.144.60:53043]     get_untracked_paths(os.getcwd(), r.path, r.open_index())) 
+        # [Mon Jul 30 16:40:17.271604 2018] [wsgi:error] [pid 8695:tid 140399248512768] [remote 174.62.144.60:53043]   File "/var/www/umber/venv/lib/python2.7/site-packages/dulwich/porcelain.py", line 882, in get_untracked_paths 
+        # [Mon Jul 30 16:40:17.271606 2018] [wsgi:error] [pid 8695:tid 140399248512768] [remote 174.62.144.60:53043]     ip = path_to_tree_path(basepath, ap) 
+        # [Mon Jul 30 16:40:17.271610 2018] [wsgi:error] [pid 8695:tid 140399248512768] [remote 174.62.144.60:53043]   File "/var/www/umber/venv/lib/python2.7/site-packages/dulwich/porcelain.py", line 186, in path_to_tree_path 
+        # [Mon Jul 30 16:40:17.271613 2018] [wsgi:error] [pid 8695:tid 140399248512768] [remote 174.62.144.60:53043]     return path.encode(sys.getfilesystemencoding()) 
+        # [Mon Jul 30 16:40:17.271617 2018] [wsgi:error] [pid 8695:tid 140399248512768] [remote 174.62.144.60:53043] UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 36: ordinal not in range(128) 
+
+        # https://stackoverflow.com/questions/21129020/
+        #  how-to-fix-unicodedecodeerror-ascii-codec-cant-decode-byte
+
+        try:
+            # ATTEMPTED KLUDGE FIX:
+            import sys  
+            reload(sys)  
+            sys.setdefaultencoding('utf8')
+            
+            porcelain.add(os_git, paths=None)
+            porcelain.commit(os_git, '--message=user:admin')
+            
+        except:
+            pass
     
     def add_and_commit(self, page, abspath=None):
         """ commit abspath or this page or this folder to git repo """

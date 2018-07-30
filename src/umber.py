@@ -396,6 +396,19 @@ def submit_newcourse():
                                      start = startdate,
                                      name_as_title = title,
                                      copyfrom = copyfrom)
+    for name in request.form['faculty'].split(','):
+        try:
+            faculty = Person.get(username = name.strip())
+        except:
+            faculty = None
+        if not faculty:
+            try:
+                faculty = Person.get(username = name.strip())
+            except:
+                faculty = None
+        if faculty:
+            today = str(Time())[:10]
+            newcourse.enroll(faculty, 'faculty', today, create_work=False)
     return url_base + '/sys/courses'
 
 def submit_edituser():
