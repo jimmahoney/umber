@@ -54,6 +54,7 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     site_url = 'http://127.0.0.1:5000/umber/'
     os_courses = os.path.join(os_root, 'courses')
     os_default_course = os.path.join(os_root, 'courses/default_course')
+    umber_cleanup = ''
     os_git = os_root
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
@@ -67,6 +68,7 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     os_courses = '/var/www/cours'
     os_git = '/var/www/cours'
     os_default_course = '/var/www/cours/default_course'
+    umber_cleanup = '/var/www/cours/etc/bin/umber_cleanup'
 
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')

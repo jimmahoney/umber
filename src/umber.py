@@ -409,7 +409,7 @@ def submit_newcourse():
         if faculty:
             today = str(Time())[:10]
             newcourse.enroll(faculty, 'faculty', today, create_work=False)
-    return url_base + '/sys/courses'
+    return newcourse.url
 
 def submit_edituser():
     """ edit existing user - admin only """
