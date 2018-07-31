@@ -388,6 +388,7 @@ class Git:
         except:
             # Instead just run umber_cleanup (which also commits changed files)
             # in a fork.
+            # OOPS - this doesn't work either.
             pid = os.spawnlp(os.P_NOWAIT, umber_cleanup, 'umber_cleanup', '')
     
     def add_and_commit(self, page, abspath=None):
