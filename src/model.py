@@ -134,8 +134,8 @@ class Person(BaseModel):
             as a dict with keys role,course,url,semester """
         registrations = list(Registration.select(Registration.role, Registration.course)
                                          .where(Registration.person == self))
-        registrations.sort(key=lambda r: r.course_name)
-        registrations.sort(key=lambda r: r.start_date, reverse=True)
+        registrations.sort(key=lambda r: r.course.name)
+        registrations.sort(key=lambda r: r.course.start_date, reverse=True)
         return [{'role':r.role.name, 'course':r.course.name,
                  'url':r.course.url, 'semester':Time(r.course.start_date).semester()}
                 for r in registrations if not r.course.name == 'Umber']
