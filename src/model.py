@@ -108,11 +108,14 @@ class Person(BaseModel):
     def create_person(username, name, email, password='', is_admin=False):
         with db.atomic():
             (user, created) = Person.get_or_create(username=username)
-            user.name = name
-            user.email = email
-            user.set_password(password)
-            user.save()
-        Course.enroll_site(user, is_admin=is_admin)
+            if created:
+                user.name = name
+                user.email = email
+                if not password:
+                    password = str(random.getrandbits(32))
+                user.set_password(password)
+                user.save()
+                Course.enroll_site(user, is_admin=is_admin)
         return user
 
     @staticmethod

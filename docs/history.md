@@ -1,5 +1,16 @@
 # umber development history #
 
+## Sep 2
+
+ added an adminscripts.py to misc/ folder;
+ can do bulk creation of users from nook html listings.
+ (upload images manually with for example chrome's
+  "image downloader" extension which does background images)
+
+ While the software is feeling fairly stable, I'm seeing
+ high loads on the server - often over 2.0. And it seems
+ slow to do some of the editing tasks.
+
 ## July 13
 
  TODO: crontabl (daily?) for umber_cleanup DONE
