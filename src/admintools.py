@@ -109,6 +109,7 @@ def parse_directory(filename):
 def make_csv(userdict, csvfilename):
     """ create csv file from user dictionary """
     csv = open(csvfilename, 'w')
+    cs.write('name,username\n')
     for u in userdict:
         csv.write("{},{}\n".format(u['name'], u['username']))
     csv.close()
