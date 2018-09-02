@@ -43,7 +43,7 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-import os, subprocess, yaml, re, mimetypes, shutil
+import os, subprocess, yaml, re, mimetypes, shutil, random
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
