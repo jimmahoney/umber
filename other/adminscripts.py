@@ -24,8 +24,8 @@ and then add them to umber's sql database :
 
   $ cd /var/www/umber
   $ . env/production
-  $ cd /var/www/cours/etc/misc
   $ umber_console
+  >>> os.chdir('/var/www/cours/etc/misc')
   >>> from adminscripts import *
   >>> users = parse_directory('nookfile.html')
   >>> make_csv(users, 'users.csv')
@@ -81,7 +81,6 @@ def add_users(csvfilename, passwd=False, enroll=False):
             password = row['username'] + '*05344*'  # i.e. mahoney*05344*
         else:
             password = '' # blank => make random passwd in Person.create_person
-        )
         student = Person.create_person(
             username = row['username'],
             name = row['name'],
