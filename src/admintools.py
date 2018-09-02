@@ -1,7 +1,7 @@
 """
- adminscripts.py
+ admintools.py
 
- utility scripts to add users, courses, etc.
+ utilities to add users, courses, etc.
 
 --- courses_jan2018.csv ----
 name,name_as_title,path,faculty
@@ -25,8 +25,8 @@ and then add them to umber's sql database :
   $ cd /var/www/umber
   $ . env/production
   $ umber_console
-  >>> os.chdir('/var/www/cours/etc/misc')
   >>> from adminscripts import *
+  >>> os.chdir('/var/www/cours/etc/misc') # folder for .html , .csv
   >>> users = parse_directory('nookfile.html')
   >>> make_csv(users, 'users.csv')
   >>> add_users('users.csv')
