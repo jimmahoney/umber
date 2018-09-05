@@ -12,6 +12,7 @@ The rules are :
 * Bullet lists have a * for each a line - and leave a blank line before and after the list.
 * Horizontal lines are given by ----- .
 * Code blocks with syntax highlights are created with triple ticks, [as on github](https://help.github.com/articles/creating-and-highlighting-code-blocks/).
+* Inline code is marked with single ticks or &lt;code&gt; blocks, again [as on github](https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code).
 * Math LaTeX inline expressions are delimited with slash parens, e.g. `\(  e^\pi \)` while equations on their own line should be placed between bracket parens e.g. `\[ x = \frac{1}{1+x} \]`
 
 Below are examples of these rules. 
@@ -101,6 +102,7 @@ def increment(x):
   return x + 1
 ```
 
+And here is some inline code, namely the statements `x=x+1; y=sin(x)`. So there.
 
 Math LaTeX
 ----------

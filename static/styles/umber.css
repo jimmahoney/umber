@@ -789,13 +789,26 @@ form.login {
     margin-bottom: 0.1em;
 }
 
-/* Blocks that were <pre><code>...</code></pre> are now just <code>...</code>  */
-.component code, pre.code { 
+/* `...` inline is <code>...</code> ; ```...``` blocks are <pre><code>...</pre></code>. */
+
+.component code { 
+  font-family: monospace;      /* default for <pre> */
+  /* display: block; */              /* default for <pre> */
+  white-space: pre;            /* default for <pre> */
+  background-color: #fffff6; 
+  padding: 0.2em;
+  /* margin: 0.5em 0 0 0; */
+  border: 1px dashed #90C0C0;
+  color: black;
+  line-height: 1.1em;
+}
+
+pre code {
   font-family: monospace;      /* default for <pre> */
   display: block;              /* default for <pre> */
   white-space: pre;            /* default for <pre> */
   background-color: #fffff6; 
-  padding: 1em;
+  padding: 0.5em !important;
   margin: 0.5em 0 0 0;
   border: 1px dashed #90C0C0;
   color: black;
@@ -806,6 +819,7 @@ form.login {
   position: relative;
   left: -1em;
 }
+
 
 /* 
   ##### old

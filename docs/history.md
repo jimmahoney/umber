@@ -4,6 +4,11 @@
 
  fixed links for markup help on edit_work and edit_file templates.
 
+ changed umber.css to allow inline code blocks.
+ (`stuff` already turns into <code>stuff</code>;
+ now that is an inline spec and not a block.)
+ Also updated the markup syntax help accordingly.
+
   -- coming --
   run umber_cleanup from a deamon process
   when the database or files change
