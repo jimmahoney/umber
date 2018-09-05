@@ -1,5 +1,18 @@
 # umber development history #
 
+## Sep 5 2018
+
+ fixed links for markup help on edit_work and edit_file templates.
+
+  -- coming --
+  run umber_cleanup from a deamon process
+  when the database or files change
+  to insure that the git repo in a reasonable state.
+  Sending a unix signal from the apache wsgi
+  but not taking up time or resources in that process.
+  I'm hoping that something like this can help with the high apache
+  loads  and glitches I've been seeing.
+
 ## Sep 2
 
  added an adminscripts.py to misc/ folder;

@@ -76,6 +76,7 @@ else:
 umber_url = protocol + hostname + '/' + url_base
 about_url = umber_url + '/site/docs/about'
 help_url = umber_url + '/site/docs/help'
+markup_url = umber_url + '/site/docs/markup'
 photos_url = umber_url + '/site/photos'
 
 # custom mime-types for files within courses (does not include static files)
