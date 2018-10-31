@@ -269,7 +269,10 @@ class Course(BaseModel):
         # This method is essentially __init__ for these database objects.
         self._set_users()
         self.assignments = self._get_assignments()
-        self.semester = Time(self.start_date).semester()
+        if not self.start_date:
+            self.semester = ''
+        else:
+            self.semester = Time(self.start_date).semester()
         # url without request though that info is also in request
         self.url = umber_url + '/' + self.path
         self.abspath = os.path.join(os_courses, self.path)
