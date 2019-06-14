@@ -3,7 +3,7 @@
  utilities.py
 """
 import parsedatetime, pytz, random
-import os, urlparse, arrow, string, re, StringIO
+import os, urllib.parse, arrow, string, re, io
 from dulwich import porcelain
 from dulwich.repo import Repo
 from dulwich.object_store import tree_lookup_path
@@ -17,7 +17,7 @@ from dateutil.parser import parse as dateutil_parse
 debug_log = {'file': None}
 def print_debug(message):
     if umber_debug:
-        print message
+        print(message)
     if debug_logfilename:
         if not debug_log['file']:
             debug_log['file'] = open(debug_logfilename, 'a')
@@ -265,9 +265,9 @@ def clean_access_dict(dict):
         [('one', 'alpha'), ('two', ['beta', 'gamma'])]
     """
     new_dict = {}
-    for (key,value) in dict.iteritems():
+    for (key,value) in dict.items():
         if type(value) == type([]):
-            new_value = map(str, value)
+            new_value = list(map(str, value))
         else:
             new_value = str(value)
         new_dict[str(key)] = new_value
@@ -294,15 +294,15 @@ def parse_assignment_data(request_form):
         if m:
             (which, nth) = (m.group(1), int(m.group(2)))
             if request_form[key] != "":              # Ignore blank assignments.
-                if not assignment_data.has_key(nth):
+                if nth not in assignment_data:
                     assignment_data[nth] = {}
                 assignment_data[nth][which] = request_form[key]
     # Only keep well-formed assignments which have (name, due, blurb)
     bad = []
     for nth in assignment_data:
-        if not assignment_data[nth].has_key('name') or \
-           not assignment_data[nth].has_key('due') or \
-           not assignment_data[nth].has_key('blurb'):
+        if 'name' not in assignment_data[nth] or \
+           'due' not in assignment_data[nth] or \
+           'blurb' not in assignment_data[nth]:
              bad.append(nth)
     for nth in bad:
         del assignment_data[nth]
@@ -403,7 +403,7 @@ class Git:
     def rm_and_commit(self, page, abspaths):
         """ remove files and folders (absolute paths) & commit changes """
         # -- page is the folder from which the delete form was submitted.
-        relpaths = map(lambda x: os.path.relpath(x, os_git), abspaths)
+        relpaths = [os.path.relpath(x, os_git) for x in abspaths]
         page.keep()
         porcelain.rm(os_git, paths=relpaths)
         porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
@@ -418,7 +418,7 @@ class Git:
         """ return revisions and dates of a given file as [(githash, date, author)]"""
         # The path seems to be picky here - wants not abspath but relative to os_git.
         relpath = os.path.relpath(page.abspath, os_git)
-        buffer = StringIO.StringIO()
+        buffer = io.StringIO()
         porcelain.log(os_git, paths=[relpath], outstream=buffer)
         logstring = buffer.getvalue()
         print_debug('  dulwich git log for {} is {}'.format(page.abspath, logstring))
@@ -458,7 +458,7 @@ _icon_map = {'text' : ('text.gif', ('txt', 'css', 'rtf', 'html',
            }
 ext_to_filetype = {}
 filetype_to_icon = {}
-for (filetype, (icon, extensions)) in _icon_map.items():
+for (filetype, (icon, extensions)) in list(_icon_map.items()):
     filetype_to_icon[filetype] = os.path.join('icons', icon)
     for ext in extensions:
         ext_to_filetype['.' + ext] = filetype
@@ -536,7 +536,7 @@ def stringify_access(rights):
     """ convert list or string to list with commas """
     # [u'frank', u'bob'] => 'frank, bob'
     # u'joe'  => 'joe'
-    if type(rights) == type('') or type(rights) == type(u''):
+    if type(rights) == type('') or type(rights) == type(''):
         return str(rights)
     else:
         return str(', '.join(rights))
@@ -546,8 +546,8 @@ def parse_access_string(access):
     # 'frank' => 'frank'
     # 'frank, faculty' => ['frank', 'faculty']
     names = re.split(r'\s*,\s*|\s+', access) # split on commas and/or whitespace
-    names = map(whitestrip, names)
-    names = filter(lambda x: len(x)>0, names)
+    names = list(map(whitestrip, names))
+    names = [x for x in names if len(x)>0]
     if len(names) == 1:
         names = names[0]
     return names
@@ -619,7 +619,7 @@ def markdown2html(string, extras=True):
 def split_url(urlpath):
     """ Given e.g. 'foo/bar/baz.html?this=that&color=red', 
         return ('foo/bar/baz', '.html', '?this=that&color=red') """
-    (scheme, netloc, path, query, fragment) = urlparse.urlsplit(urlpath)
+    (scheme, netloc, path, query, fragment) = urllib.parse.urlsplit(urlpath)
     (base, ext) = os.path.splitext(path)
     return (base, ext, query)
 
@@ -664,7 +664,7 @@ def pygmentize(code, filename=None, language=None):
 def in_console():
     """ Return True if current environment is the flask console """
     # See $UMBER_ROOT/bin/umber_console
-    return os.environ.has_key('UMBER_CONSOLE')
+    return 'UMBER_CONSOLE' in os.environ
 
 if __name__ == '__main__':
     import doctest

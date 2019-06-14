@@ -24,13 +24,13 @@ request_context = app.test_request_context('')
 request_context.push()        # Make it active.
 app.preprocess_request()      # Run the pre-requrest code.
 
-print "== Umber console | flask shell | {} ==".format(
-    os.environ['UMBER_CONFIG'].lower())
-print "Database file is {}".format(os_db)
-print "To see all defined names : pp(vars()) ."
+print("== Umber console | flask shell | {} ==".format(
+    os.environ['UMBER_CONFIG'].lower()))
+print("Database file is {}".format(os_db))
+print("To see all defined names : pp(vars()) .")
 
 if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     democourse = Course.get(name='Demo Course')
     homepage = Page.get_from_path('demo/home')
     jane = Person.get(username='janedoe')
-    print "Variables include (democourse, homepage, jane, app, request)."
+    print("Variables include (democourse, homepage, jane, app, request).")

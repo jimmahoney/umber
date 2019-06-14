@@ -4,11 +4,11 @@
 from flask import Flask
 app = Flask('hello')
 
-print "==>  hello.py"
-print "==>  app={}".format(app)
+print("==>  hello.py")
+print("==>  app={}".format(app))
 
 @app.route('/', defaults={'path':''})
 @app.route('/<path:path>')
 def catchall(path):
-    print "==> catchall('{}')".format(path)
+    print("==> catchall('{}')".format(path))
     return "hello path '{}'".format(path)

@@ -53,6 +53,7 @@ from utilities import markdown2html, link_translate, static_url, \
      git, Time, stringify_access, print_debug, clean_access_dict
 from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
     os_root, os_courses, photos_url, url_base, os_default_course
+from functools import reduce
 
 db = SqliteDatabase(os_db)
 
@@ -62,8 +63,7 @@ class BaseModel(Model):
 
     def __repr__(self):
         # e.g. 
-        fields = ', '.join(map(lambda x: "{}={}".format(x[0],repr(x[1])),
-                           self.__dict__['_data'].items()))
+        fields = ', '.join(["{}={}".format(x[0],repr(x[1])) for x in list(self.__dict__['_data'].items())])
         return '<{}({}) at 0x{:X}>'.format(self.__class__.__name__,
                                        fields, id(self))
 
@@ -93,7 +93,7 @@ class Person(BaseModel):
     @staticmethod
     def from_comma_string(comma_string):
         """ Return list of people from a string of usernames e.g. "john,mary" """
-        return map(Person.by_username, comma_string.split(','))
+        return list(map(Person.by_username, comma_string.split(',')))
     
     @staticmethod
     def searchname(partialname, maxresults=32):
@@ -183,7 +183,7 @@ class Person(BaseModel):
         """ Create and return an anonymous Person """
         # Not saved to database (i.e. save() not called).
         # Not logged in.
-        anon = Person(name=u'anonymous', username=u'')
+        anon = Person(name='anonymous', username='')
         anon.anonymous = True
         return anon
         
@@ -205,9 +205,9 @@ class Person(BaseModel):
 
     def get_id(self):
         if self.username == None:
-            return unicode('')
+            return str('')
         else:
-            return unicode(self.username)
+            return str(self.username)
 
     def get_photo_url(self):
         return photos_url + '/' + self.username + '.jpg'
@@ -1093,7 +1093,7 @@ class Page(BaseModel):
                     except:
                         pass    # i.e. jpg image files
         else:
-            text = u''
+            text = ''
         #print_debug(" page.content : page.action = '{}'".format(page.action))
         return text
 
@@ -1147,7 +1147,7 @@ class Page(BaseModel):
         # This method converts the content of that file to html,
         # keeping only the parts that this user is allowed to see.
         parser = BeautifulSoup(self.content(), 'html.parser')
-        for role in Role.name_rank.keys():
+        for role in list(Role.name_rank.keys()):
             divs = parser.find_all('div', access=role)
             if self.user_rank < Role.by_name(role).rank:
                 for div in divs:
@@ -1159,7 +1159,7 @@ class Page(BaseModel):
             mstring = markdown2html(contents)
             insides.append(mstring)
             divm.string = marker
-        html = unicode(parser) # convert beautiful soup object to formatted unicode
+        html = str(parser) # convert beautiful soup object to formatted unicode
         while insides:
             inside = insides.pop(0)
             html = html.replace(marker, inside, 1)
@@ -1180,7 +1180,7 @@ class Page(BaseModel):
             span['class'] = 'thispage'
             span.string = anchor.string
             parser.find('a', href=page.url).replace_with(span)
-        html = unicode(parser)
+        html = str(parser)
         return html
     
 class Assignment(BaseModel):
@@ -1275,7 +1275,7 @@ class Role(BaseModel):
     @staticmethod
     def create_defaults():
         with db.atomic():
-            for (name, rank) in Role.name_rank.items():
+            for (name, rank) in list(Role.name_rank.items()):
                 Role.get_or_create(name=name, rank=rank)
                 
 class Registration(BaseModel):
@@ -1339,7 +1339,7 @@ class Work(BaseModel):
                         # The special grades "...", "overdue', 'ungraded'
                         # are created when the actual grade is not set yet.
                         grade = id_grade_dict[key]
-                        if grade in (u'...', 'overdue', 'ungraded'):
+                        if grade in ('...', 'overdue', 'ungraded'):
                             grade = ''
                         work.grade = grade
                         work.save()
@@ -1372,7 +1372,7 @@ class Work(BaseModel):
                 css_class = 'darkgreen'
             if not self.submitted:
                 if before_due_date:
-                    grade = u'…'
+                    grade = '…'
                 else:
                     grade = 'overdue'
                     css_class = 'red'
@@ -1389,7 +1389,7 @@ class Work(BaseModel):
                 css_class = 'darkgreen'
             if not self.submitted:
                 if before_due_date:
-                    grade = u'…'
+                    grade = '…'
                 else:
                     grade = 'overdue'
                     css_class = 'green'

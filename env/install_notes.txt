@@ -37,9 +37,5 @@ Installation instructions
 
      $ pip freeze > requirements_new.txt
 
----------------------------------------------------------------------------
 
-I was using an anaconda python and a conda virtual environment.
-The files for that are in the ./anaconda/ folder,
-or in the github repo for Jan 14 2014 i.e.
-commit 573cc76404dfe5f11ed318ade6379fc1311ba52c
+

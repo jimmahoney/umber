@@ -1,5 +1,66 @@
 # umber development history #
 
+## June 2019
+
+ working on a python3 branch
+ ... though python versions & package management is (still) a royal mess.
+
+ On my softmaple laptop, installed both python.org's 3.73 and homebrew's 3
+ (which is also 3.73). Anaconda's lags behind, is still at 3.6x.
+ These install to
+   /Library/Frameworks/Python.framework/Versions/3.7/bin/python3
+ and put a symbolic link at
+   /usr/local/bin/python3
+
+ Likewise, pip3 is the python3
+
+ Homebrew lays out the mess :
+ Python 3.x or Python 2.x
+
+    Homebrew provides one formula for Python 3.x (python) and another
+    for Python 2.7.x (python@2).  The executables are organized as
+    follows so that Python 2 and Python 3 can both be installed
+    without conflict:
+
+    - python3 points to Homebrew’s Python 3.x (if installed)
+    - python2 points to Homebrew’s Python 2.7.x (if installed)
+    - python points to Homebrew’s Python 2.7.x (if installed)
+       otherwise the macOS system Python. Check out brew info python
+       if you wish to add Homebrew’s 3.x python to your PATH.
+    - pip3 points to Homebrew’s Python 3.x’s pip (if installed)
+    - pip and pip2 point to Homebrew’s Python 2.7.x’s pip (if installed)
+
+ I will keep to this convention for now.
+
+ However, it looks like virtualenv is a more powerful tool
+ than the (now recommended at python.org) "python3 -m venv" virtual
+ thingy ... which seems too recent for me, particularly since
+ I have an existing virtualenv workflow.
+
+  My PATH has the python.org's python3 at it's default place;
+  that's the one I guess that I'll use.
+
+  Installed virtualenv :
+
+    $ python3 -m pip install virtualenv
+
+  and with it created a new umber/venv :
+
+    $ cd umber
+    $ virtualenv --python=python3.7 venv
+    $ ./env/activate   # sets environment vars & local python path
+    (venv) $ pip3 install -r env/requirements_without_versions.txt
+    (venv) $ pip3 freeze > requirements.txt
+
+  Now try the automated src conversion using
+  /Library/Frameworks/Python.framework/Versions/3.7/bin/2to3
+
+    $ 2to3 --output-dir=src -W -n src2
+
+## May-ish 2019
+
+ fixed edit_grades bug
+
 ## Sep 5 2018
 
  fixed links for markup help on edit_work and edit_file templates.

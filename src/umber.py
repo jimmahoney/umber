@@ -268,7 +268,7 @@ def ajax_upload():
     
     page = request.page
     print_debug(' ajax_upload ')    
-    print_debug('   request.form.keys() : {}'.format(request.form.keys()))
+    print_debug('   request.form.keys() : {}'.format(list(request.form.keys())))
     print_debug('   destination : "{}"'.format(page.abspath))
     print_debug('   page.url : {}'.format(page.url))
 
@@ -487,8 +487,7 @@ def submit_delete():
     # example request.form would be {'submit_delete':'delete',
     #                                '/full/path/file1.md':'checkboxdelete',
     #                                '/full/path/folder2/':'checkboxdelete'}
-    abspaths = list(filter(lambda path: request.form[path]=='checkboxdelete',
-                           request.form.keys()))
+    abspaths = list([path for path in list(request.form.keys()) if request.form[path]=='checkboxdelete'])
     print_debug(' submit_delete : {}'.format(abspaths))
     git.rm_and_commit(request.page, abspaths)
     return url_for('mainroute', pagepath=request.page.path, action='edit')
@@ -625,8 +624,7 @@ def form_post():
     # and is handled by a corresponding function submit_X()
     # if it passes its authorize_* permissions check.
 
-    keys_named_submit = filter(lambda s: re.match('submit', s),
-                               request.form.keys())
+    keys_named_submit = [s for s in list(request.form.keys()) if re.match('submit', s)]
     print_debug(' handle_post : submit keys = "{}" '.format(keys_named_submit))
     submit_what = keys_named_submit[0]
     print_debug(' handle_post : submit_what = "{}" '.format(submit_what))

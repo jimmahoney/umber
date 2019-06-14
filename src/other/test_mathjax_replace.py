@@ -41,12 +41,12 @@ text4 = r'Stuff for \(all\) $$three types$$ with \(repeats\) \[so\] $$there$$.'
 
 for text in (text1, text2, text3, text4):
     (newtext, lookup) = mathjax_replace(text)
-    print "text = '{}'".format(text)
-    print "newtext = '{}'".format(newtext)
+    print("text = '{}'".format(text))
+    print("newtext = '{}'".format(newtext))
     for m in lookup:
-        print "(mark, substring) = ('{}', '{}')".format(m, lookup[m])
+        print("(mark, substring) = ('{}', '{}')".format(m, lookup[m]))
     original = undo_mathjax_replace(text, lookup)
-    print "original = '{}'".format(original)
-    print
+    print("original = '{}'".format(original))
+    print()
 
 

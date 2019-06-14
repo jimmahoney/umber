@@ -4,6 +4,9 @@
 
  utility scripts to read in users and courses
 
+       RefactoringTool: Can't parse src2/input.py: 
+       ParseError: bad input: type=4, value='\n', context=(' ', (28, 19))
+
 """
 from model import Course, Person
 import csv
@@ -17,29 +20,21 @@ def input_courses(csvfilename):
         name_as_title = row['name_as_title']
         path = row['path']
         start = default_date
-        Course.create_course(
-            name = name,
-            name_as_title = name_as_title,
-            path = path,
-            start = default_date,
-            copy_generic = True
-            )
+        Course.create_course(name = name,
+                             name_as_title = name_as_title,
+                             path = path, start = default_date,
+                             copy_generic = True )
 
 def input_people(csvfilename):
     """ create users from a .csv file defining them """
     with row in csv.DictReader(open(csvfilename)):
-        username = 
+        username = row['username']
         name = row['name']
         email = row.get('email', username+'@marlboro.edu')
         password = row.get('password', username+'*05344*')  # CHANGEME
-        Person.create_person(
-            username = row['username'],
-            name = row['name']
-            email = username+'@marlboro.edu'
-            password = password
+        Person.create_person( username = row['username'],
+                              name = row['name'],
+                              email = username+'@marlboro.edu',
+                              password = password
             )
         coursepath = row['coursepath']
-
-
-
-
