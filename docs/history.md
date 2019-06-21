@@ -1,5 +1,23 @@
 # umber development history #
 
+## Apr 2019
+
+ I should look closely at cocalc :
+   blog.sagemath.com/2019/04/12/should-i-resign-from-my-full-professor-job-to-work-fulltime-on-cocalc.html
+   https://news.ycombinator.com/item?id=19682126
+   https://github.com/sagemathinc/cocalc
+
+ It's sage + jupyter + other stuff,
+ including a course management system.
+ They have a hosted setup for $ and handful of full time folks coding it.
+ The source itself is GPL-ish and can be run without paying them.
+
+ It's shared environments are "project" base,
+ so each course is a project, and each student has a "project" within the course.
+ Like the jupyterlab model, each project is a linux directory with a shell.
+
+ It does have full 
+
 ## Sep 5 2018
 
  fixed links for markup help on edit_work and edit_file templates.
