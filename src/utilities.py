@@ -81,7 +81,7 @@ class Time(object):
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
         including a timezone-aware (as specified in settings.py) offset.
 
-        >>> print Time('2013-01-01T12:24:52.3327-05:00')
+        >>> print(Time('2013-01-01T12:24:52.3327-05:00'))
         2013-01-01T12:24:52-05:00
 
         >>> a = str(Time('Tue Jul 10 2018 18:01:33 +0000')) # UTC
@@ -138,7 +138,7 @@ class Time(object):
             result = str(Time())  # If it can't be parsed, use "now" time.
         if re.search(r'00:00:00', result):
             # rather than use the start of the day (midnight), use the end.
-            #print "found zeros"
+            #print("found zeros")
             try:
                 date_time_string += ' ' + Time.default24time
                 result = str(dateutil_parse(date_time_string, ignoretz=True))
@@ -261,7 +261,7 @@ def clean_access_dict(dict):
     """ Return access dict with unicode replaced by str 
         >>> dirty = {u'one': u'alpha', 'two':[u'beta', 'gamma']}
         >>> clean = clean_access_dict(dirty)
-        >>> sorted(clean.iteritems())
+        >>> sorted(list(clean.items()))
         [('one', 'alpha'), ('two', ['beta', 'gamma'])]
     """
     new_dict = {}
@@ -421,7 +421,8 @@ class Git:
         buffer = io.StringIO()
         porcelain.log(os_git, paths=[relpath], outstream=buffer)
         logstring = buffer.getvalue()
-        print_debug('  dulwich git log for {} is {}'.format(page.abspath, logstring))
+        print_debug(
+            '  dulwich git log for {} is {}'.format(page.abspath, logstring))
         return parse_porcelain_log(buffer.getvalue())
     
     def get_revision(self, page):
@@ -600,7 +601,8 @@ def markdown2html(string, extras=True):
     else:
         output = markdown(string)
     #print_debug(u" markdown2html: string after markdown '{}'".format(string))
-    #print_debug(u" markdown2html: replacemements '{}'".format(unicode(replacements)))
+    #print_debug(u" markown2html: replacemements '{}'".format(
+    #  unicode(replacements)))
     output = undo_mathjax_replace(output, replacements)
     #print_debug(u" markdown2html: string after undo ''".format(string))  
     #

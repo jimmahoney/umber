@@ -14,7 +14,7 @@
    >>> democourse = Course.get(Course.name == 'Demo Course')
    >>> for (username, role) in sorted(democourse.username_to_role.items()):
    ...   user = Person.by_username(username)
-   ...   print "{} is {} in {}.".format(user.name, role.name, democourse.name)
+   ...   print("{} is {} in {}.".format(user.name, role.name, democourse.name))
    ...
    Jane Q. Doe is student in Demo Course.
    Johnny Smith is student in Demo Course.
@@ -22,7 +22,7 @@
  
    # Find a person from their username.
    >>> john = Person.get(username='johnsmith')
-   >>> print john.name
+   >>> print(john.name)
    Johnny Smith
 
    # Change their name.
@@ -31,7 +31,7 @@
 
    # See the change.
    >>> newjohn = Person.get(username='johnsmith')
-   >>> print newjohn.name
+   >>> print(newjohn.name)
    John Z. Smith
 
    # Change it back.
@@ -63,7 +63,8 @@ class BaseModel(Model):
 
     def __repr__(self):
         # e.g. 
-        fields = ', '.join(["{}={}".format(x[0],repr(x[1])) for x in list(self.__dict__['_data'].items())])
+        fields = ', '.join(["{}={}".format(x[0],repr(x[1]))
+                            for x in list(self.__dict__['_data'].items())])
         return '<{}({}) at 0x{:X}>'.format(self.__class__.__name__,
                                        fields, id(self))
 
@@ -92,7 +93,7 @@ class Person(BaseModel):
 
     @staticmethod
     def from_comma_string(comma_string):
-        """ Return list of people from a string of usernames e.g. "john,mary" """
+        """ Return people list from a string of usernames e.g. "john,mary" """
         return list(map(Person.by_username, comma_string.split(',')))
     
     @staticmethod
@@ -135,13 +136,16 @@ class Person(BaseModel):
     def course_data(self):
         """ return courses that this person is registered in 
             as a dict with keys role,course,url,semester """
-        registrations = list(Registration.select(Registration.role, Registration.course)
+        registrations = list(Registration.select(Registration.role,
+                                                 Registration.course)
                                          .where(Registration.person == self))
         registrations.sort(key=lambda r: r.course.name)
         registrations.sort(key=lambda r: r.course.start_date, reverse=True)
-        return [{'role':r.role.name, 'course':r.course.name,
-                 'url':r.course.url, 'semester':Time(r.course.start_date).semester()}
-                for r in registrations if not r.course.name == 'Umber']
+        return [{'role':r.role.name,
+                 'course':r.course.name,
+                 'url':r.course.url,
+                 'semester':Time(r.course.start_date).semester()}
+               for r in registrations if not r.course.name == 'Umber']
 
     def get_username(self, username):
         return Person.by_username(username)
@@ -264,7 +268,7 @@ class Course(BaseModel):
 
     _site_course = None  # course for site data
 
-    def prepared(self):
+    def prepared(self):        
         """ setup this instance after it's attributes are set """
         # This method is essentially __init__ for these database objects.
         self._set_users()
@@ -277,6 +281,19 @@ class Course(BaseModel):
         self.url = umber_url + '/' + self.path
         self.abspath = os.path.join(os_courses, self.path)
 
+    def __getattr__(self, key):
+        # Define some attributes (.url, .abspath, .students, ...)
+        # when they're needed.
+        #
+        # June 2019 : there is no "prepared" in python3's peewee;
+        # see https://github.com/coleifer/peewee/issues/1479
+        # So I need another way to call this after instantiating a Course.
+        # See docs.python.org/3/reference/expressions.html#attribute-references;
+        # ... I can override __getattr__ to fill 'em in when first accessed.
+        if not 'abspath' in self.__dir__():
+            self.prepared()
+        return self.__getattribute__(key)
+        
     def _set_users(self):
         """ define self.students, .faculty, .guests, .username_to_role """
         registrations = list(Registration.select(Registration.person,
@@ -408,7 +425,8 @@ class Course(BaseModel):
     
     def get_faculty_data(self):
         """ return {'email', 'name'} of faculty """
-        return [{'email':person.email, 'name':person.name} for person in self.faculty]
+        return [{'email':person.email, 'name':person.name}
+                for person in self.faculty]
 
     def grade_data_list(self, student):
         """ return student's view grade list for templates/grades.html """
@@ -452,7 +470,8 @@ class Course(BaseModel):
         #
         # The basic idea of the colors is that
         #    green-ish means the viewer should respond (i.e. "go")
-        #    red-ish   means that the other person should do something (i.e. a problem)
+        #    red-ish   means that the other person should do something
+        #              (i.e. a problem)
         #
         result = []
         for stud in self.students:
@@ -648,7 +667,7 @@ class Page(BaseModel):
     notes = TextField()
     path = TextField(unique=True)
     
-    course = ForeignKeyField(rel_model=Course,
+    course = ForeignKeyField(model=Course,
                              db_column='course_id',
                              to_field='course_id')
 
@@ -871,7 +890,8 @@ class Page(BaseModel):
                 accesspath = os.path.join(abspath, '.access.yaml')
                 if os.path.exists(accesspath):
                     accessfile = open(accesspath)
-                    access_dict = yaml.load(accessfile)
+                    # see https://msg.pyyaml.org/load
+                    access_dict = yaml.full_load(accessfile)
                     accessfile.close()
                     if type(access_dict) == type({}):
                         # OK, we found an access dict, so stop here.
@@ -1196,7 +1216,7 @@ class Assignment(BaseModel):
     name = TextField()
     notes = TextField()
     
-    course = ForeignKeyField(rel_model=Course,
+    course = ForeignKeyField(model=Course,
                              db_column='course_id',
                              to_field='course_id')
 
@@ -1290,13 +1310,13 @@ class Registration(BaseModel):
     midterm = TextField()
     status = TextField()
 
-    course = ForeignKeyField(rel_model=Course,
+    course = ForeignKeyField(model=Course,
                              db_column='course_id',
                              to_field='course_id')
-    person = ForeignKeyField(rel_model=Person,
+    person = ForeignKeyField(model=Person,
                              db_column='person_id',
                              to_field='person_id')
-    role = ForeignKeyField(rel_model=Role,
+    role = ForeignKeyField(model=Role,
                            db_column='role_id',
                            to_field='role_id')
         
@@ -1314,13 +1334,13 @@ class Work(BaseModel):
     faculty_modified = TextField(db_column='faculty_modified')
     faculty_seen = TextField(db_column='faculty_seen')
 
-    assignment = ForeignKeyField(rel_model=Assignment,
+    assignment = ForeignKeyField(model=Assignment,
                                  db_column='assignment_id',
                                  to_field='assignment_id')
-    person = ForeignKeyField(rel_model=Person,
+    person = ForeignKeyField(model=Person,
                              db_column='person_id',
                              to_field='person_id')
-    page = ForeignKeyField(rel_model=Page,
+    page = ForeignKeyField(model=Page,
                            db_column='page_id',
                            to_field='page_id')
 
@@ -1417,7 +1437,7 @@ def init_db():
 def populate_db():
     """ Create test & example development objects """
     # i.e. democourse, jane, ted, john, adam; examples and tests.
-    #print "Populating development database."
+    #print("Populating development database.")
     
     with db.atomic():
         student = Role.by_name('student')

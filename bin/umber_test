@@ -8,7 +8,7 @@ if [ $UMBER_CONFIG = "PRODUCTION" ]; then
 else
     umber_init_db
     cd $UMBER_ROOT/src
-    echo "* Testing model.py";  python model.py
-    echo "* Testing utilities.py";  python utilities.py
+    echo "* Testing model.py";  python3 model.py
+    echo "* Testing utilities.py";  python3 utilities.py
 fi
 
