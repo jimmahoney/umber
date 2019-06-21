@@ -8,7 +8,7 @@ cd $UMBER_ROOT   # Set the working folder to the project root.
 pkill -f flask
 
 # start new background web server
-python -B -m flask run
+python3 -B -m flask run
 
 
 
