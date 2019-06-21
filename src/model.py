@@ -1335,7 +1335,13 @@ class Work(BaseModel):
                     if key[:5] == 'work_':  
                         id = int(key[5:])
                         work = Work.get(work_id=id)
-                        work.grade = id_grade_dict[key]
+                        # See get_grade_css for special grades ..., 
+                        # The special grades "...", "overdue', 'ungraded'
+                        # are created when the actual grade is not set yet.
+                        grade = id_grade_dict[key]
+                        if grade in (u'...', 'overdue', 'ungraded'):
+                            grade = ''
+                        work.grade = grade
                         work.save()
         except:
             print_debug('OOPS : Work.edit_grades(id_grade_dict="{}") failed' \
