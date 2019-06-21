@@ -48,11 +48,11 @@
 
     $ cd umber
     $ virtualenv --python=python3.7 venv
-    $ ./env/activate   # sets environment vars & local python path
+    $ . env/activate   # sets environment vars & local python path
     (venv) $ pip3 install -r env/requirements_without_versions.txt
     (venv) $ pip3 freeze > requirements.txt
 
-  Now try the automated src conversion using
+  Next : try the automated src conversion using
   /Library/Frameworks/Python.framework/Versions/3.7/bin/2to3
 
     $ 2to3 --output-dir=src -W -n src2
