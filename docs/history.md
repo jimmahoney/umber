@@ -1,5 +1,12 @@
 # umber development history #
 
+## Aug 2019
+
+ fixing various bugs
+    - a bunch related python3 string vs bytes, regex, dulwich paths
+    - jpeg/png file content can't be treated as strings ...
+    - os.remove does files, not folders; added shutil.rmtree
+
 ## June 2019
 
  working on a python3 branch

@@ -21,12 +21,12 @@
         href="{{ page.url }}?action=edit{{ amp_user }}">edit</a></li>
   {% endif %}
   {#  #}
-  {# --- history tab --- #}    
+  {# --- history tab --- #}
   {% if page.action == 'history' and page.is_file %}
     <li class='front'>history</li>
   {% elif page.is_file %}
     <li class='behind'><a href="{{page.url}}?action=history">history</a></li>
-  {% endif %}  
+  {% endif %}
   {# --- revision prev|info|next|current tab --- #}
   {#  #}    
   {% if page.revision and page.is_file %}

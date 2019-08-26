@@ -3,7 +3,7 @@
  utilities.py
 """
 import parsedatetime, pytz, random
-import os, urllib.parse, arrow, string, re, io
+import os, shutil, urllib.parse, arrow, string, re, io
 from dulwich import porcelain
 from dulwich.repo import Repo
 from dulwich.object_store import tree_lookup_path
@@ -403,21 +403,32 @@ class Git:
     def rm_and_commit(self, page, abspaths):
         """ remove files and folders (absolute paths) & commit changes """
         # -- page is the folder from which the delete form was submitted.
-        relpaths = [os.path.relpath(x, os_git) for x in abspaths]
         page.keep()
-        porcelain.rm(os_git, paths=relpaths)
-        porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
-        # This porcelain.rm seems to sometimes not delete the file itself.
+        # delete files & folders explicitly with os.remove() and shutil.rmtree()
         for abspath in abspaths:
-            try:
-                os.remove(abspath)
-            except:
-                pass
+            if os.path.isdir(abspath):
+                try:
+                    shutil.rmtree(abspath)      # folders
+                except:
+                    pass
+            else:
+                try:
+                    os.remove(abspath)          # files
+                except:
+                    pass
+        try:
+            # add changes to github repo (TODO: needs more testing!)
+            relpaths = [os.path.relpath(x, os_git).encode('utf8')
+                        for x in abspaths]
+            porcelain.rm(os_git, paths=relpaths)
+        except:
+            pass
+        porcelain.commit(os_git, '--message=user:{}'.format(page.user.username))
 
     def log(self, page):
         """ return revisions and dates of a given file as [(githash, date, author)]"""
         # The path seems to be picky here - wants not abspath but relative to os_git.
-        relpath = os.path.relpath(page.abspath, os_git)
+        relpath = os.path.relpath(page.abspath, os_git).encode('utf8')
         buffer = io.StringIO()
         porcelain.log(os_git, paths=[relpath], outstream=buffer)
         logstring = buffer.getvalue()
@@ -430,8 +441,8 @@ class Git:
         # page.revision:     (new) current 4 3 2 1 (old) page.revision
         # page.githashes     (new) 0       1 2 3 4 (old) if 5 revisions
         index = len(page.githashes) - page.revision
-        commit_sha = str(page.githashes[index])
-        relpath = os.path.relpath(page.abspath, os_git)        
+        commit_sha = str(page.githashes[index]).encode('utf8')
+        relpath = os.path.relpath(page.abspath, os_git).encode('utf8')
         return dulwich_get_file_revision(os_git, commit_sha, relpath)
 
 git = Git()
@@ -590,6 +601,10 @@ def markdown2html(string, extras=True):
         >> markdown2html(r'Formula \\( \\frac{1}{x} \\)')
         u'<p>Formula \\( \\frac{1}{x} \\)</p>\n'
     """
+    try:       # make sure string is really a string and not bytes
+        string = string.decode('utf8')
+    except:
+        pass 
     #print_debug(u" markdown2html: string before replace '{}'".format(string))    
     (string, replacements) = mathjax_replace(string)
     #print_debug(u" markdown2html: string after replace '{}'".format(string))

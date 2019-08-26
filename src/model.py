@@ -1102,16 +1102,19 @@ class Page(BaseModel):
     def content(self):
         """ Return file or github (revision) data for a page """
         # TODO: should this be cached as self._content ?
+        # python3 gotchas:
+        #  for text, I convert to a python3 string (utf8)
+        #  but for other (i.e. binary) data, I leave as python3 bytes
         if self.exists and self.is_file:
             if self.revision:
                 text = git.get_revision(self)
             else:
-                with open(self.abspath, 'r') as _file:
-                    text = _file.read()
+                with open(self.abspath, 'rb') as _file:
+                    text_bytes = _file.read()
                     try:
-                        text = text.decode('utf8')
+                        text = text_bytes.decode('utf8')  
                     except:
-                        pass    # i.e. jpg image files
+                        text = text_bytes   # e.g. *.png files
         else:
             text = ''
         #print_debug(" page.content : page.action = '{}'".format(page.action))
@@ -1122,10 +1125,10 @@ class Page(BaseModel):
         if self.can['write']:  # shouldn't get here without this anyway
             with open(self.abspath, 'w') as _file:
                 try:
-                    new_content = new_content.encode('utf8')
+                    new_text = new_content.decode('utf8')
                 except:
-                    pass
-                bytes_written = _file.write(new_content)
+                    new_text = new_content
+                bytes_written = _file.write(new_text)
         return bytes_written
 
     def content_as_html(self):
