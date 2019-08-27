@@ -1,0 +1,19 @@
+
+Aug 2019
+
+I'm thinking about implementing a seperate file service
+(git stuff, delete files, etc) that runs async
+to make the umber app more stable - it's had
+problems with all that stuff.
+
+ possibly related info :
+
+ https://github.com/phonkee/goexpose
+ https://github.com/iobio/minion
+ https://github.com/joewalnes/websocketd
+ https://stackoverflow.com/questions/14043926/node-js-connect-only-works-on-localhost
+ http://gitblit.com/
+ https://github.com/hulu/restfulgit   - python, flask, wsgi ...
+
+
+

@@ -6,7 +6,7 @@ certifi==2019.3.9
 cffi==1.12.3
 Click==7.0
 cryptography==2.7
-dulwich==0.19.11
+dulwich==0.19.11 
 enum34==1.1.6
 Flask==1.0.3
 Flask-Login==0.4.1

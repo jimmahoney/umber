@@ -21,11 +21,11 @@ sqlite3 $UMBER_DATA  < $UMBER_ROOT/database/umber.sql
 
 cd $UMBER_ROOT/src
 if [ $UMBER_CONFIG = "DEVELOPMENT" ]; then
-    python -c "import model; model.init_db(); model.populate_db()"
+    python3 -c "import model; model.init_db(); model.populate_db()"
 else
-    python -c "import model; model.init_db()"
+    python3 -c "import model; model.init_db()"
 fi
 
 # To create pwiz_model.py (which isn't loaded into the software but 
 # instead is a starting point for classes in src/model.py), run
-# $ python -m pwiz -e sqlite3 umber.db > pwiz_model.py
+# $ python3 -m pwiz -e sqlite3 umber.db > pwiz_model.py

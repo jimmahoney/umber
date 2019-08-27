@@ -1,5 +1,12 @@
 # umber development history #
 
+## Aug 2019
+
+ fixing various bugs
+    - a bunch related python3 string vs bytes, regex, dulwich paths
+    - jpeg/png file content can't be treated as strings ...
+    - os.remove does files, not folders; added shutil.rmtree
+
 ## June 2019
 
  working on a python3 branch
@@ -48,11 +55,11 @@
 
     $ cd umber
     $ virtualenv --python=python3.7 venv
-    $ ./env/activate   # sets environment vars & local python path
+    $ . env/activate   # sets environment vars & local python path
     (venv) $ pip3 install -r env/requirements_without_versions.txt
     (venv) $ pip3 freeze > requirements.txt
 
-  Now try the automated src conversion using
+  Next : try the automated src conversion using
   /Library/Frameworks/Python.framework/Versions/3.7/bin/2to3
 
     $ 2to3 --output-dir=src -W -n src2

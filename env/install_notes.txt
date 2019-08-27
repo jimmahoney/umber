@@ -11,17 +11,24 @@ Installation instructions
       $ git --version
       $ sqlite3 --version
 
- 2. Install a virtual python2.7 environment
+ 2. Install a virtual python environment
 
-    Get python2.7 and a compatible virtualenv
+    (Originally python2.7; as of Aug 2019, python3.7)
+
+    Get python and a compatible virtualenv
     ... probably already installed; otherwise see e.g. python.org.
+    (See below for ubuntu 18 & python3.7 instructions.)
 
       $ python --version
       $ virtualenv --version
 
     Create the virtual environment venv folder.
 
-      $ virtualenv --python=python2.7 venv
+      $ virtualenv --python=pythonX.X venv
+
+    Actifate the new python
+
+      $ . venv/bin/activate
 
     Load the project python packages.
 
@@ -37,5 +44,127 @@ Installation instructions
 
      $ pip freeze > requirements_new.txt
 
+========================
+Aug 2019 ; deploying on ubuntu 18 server cs.marlboro.college with python3 
 
+    python3.7  (... though I gave up on this and settled for the system's 3.5)
+    ------
+    
+    https://linuxize.com/post/how-to-install-python-3-7-on-ubuntu-18-04/
+    $ sudo bash
+    $ apt update
+    $ apt install software-properties-common
+    $ add-apt-repository ppa:deadsnakes/ppa
+    $ apt update
+    $ apt install python3.7
+    stackoverflow.com/questions/54633657/how-to-install-pip-for-python-3-7-on-ubuntu-18
+    $ apt install python3-pip        # installs pip3
+    $ python3.7 -m pip install pip
+    $ python3.7 -m pip --version
 
+    ... but I changed my mind and redid this with ubuntu's "apt-get python3" (3.5.2),
+    see below. (Had the headers correct for dulwich compile & was consistent
+    with what I could compile for apache's python mod_wsgi)b
+
+    umber (python3 branch)
+    ----------------------
+
+    $ git clone -b python3 https://github.com/jimmahoney/umber.git
+      then changed owner to mahoney:mahoney
+
+    virtualenv & packages
+    ---------------------
+
+    $ virtualenv --python=python3 venv    # (3.5.2 ; apt-get install python3)
+    $ . venv/bin/activate
+    (venv) $ pip install -r env/requirements.txt
+    
+    I had trouble with the default dulwich (python git wrapper) install
+    when using the (funkily installed) 3.7; 
+    in that case I I installed it manually instead
+    $ pip install dulwich --global-option="--pure"
+    ... but I think that ends up with much slower git stuff.
+
+    After some back-and-forth, I ended up using the
+    same mod_wsgi & virtualenv python : python3 (3.5.2).
+    The mod_wsgi docs really emphasize the problems
+    that doing anything else can bring.
+
+   apache & wsgi
+   -------------
+
+   looks like I was using a system python2;
+   the existing umber.wsgi & apache2 config fails.
+
+   It looks messy :
+    stackoverflow.com/questions/30642894/getting-flask-to-use-python3-apache-mod-wsgi
+    stackoverflow.com/questions/30674644/installing-mod-wsgi-for-python3-on-ubuntu/30682386#30682386
+   ... but turned out to be OK once I settled on python3 & compiled mod_wsgi from source.
+
+   -- 0. remove existing apache wsgi
+   $ sudo a2dismod wsgi
+   $ sudo apt-get remove libapache2-mod-wsgi
+
+   -- 1. build & install mod_wsgi with python3 
+   $ cd /var/www/umber
+   $ . venv/bin/activate   # activate the installed python3.7
+   ... failed .
+   
+     -- this is the apt-get system one : v 3.5
+     $ sudo apt-get upgrade apache2
+     $ sudo apt install libapache2-mod-wsgi-py3
+     $ dpkg -S mod_wsgi
+     libapache2-mod-wsgi-py3: /usr/lib/apache2/modules/mod_wsgi.so
+     libapache2-mod-wsgi-py3: /usr/lib/apache2/modules/mod_wsgi.so-3.5
+
+     -- I installed a more recent one from source 
+     see /usr/local/src/mod_wsgi on cs.marlboro.college.
+      following modwsgi.readthedocs.io/en/develop/user-guides/quick-installation-guide.html
+      source at https://github.com/GrahamDumpleton/mod_wsgi/releases
+      $ mkdir /usr/local/src/mod_wsgi
+      $ cd /usr/local/src/mod_wsgi
+      $ wget https://github.com/GrahamDumpleton/mod_wsgi/archive/4.6.5.tar.gz
+      $ tar xf 4.6.5.tar.gz
+      $ cd mod_wsgi-4.6.5
+      $ ./configure --with-python=python3
+      $ make
+      $ make install
+      Libraries have been installed in: /usr/lib/apache2/modules/mod_wsgi.so
+      (The apt-get one is still at mod_wsgi.so-3.5;
+       see /etc/apache2/mods-available/mod_wsgi.load )
+
+  -- 2. enable mod_wsgi
+   Enabled apache2 mod_wsgi by putting symbolic links in /etc/apache2/mods-enabled/
+
+  -- 3. make sure the umber python is the same as the wsgi python
+
+     modwsgi.readthedocs.io/en/develop/user-guides/virtual-environments.html
+     wsgi python path : /var/www/umber/venv
+
+     $ sudo apt-get install python3-venv
+
+     $ cd /var/www/umber
+     $ rm -rf venv
+     $ virtualenv --python=python3 venv
+     $ . venv/bin/activate
+     $ pip install -r env/requirments.txt   # including dulwich compile!
+
+     (And just for redundancy, I also put all the umber requirments into
+      the system python3 , including the compiled dulwich.
+      Not needed I think ... but this machine is primarily for this service.
+      $ sudo python3 -m pip install -r env/requirements.txt )
+
+  -- 4. edit apache config & umber.wsgi to be :
+
+   ##########################  umber.wsgi
+   import sys; sys.path.insert(0,  '/var/www/umber/src')
+   from umber import app as application
+
+   ##########################  cs.marlboro.college.conf
+   WSGIDaemonProcess umber python-home=/var/www/umber/venv
+   WSGIScriptAlias /cours /var/www/umber/src/umber.wsgi
+   <Directory /var/www/umber/src>
+      WSGIProcessGroup umber
+      WSGIApplicationGroup %{GLOBAL}
+      Require all granted
+   </Directory>

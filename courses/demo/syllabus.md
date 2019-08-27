@@ -6,7 +6,7 @@ Yes, you've found the <b>Demo Course</b> syllabus.
  details on when and where the course would run, and all that.
  For the demo course, this page is mostly a placeholder.
 
-## What you can do ###
+## What you can do here ###
 
 The home page (look to the left for the navigation links) lists
 several usernames and passwords; log in with one of those roles,
