@@ -57,6 +57,13 @@
 
     $ 2to3 --output-dir=src -W -n src2
 
+  setting up & pushing a new branch with this python3 stuff.
+    $ git branch python3
+    $ git checkout python3
+    $ git add ...
+    $ git commit ...
+    $ git push --set-upstream origin python3   # after some googling
+
 ## May-ish 2019
 
  fixed edit_grades bug
