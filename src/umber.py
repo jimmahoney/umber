@@ -381,7 +381,7 @@ def submit_newuser():
                 'username={} name="{}" email={} password=""'.format(
                 username, name, email, password))
     Person.create_person(username, name, email, password)
-    return url_base + '/sys/user?username=' + username
+    return umber_url + '/sys/user?username=' + username
 
 def submit_newcourse():
     """ create new course """

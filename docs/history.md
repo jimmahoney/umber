@@ -1,9 +1,17 @@
 # umber development history #
 
+## Aug 28
+
+ more fixes
+    - alphabatized list of users
+    - "try" around access_rights eval()
+      (crashed for non-existant file)
+    - url for newuser redirect
+
 ## Aug 2019
 
  fixing various bugs
-    - a bunch related python3 string vs bytes, regex, dulwich paths
+    - a bunch of related python3 string vs bytes, regex, dulwich paths
     - jpeg/png file content can't be treated as strings ...
     - os.remove does files, not folders; added shutil.rmtree
 
