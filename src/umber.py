@@ -224,6 +224,8 @@ def mainroute(pagepath):
             print_debug('   pygmentizing ...')
             html = pygmentize(_content, filename=page.name_with_ext)
             _mimetype = 'text/html'
+        else:
+            html = _content  # pass along unchanged
         return Response(html, mimetype=_mimetype)
 
     else:
