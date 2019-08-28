@@ -368,7 +368,8 @@ def submit_searchuser():
     if len(usernames) == maxresults:
         flash("Too many results - only showing first {}.".format(maxresults),
                   'search')
-    return request.page.url + '?search=' + partialname + '&usernames=' + ','.join(usernames)
+    return request.page.url + '?search=' + partialname + \
+                              '&usernames=' + ','.join(usernames)
 
 def submit_newuser():
     """ create new user """

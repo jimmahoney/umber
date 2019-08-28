@@ -180,6 +180,9 @@ class Person(BaseModel):
         else:
             return Role.by_name('visitor')
 
+    def get_lastname(self):
+        return self.name.split(' ')[-1]
+        
     # -- Flask-Login methods & tools --
 
     @staticmethod
@@ -415,7 +418,13 @@ class Course(BaseModel):
         return os.path.join(self.url, 'home')
 
     def get_registered(self):
-        return self.students + self.guests + self.faculty
+        registrations = list(Registration.select(Registration.person,
+                                                 Registration.role)
+                                         .where((Registration.course == self)
+                                          &  (Registration.status != 'drop')))
+        people = [reg.person for reg in registrations]
+        people.sort(key=lambda p: p.get_lastname())
+        return people
 
     def email_everyone_html(self):
         return "mailto:" + ','.join([p.email for p in self.get_registered()])
@@ -880,7 +889,11 @@ class Page(BaseModel):
                 ## e.g.  {# {'read':'all', 'write':'faculty' #}
                 template = os.path.join(os_root, 'templates', self.sys_template)
                 firstline = open(template).readline()
-                access_dict = eval(firstline.replace('{#','').replace('#}',''))
+                try:
+                    access_dict = eval(firstline.replace('{#','').replace('#}',''))
+                except:
+                    # something fairly safe as a fall-back
+                    access_dict = {'read':'faculty', 'write':'faculty'}
         else:
             if self.is_dir:
                 abspath = self.abspath
