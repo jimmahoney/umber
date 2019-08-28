@@ -222,9 +222,9 @@ def mainroute(pagepath):
         _mimetype = page.get_mimetype()
         if 'html' in request.args:
             print_debug('   pygmentizing ...')
-            _content = pygmentize(_content, filename=page.name_with_ext)
+            html = pygmentize(_content, filename=page.name_with_ext)
             _mimetype = 'text/html'
-        return Response(_content, mimetype=_mimetype)
+        return Response(html, mimetype=_mimetype)
 
     else:
 

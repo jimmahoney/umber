@@ -7,6 +7,7 @@
     - "try" around access_rights eval()
       (crashed for non-existant file)
     - url for newuser redirect
+    - b'' in ?html pygmentize (another bytes vs string python3 glitch)
 
 ## Aug 2019
 

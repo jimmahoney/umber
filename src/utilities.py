@@ -644,10 +644,11 @@ def pygment_webpage(filename, body):
     """ Return html webpage for pygmentized code """
     pygments_css = static_url('styles/pygment.css')
     try:
-        body = body.encode('utf8')
+        # convert bytes to python3 string
+        body = body.decode('utf8')  
     except:
         pass
-    return """
+    result = """
 <html>
 <head>
 <title>{}</title>
@@ -658,6 +659,7 @@ def pygment_webpage(filename, body):
 </body>
 </html>
 """.format(filename, pygments_css, body)
+    return result
 
 def pygmentize(code, filename=None, language=None):
     """ return html syntax higlighted code """
@@ -673,10 +675,9 @@ def pygmentize(code, filename=None, language=None):
         lexer = get_lexer_by_name(language)
     else:
         lexer = guess_lexer(code)
-    formatter = HtmlFormatter(linenos=False, cssclass='codehilite')
+    formatter = HtmlFormatter(linenos=False, cssclass='codehilite', encoding='utf-8')
     code_as_html = highlight(code, lexer, formatter)
     return pygment_webpage(filename, code_as_html)
-
 
 def in_console():
     """ Return True if current environment is the flask console """
