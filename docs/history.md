@@ -1,5 +1,17 @@
 # umber development history #
 
+## Sep 1 2019
+
+ * looking at gitlab ... it can be self-hosted and act as a web-git thingy.
+ * perhaps that would help me run some git scripts from the umber side
+   to do my git stuff? Hmmm.
+ * maybe I just need to run some sort of async script from apache
+   to invoke git ...
+ * ... or maybe I need another service, i.e.
+   e.g. a tornado / python thing on another port; see
+   blog.dscpl.com.au/2015/08/running-async-web-applications-under.html
+   ... and lots of staring at "async" and "await" in python.
+
 ## Aug 28
 
  more fixes

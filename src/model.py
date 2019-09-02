@@ -25,6 +25,10 @@
    >>> print(john.name)
    Johnny Smith
 
+   # test last, first
+   >>> john.get_last_first()
+   'Smith, Johnny'
+
    # Change their name.
    >>> john.name = 'John Z. Smith'
    >>> rows_changed = john.save()
@@ -180,8 +184,9 @@ class Person(BaseModel):
         else:
             return Role.by_name('visitor')
 
-    def get_lastname(self):
-        return self.name.split(' ')[-1]
+    def get_last_first(self):
+        names = self.name.split(' ')
+        return names[-1] + ', ' + names[0]
         
     # -- Flask-Login methods & tools --
 
@@ -423,7 +428,7 @@ class Course(BaseModel):
                                          .where((Registration.course == self)
                                           &  (Registration.status != 'drop')))
         people = [reg.person for reg in registrations]
-        people.sort(key=lambda p: p.get_lastname())
+        people.sort(key=lambda p: p.get_last_first())
         return people
 
     def email_everyone_html(self):
