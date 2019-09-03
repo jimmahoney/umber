@@ -1,5 +1,34 @@
 # umber development history #
 
+## Sep 2 2019
+
+ * Doing "new user" on cs.marlboro.college
+   sends one of the apache2 processes to 100% cpu
+   in "top" ... and it stays busy even after the
+   web page reloads and it looks like it's done.
+   
+   Something isn't right there - I think that process is hanging,
+   even though the page load completes successfully eventually
+   and the database seems to up updated correctly.
+
+   Also, "w" and "uptime" show the load shooting up to 1.0.
+
+   Needs more investigation.
+
+   Attempted fix: in Person.create_person, took Course.enroll_site out
+   of "with db.atomic()" since there is already one of those within
+   enroll_site. (Though
+   http://docs.peewee-orm.com/en/3.1.0/peewee/transactions.html says
+   that's OK ... at lease within one function.)  Though it does say
+   "if an exception occurs in a nested block, this can lead to
+   unpredictable behavior, so it is strongly recommended that you
+   use atomic"
+
+   Another possibility: picture for user janedoe ... when
+   there isn't such a person, in templates/src/newuser.html.
+   Just use a stock image, eh?
+
+
 ## Sep 1 2019
 
  * looking at gitlab ... it can be self-hosted and act as a web-git thingy.

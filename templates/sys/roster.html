@@ -7,7 +7,7 @@
        href="{{ page.course.url ~ '/sys/user?username=' ~ _user.username }}"><img
        src="{{ _user.get_photo_url() }}"
        alt="{{ _user.username }} photo" height="152" /
-       onerror=this.src="{{Person.generic_photo_url() }}"
+       onerror=this.src="{{ static_url('images/generic_student.png') }}"
        ></a><br/><b>{{ _user.name }}</b><br/
        ><small> <a href="mailto:{{ _user.email }}">{{ _user.username }}</a></small></td>
 {%     if (loop.index % 5) == 0 %}{# 5 pictures per row #}

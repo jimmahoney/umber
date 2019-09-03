@@ -120,7 +120,7 @@ class Person(BaseModel):
                     password = str(random.getrandbits(32))
                 user.set_password(password)
                 user.save()
-                Course.enroll_site(user, is_admin=is_admin)
+        Course.enroll_site(user, is_admin=is_admin) # also has db.atomic()
         return user
 
     @staticmethod
