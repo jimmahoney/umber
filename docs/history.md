@@ -1,5 +1,23 @@
 # umber development history #
 
+## Sep 5 2019
+
+ performance of python wsgi & git stuff on cs.marlboro.college?
+
+ stackoverflow.com/questions/30794363/
+ how-to-improve-the-performance-of-apache-with-mod-wsgi
+
+ there may be some stragegies to improve speed.
+ I need to read up more on how to (a) analyze and (b) optimize it.
+   - mpm_worker_module
+   - wsgidaemonprocess
+
+ also look into speeding up git :
+   https://www.atlassian.com/blog/git/handle-big-repositories-git
+   - "shallow clone" to remove old history stuff
+   - remove some old binary file "cruft"
+  
+
 ## Sep 2 2019
 
  * Doing "new user" on cs.marlboro.college

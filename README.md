@@ -6,7 +6,7 @@ a course management web app built with python Flask, sqlite3, and git.
 installation
 -------------
 
-Tested on Ubuntu 16.05 with python 2.7.12.
+Tested on Ubuntu 18 with python 3.5.
 
     # -- Install the system dependencies. --
     $ sudo apt-get install git sqlite3 virtualenv 
@@ -16,11 +16,9 @@ Tested on Ubuntu 16.05 with python 2.7.12.
     $ cd umber
 
     # --Install the python environment and its required modules. --
-    $ virtualenv --python=python2.7 venv
+    $ virtualenv --python=python3.4 venv
     $ . env/activate
     $ pip install -r ./env/requirements.txt
-
-
 
 development & testing
 ---------------------
@@ -51,6 +49,12 @@ Like any Flask app, this can be deployed using WSGI,
 using for example libapache2-mod-wsgi or gunicorn.
 See src/umber.wsgi and env/production for more information.
 
+example
+--------
+
+I use this for my courses at cs.marlboro.college,
+which is running on a linode using apache mod_wsgi.
+
 ----------------------------------------------------------
 
-Jim Mahoney | cs.marlboro.edu | Jan 2018 | MIT License | github.com/jimmahoney/umber
+Jim Mahoney | Sep 2019 | MIT License | github.com/jimmahoney/umber
