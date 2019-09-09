@@ -11,7 +11,7 @@ A file with some funny characters ... hmmm.
 Σ        alphabet              
 
     A∪B      set union             A|B       
-    ∅       empty set              {}        (where the curlys delimit the set)
+    ∅       empty set              {}        (where the thingies delimit the set)
     ε       empty string           '' or ""  (where ' or " is the string delimiter)
     A○B     concatentation         AB        
     A∪B○C                          A|BC
