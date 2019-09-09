@@ -1,7 +1,7 @@
 utf8
 =====
 
-A file with some funny characters ...
+A file with some funny characters ... hmmm.
 
 
 
