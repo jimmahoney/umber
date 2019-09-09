@@ -1,5 +1,12 @@
 # umber development history #
 
+## Sep 7 2019
+
+ on umber (production), moved database outside of cours/*
+ tree so that it is *not* within the github repo ... it
+ changes often and is a binary file, so I think leaving
+ within github is a performance hit for git.
+
 ## Sep 5 2019
 
  performance of python wsgi & git stuff on cs.marlboro.college?
@@ -10,13 +17,26 @@
  there may be some stragegies to improve speed.
  I need to read up more on how to (a) analyze and (b) optimize it.
    - mpm_worker_module
-   - wsgidaemonprocess
+       ... already using mpm_event ... which seems recommended
+   - wsgidaemonprocess 
+       ... already configured
 
  also look into speeding up git :
    https://www.atlassian.com/blog/git/handle-big-repositories-git
    - "shallow clone" to remove old history stuff
+      ... but I don't slowdown is from too many file versions
    - remove some old binary file "cruft"
-  
+      ... maybe ?
+
+ * or move to nginx or gnunicorn
+   or "reverse proxy" from apache to one of them
+   https://httpd.apache.org/docs/2.4/howto/reverse_proxy.html
+
+ * or write git "to-do" to a file,
+   and have a daemon monitor file & do it
+   ... removing the (slow) "add; commit" from apache/wsgi procs
+   The "get history" - which is really slow - may still need to be
+   in apache, but that is used much less often.
 
 ## Sep 2 2019
 

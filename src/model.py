@@ -1141,12 +1141,13 @@ class Page(BaseModel):
     def write_content(self, new_content):
         """ Write new data to page's file; return number of bytes written """
         if self.can['write']:  # shouldn't get here without this anyway
-            with open(self.abspath, 'w') as _file:
+            with open(self.abspath, 'wb') as _file:
+                # open as binary ... need to write bytes.
                 try:
-                    new_text = new_content.decode('utf8')
+                    new_bytes = new_content.encode('utf8')
                 except:
-                    new_text = new_content
-                bytes_written = _file.write(new_text)
+                    new_bytes = new_content
+                bytes_written = _file.write(new_bytes)
         return bytes_written
 
     def content_as_html(self):
