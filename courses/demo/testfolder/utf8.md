@@ -8,7 +8,8 @@ A file with some funny characters ... hmmm.
     math   definition              code
     ----   ----------
 
-    Σ        alphabet              
+Σ        alphabet              
+
     A∪B      set union             A|B       
     ∅       empty set              {}        (where the curlys delimit the set)
     ε       empty string           '' or ""  (where ' or " is the string delimiter)
