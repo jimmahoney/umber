@@ -18,7 +18,7 @@ export UMBER_CONFIG=PRODUCTION
 export UMBER_ROOT='/var/www/umber'
 
 # Define the absolute path to the sqlite3 database.
-export UMBER_DATA='/var/www/cours/etc/umber_marlboro.db'
+export UMBER_DATA=/var/www/umber_data/umber_marlboro.db
 
 # Make the project's python files loadable from python.
 export PYTHONPATH=$UMBER_ROOT/src
