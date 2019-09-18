@@ -49,10 +49,11 @@ Like any Flask app, this can be deployed using WSGI,
 using for example libapache2-mod-wsgi or gunicorn.
 See src/umber.wsgi and env/production for more information.
 
-example
---------
+sample
+------
 
-I use this for my courses at cs.marlboro.college,
+I use this for my courses at
+[cs.marlboro.college](https://cs.marlboro.college),
 which is running on a linode using apache mod_wsgi.
 
 ----------------------------------------------------------
