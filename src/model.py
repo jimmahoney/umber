@@ -1381,7 +1381,7 @@ class Work(BaseModel):
                         # The special grades "...", "overdue', 'ungraded'
                         # are created when the actual grade is not set yet.
                         grade = id_grade_dict[key]
-                        if grade in ('...', 'overdue', 'ungraded'):
+                        if grade in ('…', '...', 'overdue', 'ungraded'):
                             grade = ''
                         work.grade = grade
                         work.save()

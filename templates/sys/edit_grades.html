@@ -16,7 +16,13 @@
   <tr>
     <td><a href='mailto:{{ stud.email  }}'>{{ stud.name }}</a></td>
     {% for work in stud.works %}
-    <td style='font-size:80%'><input type='input' name='work_{{work.id}}' value='{{ work.grade }}' size='8'></td>
+      {% if work.grade == '…' %}
+      {%   set grade = '' %}
+      {% else %}
+      {%   set grade = work.grade %}
+      {% endif %}
+      <td style='font-size:80%'><input type='input'
+          name='work_{{work.id}}' value='{{ grade }}' size='8'></td>
     {% endfor %}
   </tr>
   {% endfor %}
