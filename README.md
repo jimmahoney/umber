@@ -53,7 +53,7 @@ sample
 ------
 
 I use this for my courses at
-[cs.marlboro.college](https://cs.marlboro.college),
+[cs.marlboro.college](https://cs.marlboro.college/cours/site/docs/about),
 which is running on a linode using apache mod_wsgi.
 
 ----------------------------------------------------------
