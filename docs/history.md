@@ -1,5 +1,29 @@
 # umber development history #
 
+## Jan 2020
+
+ Still thinking now and again about how to get the git
+ stuff to work effectively. I need to think about what
+ application model is needed - the one I have is too slow
+ and too buggy (using dulwich.io).
+
+ Software projects to look at :
+   https://gitlab.com/gitlab-org/gitlab-foss
+   https://tljh.jupyter.org/en/latest/
+   https://tljh.jupyter.org/en/latest/contributing/plugins.html
+   edX : https://github.com/edx/edx-platform ; big python based open source LMS
+
+   flexible and lightweight static content management system
+   for building websites out of flat files
+   https://www.getlektor.com/
+
+   GitPython
+   https://gitpython.readthedocs.io/en/stable/tutorial.html#using-git-directly
+
+   I'm remembering finding one commercial project that incorporated
+   jupyter and had a course module, but can't remember what it was
+   and am not finding my notes about it.
+
 ## Sep 7 2019
 
  on umber (production), moved database outside of cours/*
