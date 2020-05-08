@@ -84,5 +84,6 @@ umber_mime_types = {x:'text/plain' for x in
     ('.py', '.c', '.cc', '.cpp', '.c++', '.c#', '.dot', '.lisp',
      '.java', '.hs', '.clisp', '.pl', '.tex', '.rb', '.yvtm', '.vtm', '.csv'
     )}
+umber_mime_types['.PNG'] = 'img/png'
 
 debug_logfilename = None
