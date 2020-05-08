@@ -523,6 +523,10 @@ form.login {
   font-size: 110%;
 }
 
+#column-one div img {
+    margin: 0 auto;
+}
+
 /* containers in column-one ("portlet" in monobook) */
 
 #column-one  div {
