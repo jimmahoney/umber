@@ -1,5 +1,9 @@
 # umber development history #
 
+## April 2020
+
+* github flavored markdown spec : https://github.github.com/gfm/#example-155
+
 ## Jan 2020
 
  Still thinking now and again about how to get the git
