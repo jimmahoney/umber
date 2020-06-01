@@ -24,9 +24,9 @@ development & testing
 ---------------------
 
     # -- setup --
-    $ . env/activate       # set shell variables & enable python environment
-    $ umber_init_db        # create database with default test data
-    $ umber_test           # run a few doc tests (TODO: write lots more ...)
+    $ . env/activate_development   # set shell variables & enable python environment
+    $ umber_init_db                # create database with default test data
+    $ umber_test                   # run a few doc tests (TODO: write lots more ...)
 
     # -- interactive --
     $ umber_console        # interact with database from command line
@@ -45,17 +45,17 @@ development & testing
 production
 ----------
 
-Like any Flask app, this can be deployed using WSGI, 
-using for example libapache2-mod-wsgi or gunicorn.
-See src/umber.wsgi and env/production for more information.
+Like any Flask app, this can be deployed using WSGI, using for example
+libapache2-mod-wsgi or gunicorn.  See src/umber.wsgi, env/production,
+and docs/readme.txt for more information.
 
 sample
 ------
 
-I use this for my courses at
+I used this for my courses at
 [cs.marlboro.college](https://cs.marlboro.college/cours/site/docs/about),
 which is running on a linode using apache mod_wsgi.
 
 ----------------------------------------------------------
 
-Jim Mahoney | Sep 2019 | MIT License | github.com/jimmahoney/umber
+Jim Mahoney | May 2020 | MIT License | github.com/jimmahoney/umber
