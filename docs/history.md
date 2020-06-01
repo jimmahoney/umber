@@ -1,5 +1,13 @@
 # umber development history #
 
+## May 2020
+
+ I'm thinking that one repo per course rather than one big site global
+ would keep them smaller and give better performance.  Also, finding a
+ way to have the site course next to rather than enclosing the other
+ courses would make things simpler and keep the git repo complications
+ to a minimum.
+
 ## April 2020
 
 * github flavored markdown spec : https://github.github.com/gfm/#example-155
