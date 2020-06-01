@@ -26,7 +26,7 @@ Installation instructions
 
       $ virtualenv --python=pythonX.X venv
 
-    Actifate the new python
+    Activate it, i.e. make this local python environement the current one.
 
       $ . venv/bin/activate
 

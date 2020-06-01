@@ -1658,7 +1658,6 @@ User-icon.png - "mini icons" from "Custom Icon Design" ; free for noncommercial
 http://www.iconarchive.com/show/mini-icons-by-custom-icon-design/User-icon.html
 
 ----------------------------------------
-
 markdown 
  
  markdown *does* allow raw HTML by default.
@@ -1810,7 +1809,6 @@ ipython connectivity might also be something to consider.
    etc
 
 -------------------
-
  git does have a version of repositories within repositories -
  it's called "submodules".
 
@@ -1852,15 +1850,12 @@ drwxr-xr-x   2 root root 12288 Jan 12 00:44 /media/sda/sbin
 drwxr-xr-x  12 root root  4096 Feb 11  2016 /media/sda/usr
 
 ===============
-
 deploy :
 
 
       software/
       cours/
       datat/
-
-
 my choices
 
      umber.cc
@@ -1904,11 +1899,4 @@ my choices
   --- then --------------
     /courses/       => new folder
     cs.marlboro.edu => new host
-
-     
-
-
-
-
-
 
