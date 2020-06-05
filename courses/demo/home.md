@@ -21,4 +21,5 @@ demo logins
     janedoe    | test    | role=student (in Demo Course)
     johnsmith  | test    | role=student (in Demo Course)
 
+Test.
 
