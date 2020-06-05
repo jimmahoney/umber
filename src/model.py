@@ -373,7 +373,7 @@ class Course(BaseModel):
             (sitecourse, created) = Course.get_or_create(
                 name = 'Umber',
                 name_as_title = 'Umber<div>a course<br>managment<br>system</div>',
-                path = '',
+                path = 'umber',
                 start_date = '2018-01-01')
         return sitecourse
     

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # Is the project environment setup?
-: ${UMBER_ROOT:?"Setup umber environment with '. env/activate' first."}
+: ${UMBER_ROOT:?"Setup umber environment with '. env/activate_development' first."}
 cd $UMBER_ROOT   # Set the working folder to the project root.
 
 # stop old background servers
 pkill -f flask
 
-echo "Point your browser at http://127.0.0.1:5000/umber or /umber/demo/home ."
+echo "Point your browser at http://127.0.0.1:500/courses/demo/home ."
 
 # start new background web server
 python3 -B -m flask run

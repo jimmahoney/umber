@@ -1,5 +1,29 @@
 # umber development history #
 
+## June 2020
+
+ Changing structure of umber course and top folder :
+   development prefix : courses/
+   umber root folder :  umber/
+ The root url / will redirect to umber/home (or something else in umber/)
+ Any urls in the top level folder will either
+   (a) match a course path or
+   (b) redirect to umber/
+
+ I see no reason to change the marlboro.college site,
+ since at this point that's history. I've made a marlboro-june-2020
+ git branch and will leave that deployed site there.
+
+ Bennington uses gmail for user@bennington.edu ...
+ can I authenticate from that without too much work?
+  * https://cloud.google.com/appengine/docs/standard/python3/authenticating-users
+  * https://developers.google.com/identity/sign-in/web/
+
+ And their bennington.populiweb.com student services app uses LTI
+ and even has an "LTI external extensions" setup choice in my
+ faculty interface ... can I get a list of students in my courses
+ from that? Hmmm.
+
 ## May 2020
 
  I'm thinking that one repo per course rather than one big site global

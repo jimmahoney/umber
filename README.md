@@ -40,7 +40,7 @@ development & testing
 
     # -- development server --
     $ umber_server
-    # then visit http://127.0.0.1:5000/umber/demo/home with a browser.
+    # then visit http://127.0.0.1:5000/courses/demo/home with a browser.
 
 production
 ----------

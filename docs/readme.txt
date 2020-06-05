@@ -25,7 +25,7 @@ Then
   OR
   (env)$ umber_console
   OR
-  (env)$ umber_server  # and visit http://127.0.0.1:5000/umber/demo/home 
+  (env)$ umber_server  # and visit http://127.0.0.1:5000/courses/demo/home 
 
 production
 ----------
