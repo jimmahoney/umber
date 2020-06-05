@@ -38,7 +38,8 @@ localtimezone = 'US/Eastern'
 # see http://arrow.readthedocs.io/en/latest & arrow.get().to(localtimezone) .
 
 # The 'Umber' course has site docs, home, etc; this is its course URL path.
-site_course_path = 'umber'  
+site_course_path = 'umber'
+site_home = 'docs/home'
 
 def umber_flask_configure(app):
     """ Configure some of Flask's internal settings. """

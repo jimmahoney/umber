@@ -16,7 +16,7 @@ from utilities import in_console, split_url, static_url, size_in_bytes, \
      print_debug, pygmentize, name_to_htmltitle, path_to_startdate
 from settings import umber_flask_configure, umber_url, contact_url, help_url, \
      about_url, site_url, url_base, os_root, umber_debug, route_prefix, \
-     os_courses, markup_url, site_course_path
+     os_courses, markup_url, site_course_path, site_home
 
 app = Flask('umber',
             static_folder=os.path.join(os_root, 'static'),
@@ -108,8 +108,8 @@ def mainroute_blank():
 def mainroute(pagepath):
 
     # home page for default 'umber' course 
-    if pagepath == '' or pagepath == 'home':
-        return redirect('/' + url_base + '/site/docs/home')
+    if pagepath in ('', 'home'):
+        return redirect(f'/{url_base}/{site_course_path}/{site_home}')
     
     print_debug('- '*30)
     print_debug(' mainroute: pagepath = "{}"'.format(pagepath))

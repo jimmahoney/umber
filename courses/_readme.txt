@@ -13,14 +13,13 @@ admin user.
 
 -- files -----------------
 
- _readme.txt         this file
- newcourse/          default files for new courses
- site/               'Umber' site specific files:
-     /photos/           user images
-     /docs/             world readable docs
- sys/                paths for admin tasks (users & courses)
- sys/
-    /navigation      'Umber' site left margin nav links
+ _readme.txt          this file
+ default_course/      default files for new courses
+ umber/               site specific files:
+     /photos/            user images
+     /docs/              world readable docs
+     /sys/               paths for admin tasks (users & courses)
+         /navigation     site left margin nav links
 
 
 

@@ -57,7 +57,7 @@ from utilities import markdown2html, link_translate, static_url, \
      git, Time, stringify_access, print_debug, clean_access_dict
 from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
     os_root, os_courses, photos_url, url_base, os_default_course, \
-    site_course_path
+    site_course_path, site_home
 from functools import reduce
 
 db = SqliteDatabase(os_db)
@@ -377,6 +377,10 @@ class Course(BaseModel):
                 path = site_course_path,
                 start_date = '2018-01-01')
         return sitecourse
+
+    def is_site(self):
+        """ true if this is the site course """
+        return self.path == site_course_path
     
     def person_to_role(self, person):
         """ Return role of person in course, or visitor """
@@ -421,7 +425,14 @@ class Course(BaseModel):
             return self.url + '/sys/user'
 
     def get_home_url(self):
-        return os.path.join(self.url, 'home')
+        """ return url for course home page """
+        if self.is_site():
+            # special case : Umber course home is docs/home,
+            #                so that all public stuff can be in docs/*
+            home_path = site_home
+        else:
+            home_path = 'home'
+        return os.path.join(self.url, home_path)
 
     def get_registered(self):
         registrations = list(Registration.select(Registration.person,

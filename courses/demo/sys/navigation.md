@@ -31,21 +31,21 @@
 <div access='admin'>
 <h5>admin</h5>
 <div markdown=1>
-* [all courses](~~/{{g.site_course_path}}/sys/courses)
-* [new course](~~/{{g.site_course_path}}/sys/newcourse)
+* [all courses](~~/umber/sys/courses)
+* [new course](~~/umber/sys/newcourse)
 
 ----
 
-* [all users](~~/{{g.site_course_path}}/sys/users)
-* [new user](~~/{{g.site_course_path}}/sys/newuser)
+* [all users](~~/umber/sys/users)
+* [new user](~~/umber/sys/newuser)
 </div>
 </div>
 
 <div access='all'>
 <h5>site</h5>
 <div markdown=1>
-* [about](~~/{{g.site_course_path}}/docs/about)
-* [help](~~/{{g.site_course_path}}/docs/help)
+* [about](~~/umber/docs/about)
+* [help](~~/umber/docs/help)
 * [..](..)
 * [.](.)
 </div>
