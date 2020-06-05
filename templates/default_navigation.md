@@ -33,21 +33,21 @@
 <div access='admin'>              <!-- site admin stuff -->
 <h5>admin</h5>
 <div markdown=1>
-* [all courses](~~/sys/courses)
-* [new course](~~/sys/newcourse)
+* [all courses](~~/courses/umber/sys/courses)
+* [new course](~~/courses/umber/sys/newcourse)
 
 ----
 
-* [all users](~~/sys/users)
-* [new user](~~/sys/newuser)
+* [all users](~~/courses/umber/sys/users)
+* [new user](~~/courses/umber/sys/newuser)
 </div>
 </div>
 
 <div access='all'>                <!-- all visitors see this -->
 <h5>site</h5>
 <div markdown=1>
-* [about](~~/site/docs/about)
-* [help](~~/site/docs/help)
+* [about](~~/courses/umber/docs/about)
+* [help](~~/courses/umber/docs/help)
 * [..](..)
 * [.](.)
 </div>

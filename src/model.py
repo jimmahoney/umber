@@ -56,7 +56,8 @@ from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
      git, Time, stringify_access, print_debug, clean_access_dict
 from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
-    os_root, os_courses, photos_url, url_base, os_default_course
+    os_root, os_courses, photos_url, url_base, os_default_course, \
+    site_course_path
 from functools import reduce
 
 db = SqliteDatabase(os_db)
@@ -373,7 +374,7 @@ class Course(BaseModel):
             (sitecourse, created) = Course.get_or_create(
                 name = 'Umber',
                 name_as_title = 'Umber<div>a course<br>managment<br>system</div>',
-                path = 'umber',
+                path = site_course_path,
                 start_date = '2018-01-01')
         return sitecourse
     

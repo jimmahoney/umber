@@ -16,7 +16,7 @@ from utilities import in_console, split_url, static_url, size_in_bytes, \
      print_debug, pygmentize, name_to_htmltitle, path_to_startdate
 from settings import umber_flask_configure, umber_url, contact_url, help_url, \
      about_url, site_url, url_base, os_root, umber_debug, route_prefix, \
-     os_courses, markup_url
+     os_courses, markup_url, site_course_path
 
 app = Flask('umber',
             static_folder=os.path.join(os_root, 'static'),
@@ -83,6 +83,7 @@ def do_before_request():
     g.umber_url = umber_url
     g.markup_url = markup_url
     g.site_url = site_url
+    g.site_course_path = site_course_path
     g.now = Time()
     
     ## Set information to be passed to the template engine as in

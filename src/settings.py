@@ -37,6 +37,9 @@ localtimezone = 'US/Eastern'
 # This timezone designation must be understood by the python arrow library;
 # see http://arrow.readthedocs.io/en/latest & arrow.get().to(localtimezone) .
 
+# The 'Umber' course has site docs, home, etc; this is its course URL path.
+site_course_path = 'umber'  
+
 def umber_flask_configure(app):
     """ Configure some of Flask's internal settings. """
     app.config['DEBUG'] = (os.environ['UMBER_CONFIG'] == 'DEVELOPMENT')
@@ -48,27 +51,28 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     umber_debug = True
     protocol = 'http://'
     hostname = '127.0.0.1:5000'
-    url_base = 'courses'            # used for generating URLs
-    route_prefix = '/courses'       # used for route match of URL
+    url_base = 'courses'        # all URLs start with this
+    route_prefix = '/courses'   # for URL route matching
     contact_url = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
-    site_url = 'http://127.0.0.1:5000/umber/'
+    site_url = 'http://127.0.0.1:5000/courses/umber/docs/home'
     os_courses = os.path.join(os_root, 'courses')
     os_default_course = os.path.join(os_root, 'courses/default_course')
     umber_cleanup = ''
     os_git = os_root
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
+    # TODO : find a better way to pull this out of the source tree.
     umber_debug = False
     protocol = 'https://'
-    hostname = 'cs.marlboro.college'
-    url_base = 'cours'      
-    route_prefix = ''  # in apache wsgi config route already has /cours/
-    contact_url = '<a href="mailto:jim@mahoney.cc">Jim Mahoney</a>'
-    site_url = 'https://cs.marlboro.college'
-    os_courses = '/var/www/cours'
-    os_git = '/var/www/cours'
-    os_default_course = '/var/www/cours/default_course'
-    umber_cleanup = '/var/www/cours/etc/bin/umber_cleanup'
+    hostname = 'cs.bennington.college'
+    url_base = 'courses'      
+    route_prefix = ''          # in apache wsgi config route already has /cours/
+    contact_url = '<a href="mailto:jimmahoney@bennington.college">Jim Mahoney</a>'
+    site_url = 'https://cs.bennington.college'
+    os_courses = '/var/www/courses'
+    os_git = '/var/www/courses'
+    os_default_course = '/var/www/courses/default_course'
+    umber_cleanup = '/var/www/courses/etc/bin/umber_cleanup'
 
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')
