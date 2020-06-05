@@ -1,5 +1,17 @@
 # umber development history #
 
+## June 5 2020
+
+ Bennington uses gmail for user@bennington.edu ...
+ can I authenticate from that without too much work?
+  * https://cloud.google.com/appengine/docs/standard/python3/authenticating-users
+  * https://developers.google.com/identity/sign-in/web/
+
+ And their bennington.populiweb.com student services app uses LTI
+ and even has an "LTI external extensions" setup choice in my
+ faculty interface ... can I get a list of students in my courses
+ from that? Hmmm.
+
 ## June 2020
 
  Changing structure of umber course and top folder :
@@ -14,15 +26,14 @@
  since at this point that's history. I've made a marlboro-june-2020
  git branch and will leave that deployed site there.
 
- Bennington uses gmail for user@bennington.edu ...
- can I authenticate from that without too much work?
-  * https://cloud.google.com/appengine/docs/standard/python3/authenticating-users
-  * https://developers.google.com/identity/sign-in/web/
+ Git ...
 
- And their bennington.populiweb.com student services app uses LTI
- and even has an "LTI external extensions" setup choice in my
- faculty interface ... can I get a list of students in my courses
- from that? Hmmm.
+   I'm thinking the cleanest thing at this point is to just
+   call the command line git, e.g. 
+   https://dev.to/endormi/automating-some-git-commands-with-python-7n4
+
+   The other techniques I've tried seem buggy and too much work.
+   GitPython says specifically that it is bad in daemons.
 
 ## May 2020
 
@@ -55,6 +66,7 @@
 
    GitPython
    https://gitpython.readthedocs.io/en/stable/tutorial.html#using-git-directly
+   "GitPython is not suited for long running processes (like daemons) ..."
 
    I'm remembering finding one commercial project that incorporated
    jupyter and had a course module, but can't remember what it was

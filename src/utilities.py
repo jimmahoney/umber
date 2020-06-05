@@ -51,6 +51,11 @@ def is_iso_utc(date_time_string):
         #  2018 - 03  - 03  T 19  : 00  : 00   -   05  : 00
         date_time_string))
 
+def is_number(x):
+    """ Return true if x is an integer or float """
+    # Yes, I know that true pythonistas aren't supposed to do this, but ...
+    return isinstance(x, int) or isinstance(x, float)
+
 def path_to_startdate(path):
     """ Given a path of the form fall2018/coursename, 
         returns corresponding start date.
@@ -89,6 +94,13 @@ class Time(object):
         >>> a == b
         True
 
+        >> license_abspath = '/Users/mahoney/sugar/academics/umber/LICENSE'
+        >> license_lastmodified = os.stat(license_abspath).st_mtime
+        >> license_lastmodified
+        1515879954.0
+        >> print(Time(license_lastmodified))
+        2018-01-13T16:45:54-05:00
+
     """
     # Uses the python Arrow library; see http://crsmithdev.com/arrow/  .
     #
@@ -112,7 +124,7 @@ class Time(object):
 
     @staticmethod
     def _parse(date_time_string):
-        """ Return a date time string from a human-ish description.
+        """ Return a date time string from a human-ish description
             >>> Time._parse('April 1 2018')
             '2018-04-01 23:59:00'
             >>> Time._parse('April 1 2018 5:01pm')
@@ -128,7 +140,6 @@ class Time(object):
             '2018-07-10 18:01:33'
             >>> Time._parse('Tue Jul 10 2018 14:01:33 -4000')
             '2018-07-10 14:01:33'
-
         """
         # date_time_string does not do what seems reasonable with time zones,
         # so I'm ignoring it if present and trying to do the right thing later.
@@ -148,7 +159,11 @@ class Time(object):
             
     def __init__(self, datetimestring=None):
         try:
-            if datetimestring == None or datetimestring == '':
+            if is_number(datetimestring):
+                # unix timestamp i.e. seconds since epoch,
+                # returned by os.stat file statistics.
+                self.arrow = arrow.Arrow.fromtimestamp(datetimestring)
+            elif datetimestring == None or datetimestring == '':
                 # use the "now" time.
                 self.arrow = arrow.get()
             elif is_iso_utc(datetimestring):

@@ -39,12 +39,12 @@ class Assignment(BaseModel):
         db_table = 'Assignment'
 
 class Page(BaseModel):
-    as_html = TextField(null=True)
-    content_hash = IntegerField(null=True)
+    path = TextField(unique=True)
+    html = TextField()
+    html_lastmodified = TextField()
     course = ForeignKeyField(db_column='course_id', null=True, rel_model=Course, to_field='course')
     notes = TextField(null=True)
     page = PrimaryKeyField(db_column='page_id')
-    path = TextField(unique=True)
 
     class Meta:
         db_table = 'Page'

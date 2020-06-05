@@ -75,17 +75,17 @@ CREATE UNIQUE INDEX course_path_index ON Course(path);
 --     for example http://localhost/umber/democourse/home
 --     at /Users/mahoney/academics/umber/courses/democourse/home
 --     would have as its path 'democourse/home'
---   * The content_hash is an md5 hash of the file contents,
---     used to see whether or not the corresponding file has changed.
---   * as_html is a cache of the processed file contents
+--   * The html field is a cache for markdown (.md) files,
+--     with html_lastmodified indicating if this is valid.
+--   * notes is currently unused.
 --
 CREATE TABLE Page (
   page_id INTEGER PRIMARY KEY NOT NULL,
   path TEXT UNIQUE NOT NULL,
   course_id INTEGER DEFAULT NULL
     CONSTRAINT fk_course_course_id REFERENCES Course(course_id),
-  content_hash INTEGER DEFAULT 0,
-  as_html TEXT DEFAULT '',
+  html TEXT NOT NULL DEFAULT '',
+  html_lastmodified TEXT NOT NULL DEFAULT '',  
   notes TEXT DEFAULT ''
 );
 

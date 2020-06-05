@@ -563,7 +563,7 @@ class Course(BaseModel):
                 ass.dateclass = 'assign-date'
             ass.date = duedate.assigndate()         # for assignment list display
             ass.ISOdate = duedate.assignISOdate()   # for assignment list editing
-            ass.blurb_html = markdown2html(ass.blurb)
+            ass.blurb_html = markdown2html(ass.blurb)     # TODO : cache this
         return self.assignments
     
     def nav_page(self, user):
@@ -688,8 +688,8 @@ class Page(BaseModel):
         
     page_id = PrimaryKeyField(db_column='page_id')
 
-    as_html = TextField()
-    content_hash = IntegerField()
+    html = TextField()
+    html_lastmodified = TextField()
     notes = TextField()
     path = TextField(unique=True)
     
@@ -731,7 +731,7 @@ class Page(BaseModel):
         page.user = user
         page.action = action
         page.revision = revision
-        page._setup_file_properties()           # sets page.isfile etc
+        page._setup_file_properties()           # sets page.is_file etc
         page.gitpath = os.path.join(os_courses, page.path_with_ext)
         page.course = page.get_course()
         if page.course.name == 'error':
@@ -1081,6 +1081,7 @@ class Page(BaseModel):
                     self.path_with_ext = self.path + ext
         (ignore, self.ext) = os.path.splitext(self.abspath)
         self.exists = os.path.exists(self.abspath)
+        #print_debug(f'debug _setup_file_properties : path={self.path} exists={self.exists} ')
         if not self.exists and self.ext == '':
             # creating a new file, so make it a .md markdown file
             self.ext = '.md'
@@ -1096,6 +1097,7 @@ class Page(BaseModel):
         self.is_dir = os.path.isdir(self.abspath)
         if self.exists:
             stat = os.stat(self.abspath)
+            #print_debug(f'debug _setup_file_properties : stat={str(stat)}')
             self.lastmodified = Time(stat.st_mtime)
             if self.is_dir:
                 self.size = None
@@ -1125,13 +1127,14 @@ class Page(BaseModel):
 
     def revision_content_as_html(self):
         content = git.get_revision(self)
-        html = markdown2html(content)
+        html = markdown2html(content)    ## TODO : cache this somehow ??
         html_with_links = link_translate(self.course, html)
         return html_with_links
 
     def content(self):
         """ Return file or github (revision) data for a page """
         # TODO: should this be cached as self._content ?
+        #       ... or better yet cache html version of .md in sql database ?
         # python3 gotchas:
         #  for text, I convert to a python3 string (utf8)
         #  but for other (i.e. binary) data, I leave as python3 bytes
@@ -1169,14 +1172,15 @@ class Page(BaseModel):
             return ''
         elif self.ext == '.md':
             content = self.content()
-            html = markdown2html(content)
+            raw_html = markdown2html(content)                
+            html = link_translate(self.course, raw_html)   # expand ~/ and ~~/
+            # TODO : cache this in sql database , using self.lastmodified 
         # elif self.ext == '.wiki':
         #    html = subprocess.check_output(['wiki2html', self.abspath])
         else:
             # Just send the file as-is : txt, html, img, .... 
             html = self.content()
             # html = '<h2>Oops</h2> unsupported file type "{}"'.format(self.ext)
-        html = link_translate(self.course, html)     # expand ~/ and ~~/
         return html
 
     def action_query(self):
