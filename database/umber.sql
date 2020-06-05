@@ -129,6 +129,8 @@ CREATE TABLE Assignment (
   name TEXT NOT NULL DEFAULT '',
   due TEXT,
   blurb TEXT NOT NULL DEFAULT '',
+  blurb_hash TEXT NOT NULL DEFAULT '',
+  blurb_html TEXT NOT NULL DEFAULT '',  
   active INTEGER NOT NULL DEFAULT 1,
   notes TEXT NOT NULL DEFAULT ''
 );

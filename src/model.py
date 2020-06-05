@@ -54,7 +54,7 @@ from peewee import SqliteDatabase, Model, \
 from bs4 import BeautifulSoup
 from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
-     git, Time, stringify_access, print_debug, clean_access_dict
+     git, Time, stringify_access, print_debug, clean_access_dict, md5
 from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
     os_root, os_courses, photos_url, url_base, os_default_course, \
     site_course_path, site_home
@@ -538,9 +538,23 @@ class Course(BaseModel):
                     (db_assignments[nth], status) = Assignment.get_or_create(
                         course=self, nth=nth)
                 db_assignments[nth].name = assignments_data[nth]['name']
-                db_assignments[nth].due = \
-                  str(Time.parse(assignments_data[nth]['due']))
-                db_assignments[nth].blurb = assignments_data[nth]['blurb']
+                duedate = assignments_data[nth]['due']
+                db_assignments[nth].due = str(Time.parse(duedate))
+                new_blurb = assignments_data[nth]['blurb']
+                old_blurb = db_assignments[nth].blurb
+                #print_debug(f" debug update_assignments : '{duedate}'")
+                #print_debug(f"   md5(new_blurb) = '{md5(new_blurb)}'")
+                #print_debug(f"     new_blurb = '{new_blurb}' ")
+                #print_debug(f"   ass.blurb_hash  = '{db_assignments[nth].blurb_hash}'")
+                #print_debug(f"     ass.blurb  = '{old_blurb}' ")
+                #print_debug(f"   new == old ? {new_blurb == old_blurb}")
+                if md5(new_blurb) != db_assignments[nth].blurb_hash: # is this changed?
+                    db_assignments[nth].blurb = new_blurb             # yes: update it
+                    db_assignments[nth].blurb_hash = md5(new_blurb)
+                    db_assignments[nth].blurb_html = markdown2html(new_blurb)
+                    #print_debug("   updating cache ")
+                #else:
+                    #print_debug("   NOT updating cache ")
                 db_assignments[nth].save()
         self.assignments = self._get_assignments()
 
@@ -563,7 +577,8 @@ class Course(BaseModel):
                 ass.dateclass = 'assign-date'
             ass.date = duedate.assigndate()         # for assignment list display
             ass.ISOdate = duedate.assignISOdate()   # for assignment list editing
-            ass.blurb_html = markdown2html(ass.blurb)     # TODO : cache this
+            #   TODO : cache this ... DONE ; see update_assignments()
+            #ass.blurb_html = markdown2html(ass.blurb)     
         return self.assignments
     
     def nav_page(self, user):
@@ -1171,14 +1186,31 @@ class Page(BaseModel):
         if not self.exists:
             return ''
         elif self.ext == '.md':
-            content = self.content()
-            raw_html = markdown2html(content)                
-            html = link_translate(self.course, raw_html)   # expand ~/ and ~~/
-            # TODO : cache this in sql database , using self.lastmodified 
-        # elif self.ext == '.wiki':
-        #    html = subprocess.check_output(['wiki2html', self.abspath])
+            # Is cached html current ?
+            #   This software can only modify .md,
+            #   and that's the expensive one to convert
+            #    so that's all I'm caching currently.
+            #print_debug(f" debug content_as_html cache")
+            #print_debug(f"   lastmodified='{self.lastmodified}' ; " + \
+            #            f"html_lastmodified='{self.html_lastmodified}'")
+            if str(self.lastmodified) != self.html_lastmodified:
+                # no ; update it
+                #print_debug(f"   updating {self.path}")
+                with db.atomic():
+                    content = self.content()
+                    raw_html = markdown2html(content)
+                    # expand ~/ and ~~/
+                    # TODO : check that this isn't doing too much
+                    #        i.e. expanding ~mahoney, unix home folder
+                    self.html = link_translate(self.course, raw_html)
+                    self.html_lastmodified = str(self.lastmodified)
+                    self.save()
+            #else:
+                #print_debug(f"   using cache {self.path}")
+            html = self.html
         else:
-            # Just send the file as-is : txt, html, img, .... 
+            # Just send the file as-is : txt, html, img, ....
+            # ... though typically images won't be sent through content_as_html
             html = self.content()
             # html = '<h2>Oops</h2> unsupported file type "{}"'.format(self.ext)
         return html
@@ -1250,6 +1282,8 @@ class Assignment(BaseModel):
     nth = IntegerField(null=False, unique=True)
     active = IntegerField()
     blurb = TextField()
+    blurb_hash = TextField()
+    blurb_html = TextField()
     due = TextField(null=True)
     name = TextField()
     notes = TextField()

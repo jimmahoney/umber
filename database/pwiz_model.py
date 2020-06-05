@@ -28,6 +28,8 @@ class Assignment(BaseModel):
     active = IntegerField()
     assignment = PrimaryKeyField(db_column='assignment_id')
     blurb = TextField()
+    blurb_hash = TextField()
+    blurb_html = TextField()
     course = ForeignKeyField(db_column='course_id', rel_model=Course, to_field='course')
     due = TextField(null=True)
     name = TextField()

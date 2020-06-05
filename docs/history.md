@@ -12,6 +12,22 @@
  faculty interface ... can I get a list of students in my courses
  from that? Hmmm.
 
+ * Fixed bug in file lastmodified time.
+
+ * Set up sql caching for markdown2html in both
+     * assignments
+     * page content
+   since markdown2html() is run in an external shell script
+   and therefore slow since it's in an old funky other language.
+   
+ Note that this is a CHANGE TO THE DATABASE which is not backward
+ compatible.  (But since my Marlboro stuff is done, and Bennington
+ hasn't started yet, now is the time.)
+
+ Note also that this means that the Marlboro site
+ really needs to stay on the marlboro-june-2020 branch
+ which has the previous database format.
+
 ## June 2020
 
  Changing structure of umber course and top folder :

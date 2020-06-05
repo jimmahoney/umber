@@ -2,7 +2,7 @@
 """
  utilities.py
 """
-import parsedatetime, pytz, random
+import parsedatetime, pytz, random, hashlib
 import os, shutil, urllib.parse, arrow, string, re, io
 from dulwich import porcelain
 from dulwich.repo import Repo
@@ -29,6 +29,14 @@ def myparsethedatetime(date_time_string):
         description.
     """
     return str(dateutil_parse(date_time_string, ignoretz=True))
+
+def md5(data):
+    """ Return md5 hash of a string 
+        >>> md5('this is a test')
+        '54b0c58c7ce9f2a8b551351102ee0938'
+    """
+    # Seems to be java-ish levels of complexity here ...
+    return hashlib.md5(data.encode()).hexdigest()
 
 def name_to_htmltitle(name):
     """ Return an html version of a course name 
