@@ -367,7 +367,6 @@ class Course(BaseModel):
             shutil.copytree(abscopyfrom, abspath)
             # remove the old copied .git folder
             shutil.rmtree(os.path.join(abspath, '.git'), ignore_errors=True)
-        print_debug(' gitlocal : init_add_commit ')
         gitlocal.init_add_commit(course, user) # initalize its .git folder
         return course
     
@@ -785,6 +784,11 @@ class Page(BaseModel):
         page._setup_work()                  # 
         return page
 
+    def get_gitpath(self):
+        """ Return file path of page relative to course path,
+            including file extension if any """
+        return os.path.relpath(self.abspath, self.course.abspath)
+    
     def _get_relpath(self):
         """ Return path of page relative to course path, 
             e.g. notes/home for path=demo/notes/home in course 'demo' """
@@ -1043,6 +1047,7 @@ class Page(BaseModel):
             self.githashes = tuple()
             self.history = [link, 'current', date, author]
             self.revision_date = date
+            self.revision_commit = ''
             self.revision_prev_url = ''
             self.revision_next_url = ''
             self.revision_count = 1
@@ -1068,6 +1073,7 @@ class Page(BaseModel):
                 self.revision = int(self.revision)
                 index = self.revision_count - self.revision
                 self.revision_date = self.history[index][2]
+                self.revision_commit = self.githashes[index]
                 self.revision_next_url = self.url + '?revision={}'.format(
                     min(self.revision + 1, len(log)))
                 self.revision_prev_url = self.url + '?revision={}'.format(
@@ -1175,26 +1181,33 @@ class Page(BaseModel):
         if not self.exists:
             return ''
         elif self.ext == '.md':
-            # I'm caching the html version of .md pages in the sql database,
+            # I'm caching the html version of .md pages in the sql database
+            # (for the current version)
             # checking to see if the cache is stale with
             # the file's lastmodified and a sql db html_lastmodified fields.
             #print_debug(f" debug content_as_html cache")
             #print_debug(f"   lastmodified='{self.lastmodified}' ; " + \
             #            f"html_lastmodified='{self.html_lastmodified}'")
-            if str(self.lastmodified) != self.html_lastmodified:
+            if self.revision:
+                content = self.content()  # pull from git repo
+                raw_html = markdown2html(content)
+                self.html = link_translate(self.course, raw_html)
+                self.html_lastmodified = str(self.lastmodified)
+            elif str(self.lastmodified) != self.html_lastmodified:
                  #print_debug(f"   updating {self.path}")
                 with db.atomic():
-                    content = self.content()
+                    content = self.content()  # pull from file
                     raw_html = markdown2html(content)
                     self.html = link_translate(self.course, raw_html)
                     self.html_lastmodified = str(self.lastmodified)
                     self.save()
             #else:
                 #print_debug(f"   using cache {self.path}")
+                # cache : just use .html already read from sql
             html = self.html
         else:
             # Not markdown, so send the file (txt, html, ...) as is.
-            html = self.content()
+            html = self.content() # from file or git repo
         return html
 
     def action_query(self):
@@ -1492,6 +1505,9 @@ def populate_db():
     """ Create test & example development objects """
     # i.e. democourse, jane, ted, john, adam; examples and tests.
     #print("Populating development database.")
+
+    from utilities import toggle_debug
+    toggle_debug()
     
     with db.atomic():
         student = Role.by_name('student')
@@ -1571,6 +1587,8 @@ def populate_db():
         janes_work.student_modified = janes_work.submitted
         janes_work.save()
 
+    toggle_debug()
+    
 if __name__ == '__main__':
     import doctest
     doctest.testmod()

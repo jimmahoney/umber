@@ -10,9 +10,15 @@ from settings import url_base, debug_logfilename, \
 from flask import url_for, app
 from dateutil.parser import parse as dateutil_parse
 
+
+# So I wanted to be able to toggle it off for doctests and setup ...
+debug_settings = {'status': True}
+def toggle_debug():
+    debug_settings['status'] = not debug_settings['status']
+
 debug_log = {'file': None}
 def print_debug(message):
-    if umber_debug:
+    if umber_debug and debug_settings['status']:
         print(message)
     if debug_logfilename:
         if not debug_log['file']:

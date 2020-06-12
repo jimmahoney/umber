@@ -294,18 +294,13 @@ def ajax_upload():
                 return ajax_response(False, 'error creating attachments folder') 
     
     for upload in request.files.getlist("file"):
-        # Should be only one file when using dropbox, I think.
-        
         # TODO: send something other than success if there's a problem here,
         # probably with a try: except: block.
-
         filename = secure_filename(upload.filename)
         print_debug('   file : "{}"'.format(filename))
         destination = os.path.join(abspath, filename)
         upload.save(destination)
-
-        # TODO: do the github stuff asyncronously ?        
-        gitlocal.add_and_commit(page)
+        gitlocal.add_commit(page)
 
     print_debug(" sending ajax response ")
     return ajax_response(True, 'upload success')
@@ -484,7 +479,7 @@ def submit_permissions():
               'write': parse_access_string( request.form['write_access'] )}
     access_abspath = request.page.write_access_file(rights)
     print_debug(' submit_permissions : access path {} '.format(access_abspath))
-    gitlocal.add_and_commit(request.page)
+    gitlocal.add_commit(request.page)
     return url_for('mainroute', pagepath=request.page.path, action='edit')    
 
 def submit_delete():
@@ -495,7 +490,7 @@ def submit_delete():
     abspaths = list([path for path in list(request.form.keys())
                      if request.form[path]=='checkboxdelete'])
     print_debug(' submit_delete : {}'.format(abspaths))
-    gitlocal.rm_and_commit(request.page)
+    gitlocal.rm_commit(request.page)
     return url_for('mainroute', pagepath=request.page.path, action='edit')
     
 def submit_edit():
@@ -542,7 +537,7 @@ def submit_edit():
     # Save the page content to a file and to git.
     bytes_written = request.page.write_content(request.form['edit_text'])
     print_debug(' submit_edit: bytes_written = {}'.format(bytes_written))
-    gitlocal.add_and_commit(request.page)
+    gitlocal.add_commit(request.page)
     return request.base_url  # ... and reload it without ?action=edit
     
 def submit_logout():

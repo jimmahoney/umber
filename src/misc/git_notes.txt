@@ -1,0 +1,73 @@
+# . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+#
+# -- Notes --
+#
+# The git commit message "author" field is just the process name
+# of the web deamon running the umber system, which isn't useful information.
+# To keep track of which user (faculty member or student typically) modified
+# a given file, the git commit messages store the username.
+#
+# python subprocess ; see https://docs.python.org/3/library/subprocess.html
+#  ... though I'm not sure how well this will work in a wsgi environment.
+# I guess I'll see.
+#
+#  * use && to execute several commands, continuing only if preceding is OK
+#      i.e. "git add . && git commit -m 'commit'"
+#  *  use shlex.quote(arg) to make sure one arg is actually one arg,
+#      if using shell=True ... which is what I need to use &&
+#      and to do one subprocess.run() for multiple git operations
+#
+# I'm quoting a bunch of stuff that I probably don't need to
+# ... but it shouldn't hurt and may b safer.
+#
+# command line git options ; see https://git-scm.com/docs/git
+#   git
+#      -C <path>           # as if run in this directory
+#      -git-dir=<path>     # folder that has the .git data
+#      <command>           # init | add | rm | log | show | ...
+#      <args>
+#
+# git log formatting examples :
+#   https://stackoverflow.com/questions/4600445/
+#     git-log-output-to-xml-json-or-yaml
+#   https://github.com/context-driven-testing-toolkit/git-log2json
+#      git log --pretty=format:'{%n  "commit": "%H",%n
+#                                    "author": "%aN <%aE>",%n
+#                                    "date": "%ad",%n
+#                                    "message": "%f"%n},' <path>
+#
+# getting a git revision of a file :
+#   https://stackoverflow.com/questions/610208/
+#     how-to-retrieve-a-single-file-from-a-specific-revision-in-git
+#   git show <revision>:<path>
+#
+# ----- file and url paths for pages and courses --------------------
+# (venv) mahoney@greymaple:umber$ umber_console
+# == Umber console | flask shell | development ==
+# Database file is /Users/mahoney/sugar/academics/umber/database/umber.db
+# To see all defined names : pp(vars()) .
+# Variables include (democourse, homepage, jane, app, request).
+# Python 3.7.3 (v3.7.3:ef4ec6ed12, Mar 25 2019, 16:52:21) 
+# [Clang 6.0 (clang-600.0.57)] on darwin
+# App: umber [production]
+# Instance: /Users/mahoney/sugar/academics/umber/src/instance
+# >>> democourse.path
+# 'demo'
+# >>> democourse.abspath
+# '/Users/mahoney/sugar/academics/umber/courses/demo'
+# >>> homepage.path
+# 'demo/home'
+# >>> homepage.abspath
+# '/Users/mahoney/sugar/academics/umber/courses/demo/home.md'
+# >>> os_root
+# '/Users/mahoney/sugar/academics/umber'
+# >>> homepage.relpath
+# 'home'
+#
+#from model import Course, Person, Page
+# ... I'm having issues with circular imports (model imports gitlocal).
+#     But to just use fields or methods of a passed argument
+#     (e.g. course.abspath), I guess  I don't need to reference
+#     the names of the objects themselves and so don't need the import.
+#     Some online discussion suggest that just "import model" would work,
+#     even if "from model import ..." has issues.
