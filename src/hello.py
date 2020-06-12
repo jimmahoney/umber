@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # flask hello world - sort of. For debugging.
 
 from flask import Flask

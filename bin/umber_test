@@ -10,5 +10,6 @@ else
     cd $UMBER_ROOT/src
     echo "* Testing model.py";  python3 model.py
     echo "* Testing utilities.py";  python3 utilities.py
+    echo "* Testing gitlocal.py";  python3 gitlocal.py
 fi
 

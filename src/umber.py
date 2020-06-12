@@ -1,6 +1,7 @@
-# -*- coding: utf-8 -*-
 """
  umber.py
+
+ a file-based, markdown-ish course management system written in flask.
  
  Jim Mahoney | mahoney@marlboro.edu | May 2017 | MIT License
 """
@@ -12,11 +13,12 @@ from werkzeug import secure_filename
 from model import db, Person, Role, Course, \
      Registration, Assignment, Work, Page, Time
 from utilities import in_console, split_url, static_url, size_in_bytes, \
-     git, is_clean_folder_name, parse_access_string, parse_assignment_data, \
+     is_clean_folder_name, parse_access_string, parse_assignment_data, \
      print_debug, pygmentize, name_to_htmltitle, path_to_startdate
 from settings import umber_flask_configure, umber_url, contact_url, help_url, \
      about_url, site_url, url_base, os_root, umber_debug, route_prefix, \
      os_courses, markup_url, site_course_path, site_home
+import gitlocal
 
 app = Flask('umber',
             static_folder=os.path.join(os_root, 'static'),
@@ -303,7 +305,7 @@ def ajax_upload():
         upload.save(destination)
 
         # TODO: do the github stuff asyncronously ?        
-        git.add_and_commit(page, abspath=destination)         
+        gitlocal.add_and_commit(page)
 
     print_debug(" sending ajax response ")
     return ajax_response(True, 'upload success')
@@ -329,11 +331,9 @@ def ajax_response(status, msg):
 #   request.url
 #   request.base_url
 #   request.url_root
-#   ... and others
-# I've also added to it
 #   request.page            umber Page object
 #   request.page.user       umber Person object
-
+#   ... and others
 
 def submit_done():
     # just reload the page
@@ -400,7 +400,8 @@ def submit_newcourse():
     newcourse = Course.create_course(name, path,
                                      start = startdate,
                                      name_as_title = title,
-                                     copyfrom = copyfrom)
+                                     copyfrom = copyfrom,
+                                     user = request.page.user)
     for name in request.form['faculty'].split(','):
         try:
             faculty = Person.get(username = name.strip())
@@ -483,7 +484,7 @@ def submit_permissions():
               'write': parse_access_string( request.form['write_access'] )}
     access_abspath = request.page.write_access_file(rights)
     print_debug(' submit_permissions : access path {} '.format(access_abspath))
-    git.add_and_commit(request.page, access_abspath)
+    gitlocal.add_and_commit(request.page)
     return url_for('mainroute', pagepath=request.page.path, action='edit')    
 
 def submit_delete():
@@ -491,9 +492,10 @@ def submit_delete():
     # example request.form would be {'submit_delete':'delete',
     #                                '/full/path/file1.md':'checkboxdelete',
     #                                '/full/path/folder2/':'checkboxdelete'}
-    abspaths = list([path for path in list(request.form.keys()) if request.form[path]=='checkboxdelete'])
+    abspaths = list([path for path in list(request.form.keys())
+                     if request.form[path]=='checkboxdelete'])
     print_debug(' submit_delete : {}'.format(abspaths))
-    git.rm_and_commit(request.page, abspaths)
+    gitlocal.rm_and_commit(request.page)
     return url_for('mainroute', pagepath=request.page.path, action='edit')
     
 def submit_edit():
@@ -540,7 +542,7 @@ def submit_edit():
     # Save the page content to a file and to git.
     bytes_written = request.page.write_content(request.form['edit_text'])
     print_debug(' submit_edit: bytes_written = {}'.format(bytes_written))
-    git.add_and_commit(request.page)
+    gitlocal.add_and_commit(request.page)
     return request.base_url  # ... and reload it without ?action=edit
     
 def submit_logout():

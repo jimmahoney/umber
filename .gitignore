@@ -23,3 +23,7 @@ venv
 database/umber.db
 database/umber.db.backup*
 
+# embedded git repos
+# (This is I think the default behavior anyway.)
+.git
+

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
  console.py -  interactive flask shell console 
 

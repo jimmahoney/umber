@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
  model.py
  
@@ -47,18 +46,19 @@
  Jim Mahoney | mahoney@marlboro.edu | MIT License
 """
 
-import os, subprocess, yaml, re, mimetypes, shutil, random
+import os, yaml, re, mimetypes, shutil, random
+from functools import reduce
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import SqliteDatabase, Model, \
      TextField, IntegerField, PrimaryKeyField, ForeignKeyField
 from bs4 import BeautifulSoup
 from utilities import markdown2html, link_translate, static_url, \
      ext_to_filetype, filetype_to_icon, size_in_bytes, \
-     git, Time, stringify_access, print_debug, clean_access_dict, md5
+     Time, stringify_access, print_debug, clean_access_dict, md5
 from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
     os_root, os_courses, photos_url, url_base, os_default_course, \
     site_course_path, site_home
-from functools import reduce
+import gitlocal
 
 db = SqliteDatabase(os_db)
 
@@ -112,6 +112,10 @@ class Person(BaseModel):
     
     @staticmethod
     def create_person(username, name, email, password='', is_admin=False):
+        # TODO : restrict legal usernames ...
+        #            * prohibit leading '_' (reserved for system)
+        #            * lowercase_only? underbar? numbers?
+        #            * enforce uniqueness
         with db.atomic():
             (user, created) = Person.get_or_create(username=username)
             if created:
@@ -121,7 +125,9 @@ class Person(BaseModel):
                     password = str(random.getrandbits(32))
                 user.set_password(password)
                 user.save()
-        Course.enroll_site(user, is_admin=is_admin) # also has db.atomic()
+            # enroll_site has in it db.atomic() too ...
+            # the docs say its OK to nest them.
+            Course.enroll_site(user, is_admin=is_admin) 
         return user
 
     @staticmethod
@@ -330,7 +336,7 @@ class Course(BaseModel):
 
     @staticmethod
     def create_course(name, path, start='', name_as_title='',
-                      copyfrom=os_default_course):
+                      copyfrom=os_default_course, user=None):
         if name_as_title == '':
             name_as_title = name
         if start == '':
@@ -350,13 +356,19 @@ class Course(BaseModel):
                 start_date = start,
                 name_as_title = name_as_title
                 )
-        # copy initial course files & save into git
-        # copyfrom is e.g. 'default_course'
+        # Create a disk folder for a course by copying
+        # files from some other course.
+        # (If 'copyfrom' isn't defined, then those course files
+        # had better already exist ... which is the case
+        # for defaultcourse and democourse.)
         if copyfrom:
             abspath = os.path.join(os_courses, path)
             abscopyfrom = os.path.join(os_courses, copyfrom)
             shutil.copytree(abscopyfrom, abspath)
-            git.add_and_commit_all()
+            # remove the old copied .git folder
+            shutil.rmtree(os.path.join(abspath, '.git'), ignore_errors=True)
+        print_debug(' gitlocal : init_add_commit ')
+        gitlocal.init_add_commit(course, user) # initalize its .git folder
         return course
     
     @staticmethod
@@ -576,9 +588,7 @@ class Course(BaseModel):
                 #print(" FUTURE : duedate = " + str(duedate))
                 ass.dateclass = 'assign-date'
             ass.date = duedate.assigndate()         # for assignment list display
-            ass.ISOdate = duedate.assignISOdate()   # for assignment list editing
-            #   TODO : cache this ... DONE ; see update_assignments()
-            #ass.blurb_html = markdown2html(ass.blurb)     
+            ass.ISOdate = duedate.assignISOdate()   # ditto
         return self.assignments
     
     def nav_page(self, user):
@@ -729,11 +739,17 @@ class Page(BaseModel):
             # bail with error message if the OS system won't do it.
             print_debug(' os.makdir("{}") failed '.format(abspath))
             return None
+        # Add an empty .keep file in this new folder,
+        # as a workaround to force git to include this new folder.
+        # (Git pays attention to files, not folders.)
+        open(os.path.join(abspath, '.keep'), 'w').close() # unix 'touch'
+        # Create the new folder object.
         path = os.path.relpath(abspath, os_courses)
         folder = Page.get_from_path(path, user=user)
-        git.add_and_commit(folder)
         if accessdict:
-            folder.write_access_file(accessdict)
+            # don't do a git commit here - wait to do whole folder 
+            folder.write_access_file(accessdict, do_git=False)
+        gitlocal.add_commit(folder)
         return folder
     
     @classmethod
@@ -854,21 +870,9 @@ class Page(BaseModel):
                 self.sys_edit_template = 'sys/edit_' + which + '.html'
             else:
                 self.sys_edit_template = 'sys/editerror.html'
-                
-            #if self.sys_edit_template == 'umber/sys/editerror.html':
-            #    if hasattr(self, 'can'):
-            #        self.can['write'] = False
-            ## ---- special cases ----
-            # students can edit their passwords
-            #if self.relpath == 'sys/user' and \
-            #  self.user_rank >= Role.name_rank['member']:
-            #    self.can['write'] = True         
-            # public can see assignments
-            #if self.relpath == 'sys/assignments':
-            #    self.can['read'] = True
 
     def get_course(self):
-        """ return this page's course """  # TODO : cache in sql database ??
+        """ return this page's course """  
         # extract path pieces e.g. ['demo', 'home']
         path_parts = self.path.split('/')
         # build partial paths e.g. ['demo', 'demo/home']
@@ -888,7 +892,7 @@ class Page(BaseModel):
         else:
             return Course.get_site()
 
-    def write_access_file(self, accessdict):
+    def write_access_file(self, accessdict, do_git=True):
         """ Given an access dict from user input e.g. 
             {'read':'students', 'write':['faculty','bob']} ,
             write it to a .access.yaml file, and return its abspath. """
@@ -899,7 +903,12 @@ class Page(BaseModel):
         # (yaml.dump turns u'string' into ugly stuff so I convert to str().
         accessfile.write(yaml.dump(clean_access_dict(accessdict)))
         accessfile.close()
-        git.add_and_commit(self, accesspath)
+        if do_git:
+            # I've left an option to avoid this to handle
+            # the case of a new folder efficiently, since
+            # we can in that case commit the whole folder in one go
+            # after this .access.yaml is created.
+            gitlocal.add_commit(self)
         return accesspath
     
     def get_access(self):
@@ -1004,25 +1013,6 @@ class Page(BaseModel):
             return 'text/plain'
         return Page._mime_types.get(self.ext, 'application/octet-stream')
 
-    def keep(self):
-        """ for folders, essentially 'touch .keep' at the command line """
-        # This is a workaround for git's ignorance of folders.  Since git
-        # tracks only files, it is not good at noticing new empty
-        # folders. Worse, git seems to sometimes delete empty parent folders
-        # when "git rm" removes all its contents.  The workaround is to add an
-        # empty '.keep' file to a folder so that git can essentially see the
-        # folder by the presence of the .keep file.  This method creates a
-        # '.keep' file if the page is a folder.
-        if self.is_dir:
-            self.keepabspath = os.path.join(self.abspath, '.keep')
-            keepfile = open(self.keepabspath, 'w')
-            keepfile.close()
-        else:
-            # For consistency between files and folder, 
-            # I'll set this to the page's path. 
-            # That way both folders & files can use this for git commits.
-            self.keepabspath = self.abspath
-
     def children(self, abspath=''):
         """ return page for each file or folder below this folder """
         result = []
@@ -1044,7 +1034,8 @@ class Page(BaseModel):
 
     def _setup_revision_data(self):
         """ read and store within page the git file revision data """
-        log = git.log(self)  # has the form [(githash, date, author)]
+        # The log is a list of tuples [(revision, date, author), ...]
+        log = gitlocal.get_history(self)  
         if len(log) == 0:
             link = self.url
             date = self.lastmodified.daydatetimesec()
@@ -1141,21 +1132,19 @@ class Page(BaseModel):
         self.bytesize = size_in_bytes(self.size)
 
     def revision_content_as_html(self):
-        content = git.get_revision(self)
-        html = markdown2html(content)    ## TODO : cache this somehow ??
+        content = gitlocal.get_revision(self)
+        html = markdown2html(content)
         html_with_links = link_translate(self.course, html)
         return html_with_links
 
     def content(self):
         """ Return file or github (revision) data for a page """
-        # TODO: should this be cached as self._content ?
-        #       ... or better yet cache html version of .md in sql database ?
         # python3 gotchas:
         #  for text, I convert to a python3 string (utf8)
         #  but for other (i.e. binary) data, I leave as python3 bytes
         if self.exists and self.is_file:
             if self.revision:
-                text = git.get_revision(self)
+                text = gitlocal.get_revision(self)
             else:
                 with open(self.abspath, 'rb') as _file:
                     text_bytes = _file.read()
@@ -1186,22 +1175,17 @@ class Page(BaseModel):
         if not self.exists:
             return ''
         elif self.ext == '.md':
-            # Is cached html current ?
-            #   This software can only modify .md,
-            #   and that's the expensive one to convert
-            #    so that's all I'm caching currently.
+            # I'm caching the html version of .md pages in the sql database,
+            # checking to see if the cache is stale with
+            # the file's lastmodified and a sql db html_lastmodified fields.
             #print_debug(f" debug content_as_html cache")
             #print_debug(f"   lastmodified='{self.lastmodified}' ; " + \
             #            f"html_lastmodified='{self.html_lastmodified}'")
             if str(self.lastmodified) != self.html_lastmodified:
-                # no ; update it
-                #print_debug(f"   updating {self.path}")
+                 #print_debug(f"   updating {self.path}")
                 with db.atomic():
                     content = self.content()
                     raw_html = markdown2html(content)
-                    # expand ~/ and ~~/
-                    # TODO : check that this isn't doing too much
-                    #        i.e. expanding ~mahoney, unix home folder
                     self.html = link_translate(self.course, raw_html)
                     self.html_lastmodified = str(self.lastmodified)
                     self.save()
@@ -1209,10 +1193,8 @@ class Page(BaseModel):
                 #print_debug(f"   using cache {self.path}")
             html = self.html
         else:
-            # Just send the file as-is : txt, html, img, ....
-            # ... though typically images won't be sent through content_as_html
+            # Not markdown, so send the file (txt, html, ...) as is.
             html = self.content()
-            # html = '<h2>Oops</h2> unsupported file type "{}"'.format(self.ext)
         return html
 
     def action_query(self):

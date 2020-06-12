@@ -1,5 +1,73 @@
 # umber development history #
 
+## June 9
+
+reading about Paas (platform as a service), cloud deploy services
+and wondering if that sort of approach would make sense or require
+too much of a learning curve ...
+
+ *** this discussion ***
+ https://news.ycombinator.com/item?id=23460066
+
+ https://blog.coinbase.com/container-technologies-at-coinbase-d4ae118dcb6c
+ http://dokku.viewdocs.io/dokku/
+ https://caprover.com/
+ https://www.docker.com/ ... https://docs.docker.com/engine/
+ https://github.com/exoframejs/exoframe ... one-command deployments
+
+ https://kubernetes.io/docs/tutorials/kubernetes-basics/
+ google "hello world kubernetes"
+
+ "Heroku is also very cheap on the low end."
+ https://devcenter.heroku.com/articles/python-websockets
+
+ "For those missing Heroku, there is Dokku..."
+ "Tried Dokku, but found CapRover [1] to be a much better / easier option"
+  - https://www.vultr.com/ ... 
+
+ "for 2 person project dokku is the smartest choice"
+
+ "Docker Engine is an open source containerization technology 
+  for building and containerizing your applications."
+
+ "If you can get away with it, vanilla docker hosts running docker
+  compose provide most of the same benefits with a fraction of the cost."
+
+ https://docs.docker.com/compose/
+ "Compose is a tool for defining and running multi-container Docker
+  applications. With Compose, you use a YAML file to configure your
+  application’s services. Then, with a single command, you create and
+  start all the services from your configuration.
+
+ "Plain old linux is the alternative ..."
+ "How do you ... (load balance | roll back | ensure dependencies | restart | ...)"
+
+ https://learn.hashicorp.com/nomad
+ "Nomad + Consul has been pretty great to us over the last year.
+  We're a small nonprofit ... "
+ several other folks like them
+
+ kubernetes : google ; GKE : their cloud system to provide it.
+ AWS, EC2, ECS (elastic container service), ... : amazon 
+ 
+## June 8
+
+thinking about git implementations, going down the
+rabbithole of wsgi, subprocesses, and all that ...
+
+  python subprocess ; see https://docs.python.org/3/library/subprocess.html
+  ... but I'm not sure how well that will work in a wsgi environment
+
+  python wsgi
+  https://www.fullstackpython.com/wsgi-servers.html
+
+  on cs.marlboro.college I've been using apache + mod_wsgi
+  ... not sure if that is still the best choice.
+      $ apachectl -M  # show config options e.g. WSGIPythonPath
+
+      uWSGI ?
+      https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html
+
 ## June 5 2020
 
  Bennington uses gmail for user@bennington.edu ...

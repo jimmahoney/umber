@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
  settings.py
 
@@ -6,7 +5,7 @@
 
  The environment variables 
     UMBER_CONFIG        (either DEVELOPMENT or PRODUCTION)
-    UMBER_SECRET_KEY    (sesstion crypto key)
+    UMBER_SECRET_KEY    (session crypto key)
  must be defined elsewhere before this runs.
 
  See ../env/shell_* .
@@ -59,7 +58,6 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     os_courses = os.path.join(os_root, 'courses')
     os_default_course = os.path.join(os_root, 'courses/default_course')
     umber_cleanup = ''
-    os_git = os_root
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     # TODO : find a better way to pull this out of the source tree.
@@ -71,7 +69,6 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     contact_url = '<a href="mailto:jimmahoney@bennington.college">Jim Mahoney</a>'
     site_url = 'https://cs.bennington.college'
     os_courses = '/var/www/courses'
-    os_git = '/var/www/courses'
     os_default_course = '/var/www/courses/default_course'
     umber_cleanup = '/var/www/courses/etc/bin/umber_cleanup'
 

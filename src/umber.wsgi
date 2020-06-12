@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
  umber.wsgi - apache2 wsgi production python
 
