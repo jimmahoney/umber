@@ -45,6 +45,23 @@ Installation instructions
      $ pip freeze > requirements_new.txt
 
 ========================
+June 2020 ; deploying bennington umber on a new linode
+
+ https://www.linode.com/docs/security/securing-your-server/
+   - unattended security updates
+   - 
+
+ Ubuntu 20.04LTS (long term support ; released April 2020, supported to April 2025)
+  - python 3.8 is the base system
+  - ... but I don't like what I'm reading about their "snap" packages
+
+ Debian 10.4 (buster) is their stable version, released May 9 2020
+  - python 2.7 & 3.7
+
+ https://cloud.linode.com/stackscripts/612220
+ "secure no root debian ubuntu" April 2020
+
+========================
 Aug 2019 ; deploying on ubuntu 18 server cs.marlboro.college with python3 
 
     python3.7  (... though I gave up on this and settled for the system's 3.5)
@@ -64,7 +81,7 @@ Aug 2019 ; deploying on ubuntu 18 server cs.marlboro.college with python3
 
     ... but I changed my mind and redid this with ubuntu's "apt-get python3" (3.5.2),
     see below. (Had the headers correct for dulwich compile & was consistent
-    with what I could compile for apache's python mod_wsgi)b
+    with what I could compile for apache's python mod_wsgi)
 
     umber (python3 branch)
     ----------------------

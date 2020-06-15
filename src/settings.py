@@ -60,12 +60,12 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     umber_cleanup = ''
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
-    # TODO : find a better way to pull this out of the source tree.
+    # TODO : find a better way to pull this stuff out of the source tree.
     umber_debug = False
     protocol = 'https://'
     hostname = 'cs.bennington.college'
     url_base = 'courses'      
-    route_prefix = ''          # in apache wsgi config route already has /cours/
+    route_prefix = ''      # in apache wsgi config route already has /cours/
     contact_url = '<a href="mailto:jimmahoney@bennington.college">Jim Mahoney</a>'
     site_url = 'https://cs.bennington.college'
     os_courses = '/var/www/courses'

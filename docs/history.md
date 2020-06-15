@@ -1,5 +1,42 @@
 # umber development history #
 
+## June 12
+
+ gitlocal repos per course with python suprocess and command line git
+ seems to be working.
+
+ google login ? https://realpython.com/flask-google-login/
+
+ bennington google signin :
+    sso.bennington.com ("LOG INTO your bennington account")
+    https://cloud.google.com/identity/sso
+    (sso : single sign on
+       openID
+       secure LDAP
+       Active Directory (AD)
+       Google Cloud Directory Sync )
+
+ ... but first I need to have it deployed
+ and set up for google to let me try it.
+
+ I think that nginx + uwsgi has more traction
+ than apache + mod_wsgi (clunky, from what I read,
+ and my experience has not been great in terms
+ of preformance and monitoring)
+
+ digitalocean.com/community/tutorials/
+ how-to-serve-flask-applications-with-uswgi-and-nginx-on-ubuntu-18-04
+
+ Should I be trying to automate the deploy process ?
+   - docker container (i.e. set something up and then save it)
+   - ansible (CLI tool on laptop, runs yaml scripts to provision & deploy)
+   discussion :
+     https://news.ycombinator.com/item?id=23506223
+     "ansible alternatives in python"
+   
+ ... but I'm not sure I understand yet well enough what to do
+     to automate it. Especially if I'm going to move to nginx + uwsgi.
+ 
 ## June 9
 
 reading about Paas (platform as a service), cloud deploy services
