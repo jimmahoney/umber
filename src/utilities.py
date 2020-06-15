@@ -10,7 +10,6 @@ from settings import url_base, debug_logfilename, \
 from flask import url_for, app
 from dateutil.parser import parse as dateutil_parse
 
-
 # So I wanted to be able to toggle it off for doctests and setup ...
 debug_settings = {'status': True}
 def toggle_debug():
@@ -92,17 +91,12 @@ def path_to_startdate(path):
     else:
         return ''
 
-class Time(object):
+class Time:
     """ Time in an ISO GMT form, as typically stored in the sqlite database,
         including a timezone-aware (as specified in settings.py) offset.
 
         >>> print(Time('2013-01-01T12:24:52.3327-05:00'))
         2013-01-01T12:24:52-05:00
-
-        >>> a = str(Time('Tue Jul 10 2018 18:01:33 +0000')) # UTC
-        >>> b = str(Time('Tue Jul 10 2018 14:01:33 -0400')) # EST
-        >>> a == b
-        True
 
         >> license_abspath = '/Users/mahoney/sugar/academics/umber/LICENSE'
         >> license_lastmodified = os.stat(license_abspath).st_mtime

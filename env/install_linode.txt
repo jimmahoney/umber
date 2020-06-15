@@ -165,7 +165,31 @@ Deploying & provisioning umber on cs.bennington.college
       $ chmod config go-r
       # installed the key in git_cs_bennington.pub in github's GUI
       
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDVJauKHvo+6ronVDe8YF9t53OuzBN2REp0IZxPEM1GO git_cs_benning
-ton
+  * umber
+      $ mkdir /var/www; cd /var/www; chown mahoney:mahoney /var/www
+      mahoney$ cd /var/www; git clone git@github.com:jimmahoney/umber.git
+      $ chown root:root /var/www
+
+      $ python --version
+      2.7.16
+      $ python3 --version
+      3.7.3
+
+      $ apt update
+      $ apt install python3-pip
+      $ apt install sqlite3
+      $ apt install virtualenv
+
+      mahoney$ cd /var/www/umber
+      mahoney$ virtualenv --python=python3.7 venv
+      mahoney$ . venv/bin/activate
+      (venv) mahoney$ python --version
+      Python 3.7.3
+      (venv) mahoney$ pip --version
+      pip 20.1.1 from /var/www/umber/venv/.../pip (python 3.7)
+      (venv) mahoney$ pip install -r env/requirements.txt
+
+
+
 
 
