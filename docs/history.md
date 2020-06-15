@@ -1,9 +1,5 @@
 # umber development history #
 
-## June 15
-
- testing cs.bennington key
-
 ## June 12
 
  gitlocal repos per course with python suprocess and command line git
