@@ -99,12 +99,14 @@ img {
 
 a { 
   text-decoration: none;
-  color: #002bb8;
+   /* color: #002bb8; */
+  color: #0c5799;
   background: none;
 }
 a:hover { 
   text-decoration: underline;
-  color: #5a3696;
+  color: #3c79ae;
+  /* color: #5a3696; */
 }
 /* a:visited { color: #5a3696; } */     
 /* not in nav menu; but see .component */
@@ -132,8 +134,10 @@ hr {
   height: 1px;
   border: 0;
   margin: .2em 0 .2em 0;
-  color: #90C0C0;
-  background-color: #90C0C0;
+  color: #8f765e;
+  background-color: #8f765e;
+  /* color: #90C0C0; */
+  /* background-color: #90C0C0; */
 }
 
 .hint {
@@ -159,9 +163,12 @@ form {
     width: 65%;
     /* other border color possibilities : 
        peru CD853F , 
-       light green borders 90C0C0 */    
-    border-top: 1px solid #006030;  
-    border-bottom: 1px solid #006030;
+       light green borders 90C0C0 */
+
+    border-top: 1px solid #654321;  
+    border-bottom: 1px solid #654321;
+    /* border-top: 1px solid #006030;  
+       border-bottom: 1px solid #006030; */
 }
 
 div.indent { 
@@ -190,15 +197,14 @@ textarea {
 }
 
 
-
-
 /* I'm not sure this changes dialogs in file upload;
    I think it's best to leave these white. */
 /* input[type="text"] { background-color: #FFFFFA; } */
 
 input[type="radio"], input[type="checkbox"] { border:none; }
 select {
-    border: 1px solid #90C0C0;  
+    border: 1px solid #8f765e;
+    /* border: 1px solid #90C0C0; */
     color: Black;
     vertical-align: top;
 }
@@ -333,8 +339,8 @@ div#header {
 #login li input[type="submit"]{
   background-color: transparent;
   font-family: serif;
-  font-size: 1em;
-  color: #002bb8;
+  color: #0c5799;
+  /* color: #002bb8; */
   border: none;
   margin: 0;
   padding: 0;
@@ -343,7 +349,8 @@ div#header {
 #login li input[type="submit"]:hover{
   text-decoration: underline;
   cursor: pointer;
-  color: #5a3696;
+  color: #778fa7;
+  /* color: #5a3696; */
 }
 
 form.login {
@@ -447,9 +454,12 @@ form.login {
 #actions li {
   position: relative;
   display: inline;
-  border-top: 1px solid #90C0C0;   /* green-ish */
-  border-right: 1px solid #90C0C0; /* green-ish */
-  border-left: 1px solid #90C0C0;  /* green-ish */    
+  border-top: 1px solid #8f765e;
+  border-right: 1px solid #8f765e;
+  border-left: 1px solid #8f765e;
+  /* border-top: 1px solid #90C0C0;
+     border-right: 1px solid #90C0C0; 
+     border-left: 1px solid #90C0C0;  */
   border-bottom: none;
   margin-left: 1em;                /* i.e. space between tabs */
   padding: 0 .5em 0.002em .5em;
@@ -499,7 +509,8 @@ form.login {
  **** */
 
 #column-one  h1 {
-  color: #006030;
+  color: #654321;
+  /* color: #006030; */
   margin: 1px;             /* corresponds to border in .component */
   padding: .2em 0 0 .2em;  /* !!! course title position; see .component h1 */
   text-align: center;
@@ -510,15 +521,17 @@ form.login {
 }
 #column-one h1 a { 
   padding: 0;
-  color: #006030;
+  color: #654321;   
+  /* color: #006030; */
   margin: auto;
 }
 #column-one  h1  a:hover { 
   text-decoration: none;
 }
 
-#column-one  div  #semester { 
-  color: #006030;
+#column-one  div  #semester {
+  color: #654321;   
+  /* color: #006030; */
   text-align: center;
   font-size: 110%;
 }
@@ -547,7 +560,8 @@ form.login {
 }
 /* box with border in column-one */
 #column-one div div div  {
-  border: solid 1px #90C0C0;    /* was #90C0C0 */
+  border: solid 1px #8f765e;   
+  /* border: solid 1px #90C0C0; */
   border-left: none;
   background-color: #FCFCFC;    /* was FFFFFC */
   margin: 1px;
@@ -647,7 +661,8 @@ form.login {
 .component {
   margin: 0;
   padding: 0 1em 0 1em;             /* !!! right whitespace; see .footer */
-  border: 1px solid #90C0C0; 
+  border: 1px solid #8f765e;
+  /* border: 1px solid #90C0C0; */
   border-right: none;
   background-color: #FFFFFC;    /* was white */
 }
@@ -708,14 +723,16 @@ form.login {
 .component h1 { 
   margin: 0;
   padding: .2em 0 0 0; /* !!! component title position; see #column-one>a>h1 */
-  border-bottom: solid 1px #90C0C0;
+  border-bottom: solid 1px #8f765e;
+  /* border-bottom: solid 1px #90C0C0; */
 }
 
 .component h2 { 
   /* line-height: 1.5em; */
   margin: 1em 0 0 0;
   padding: 0;
-  border-bottom: solid 1px #90C0C0;
+  border-bottom: solid 1px #8f765e;
+  /* border-bottom: solid 1px #90C0C0; */
 }
 
 .component h3 { 
@@ -802,7 +819,8 @@ form.login {
   background-color: #fffff6; 
   padding: 0.2em;
   /* margin: 0.5em 0 0 0; */
-  border: 1px dashed #90C0C0;
+  border: 1px dashed #8f765e;   
+  /* border: 1px dashed #90C0C0; */
   color: black;
   line-height: 1.1em;
 }
@@ -814,7 +832,8 @@ pre code {
   background-color: #fffff6; 
   padding: 0.5em !important;
   margin: 0.5em 0 0 0;
-  border: 1px dashed #90C0C0;
+  border: 1px dashed #8f765e;
+  /* border: 1px dashed #90C0C0; */
   color: black;
   line-height: 1.1em;
 }
@@ -913,7 +932,8 @@ pre code {
 #oops {
   padding: 1em;
   margin: 0.5em 0 0.5em 0;
-  border: solid 1px #90C0C0;
+  border: solid 1px #8f765e;
+  /* border: solid 1px #90C0C0; */
   /* background-color: #fafafa; */
   background-color: #fcf0f0;
   line-height: 1.1em;
@@ -1014,8 +1034,9 @@ form input[type="submit"]{
 }
 
 .enabledbutton {
-    color: #002bb8;
-    border-color: darkgrey;   /* darkgrey is #d9d9d9 */
+   color: #0c5799;
+   /* color: #002bb8; */
+   border-color: darkgrey;   /* darkgrey is #d9d9d9 */
 }
 
 .folder hr {

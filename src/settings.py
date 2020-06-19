@@ -58,6 +58,7 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     os_courses = os.path.join(os_root, 'courses')
     os_default_course = os.path.join(os_root, 'courses/default_course')
     umber_cleanup = ''
+    debug_logfilename = ''
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     # TODO : find a better way to pull this stuff out of the source tree.
@@ -71,7 +72,8 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     os_courses = '/var/www/courses'
     os_default_course = '/var/www/courses/default_course'
     umber_cleanup = '/var/www/courses/etc/bin/umber_cleanup'
-
+    debug_logfilename = '/var/logs/umber/umber_log.txt'
+    
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')
 
@@ -88,4 +90,4 @@ umber_mime_types = {x:'text/plain' for x in
     )}
 umber_mime_types['.PNG'] = 'img/png'
 
-debug_logfilename = "/var/logs/umber/umber_log.txt"
+
