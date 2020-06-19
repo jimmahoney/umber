@@ -60,4 +60,4 @@ Notes
   $ less /var/log/nginx/access.log
   $ journalctl -u nginx            # what systemd knows
   $ journalctl -u utest            # uwsgi's output
-
+  $ 

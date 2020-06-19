@@ -144,10 +144,14 @@ def mainroute(pagepath):
 
     print_debug(' mainroute: page.abspath = {}'.format(page.abspath))
 
-    # If a course for the isn't found, a special 'error' course
-    # will be returned as a signal.
-    if page.course.name == 'error':
-        return abort(404)            # "not found"
+    # If a course for the page isn't found,
+    # a special 'error' course will be returned as a signal.
+    try:
+        if page.course.page_error:
+            return abort(404)            # page "not found"
+    except AttributeError:
+        # if the course doesn't have the .page_error attribute
+        pass
 
     print_debug(' mainroute: course.name = "{}"'.format(page.course.name))
     print_debug(' mainroute: course.url = "{}"'.format(page.course.url))

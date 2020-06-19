@@ -764,16 +764,22 @@ class Page(BaseModel):
         page._setup_file_properties()           # sets page.is_file etc
         page.gitpath = os.path.join(os_courses, page.path_with_ext)
         page.course = page.get_course()
-        if page.course.name == 'error':
-            ### Unexpected (to me anyway) behavior here :
-            ###     page.course = None
-            ###     if page.course:        # This throws an error!
-            ###        ...
-            ### Apparently the peewee database code has put hooks into
-            ### the Page object to do tricky stuff for "page.course",
-            ### seems to drop into peewee and complain.
-            ### I've avoided the issue by creating a special "error" course
-            return page     # In umber.py will turn into a 404 - not found.
+        try:
+            if page.course.page_error:
+                ### Unexpected (to me anyway) behavior here :
+                ###     page.course = None
+                ###     if page.course:        # This throws an error!
+                ###        ...
+                ### Apparently the peewee database code has put hooks into
+                ### the Page object to do tricky stuff for "page.course",
+                ### seems to drop into peewee and complain.
+                ### I'm avoiding this by returning the Umber site course
+                ### but with a .page_error attribute set.
+                ### In umber.py this will turn the request into 404 not found.
+                return page     
+        except AttributeError:
+            # .page_error field not set; keep going.
+            pass
         page.relpath = page._get_relpath()
         page._setup_sys()                   # do this before .get_access()
         page.access = page.get_access()     # gets .access.yaml property.
@@ -876,7 +882,10 @@ class Page(BaseModel):
                 self.sys_edit_template = 'sys/editerror.html'
 
     def get_course(self):
-        """ return this page's course """  
+        """ return this page's course """
+        # And if there is no course for this page,
+        # return the site course but also set an error within it.
+        #
         # extract path pieces e.g. ['demo', 'home']
         path_parts = self.path.split('/')
         # build partial paths e.g. ['demo', 'demo/home']
@@ -884,17 +893,26 @@ class Page(BaseModel):
         paths = reduce(lambda x,y: x + [x[-1]+'/'+y],
                        path_parts[1:], path_parts[0:1])
         # build peewee's "where condition" to find matching courses.
-        condition = Course.path % ''     # Note: '' is Umber's default course
+        condition = Course.path
         for c in paths:
             condition = condition | Course.path % c
-        # get list of matching courses from database
+        # Get list of matching courses from database.
+        # Choose the one with the longest path,
+        # if more than on was found ...
+        # which would only happen for courses directories
+        # embedded within another course, which shouldn't happen.
+        # TODO: make sure to test for that issue during new course creation
         query = Course.select().where(condition)
         courses = list(query.execute())
-        # choose the one with the longest path
+        #
         if courses:
             return max(courses, key=lambda c: len(c.path))
         else:
-            return Course.get_site()
+            # Couldn't find a course for that page, so return
+            # the default course with a flag indicating the error.
+            umber = Course.get_site()
+            umber.page_error = True
+            return umber
 
     def write_access_file(self, accessdict, do_git=True):
         """ Given an access dict from user input e.g. 

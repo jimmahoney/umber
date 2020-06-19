@@ -25,7 +25,7 @@ and then add them to umber's sql database :
   $ cd /var/www/umber
   $ . env/production
   $ umber_console
-  >>> from adminscripts import *
+  >>> from admintools import *
   >>> os.chdir('/var/www/cours/etc/misc') # folder for .html , .csv
   >>> users = parse_directory('nookfile.html')
   >>> make_csv(users, 'users.csv')
@@ -35,29 +35,29 @@ and then add them to umber's sql database :
 from model import Course, Person
 import csv, random, re, sys
 
-term = '2018-09-01'       # CHANGEME
-termfolder = 'fall2018'   # CHANGEME
+term = '2020-09-01'       # CHANGEME
+termfolder = 'fall2020'   # CHANGEME
 
 def make_faculty():
     Person.create_person(
         username = 'mahoney',
         name = 'Jim Mahoney',
-        email = 'mahoney@marlboro.edu',
-        password = 'mahoney*05344*',
+        email = 'jimmahoney@bennington.edu',
+        password = '..henri..',  # RESETME!
         is_admin = True
     )
-    Person.create_person(
-        username = 'matt',
-        name = 'Matt Ollis',
-        email = 'matt@marlboro.edu',
-        password = 'matt*05344*'
+    #Person.create_person(
+    #    username = 'matt',
+    #    name = 'Matt Ollis',
+    #    email = 'matt@marlboro.edu',
+    #    password = 'matt*05344*'
     )
-    Person.create_person(
-        username = 'kminden',
-        name = 'Kaethe Minden',
-        email = 'kminden@marlboro.edu',
-        password = 'kminden*05344*'
-    )
+    #Person.create_person(
+    #    username = 'kminden',
+    #    name = 'Kaethe Minden',
+    #    email = 'kminden@marlboro.edu',
+    #    password = 'kminden*05344*'
+    #)
 
 def make_courses(csvfilename='courses_jan2018.csv'):
     """ create courses from a .csv file defining them """

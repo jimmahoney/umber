@@ -3,10 +3,11 @@
 
 server {
 
-    root /var/www/cs_bennington;
-
     location / {
-        # Site files : try to serve request as file, then directory, then 404.
+        # static site files
+	# try to serve request as file, then directory, then 404.
+	root /var/www/cs_bennington;
+	index index.html;
         try_files $uri $uri/ =404;
     }
 
@@ -15,9 +16,10 @@ server {
 	include uwsgi_params;
 	uwsgi_read_timeout 60s;
         uwsgi_send_timeout 60s;
-	uwsgi_pass unix:/var/rum/umber/uwsgi.sock;
+	uwsgi_pass unix:/var/run/umber/uwsgi.sock;
     }
 
-    # and of course any other configurations
-    # such as ssl certificates and http to https redirects .
+    # And other nginx configurations - at least ssl certificates
+    # and http to https redirects as set up by certbot.
+    
 }

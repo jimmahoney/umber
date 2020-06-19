@@ -71,8 +71,13 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     site_url = 'https://cs.bennington.college'
     os_courses = '/var/www/courses'
     os_default_course = '/var/www/courses/default_course'
-    umber_cleanup = '/var/www/courses/etc/bin/umber_cleanup'
-    debug_logfilename = '/var/logs/umber/umber_log.txt'
+    #umber_cleanup = '/var/www/courses/etc/bin/umber_cleanup'
+    umber_cleanup = '' # TODO : figure out what's needed for bennington deploy
+    # debugging: see also
+    #   * uwsgi errors in /var/log/umber/uwsgi.log
+    #   * systemctl mwssages , command line "journalctl -u umber"
+    #   * uwsgi stats; command line "uwsgitop /var/run/umber/stats.sock"
+    debug_logfilename = '/var/log/umber/umber.log'
     
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')
