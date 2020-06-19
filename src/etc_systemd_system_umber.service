@@ -1,0 +1,28 @@
+# See
+#   * digitalocean.com/community/tutorials/
+#      how-to-serve-flask-applications-with-uswgi-and-nginx-on-ubuntu-18-04
+#   * coreos.com/os/docs/latest/
+#      using-environment-variables-in-systemd-units.html
+#   * ./setting.py
+#   * ../env/activate_production
+#
+
+[Unit]
+Description="umber uwsgi instance"
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/umber/src
+# virtual python environment + subprocess.run /bin/git 
+Environment="PATH=/var/www/umber/venv/bin:/bin"
+Environment="PYTHONPATH=/var/www/umber/src"
+Environment="UMBER_CONFIG=PRODUCTION"
+Environment="UMBER_ROOT=/var/www/umber"
+Environment="UMBER_DATA=/var/www/umber_data/umber_bennington.db"
+Environemnt="UMBER_SECRET_KEY=f0995be2638815f9c96451e1e8e0be5595954b31e49ffe23"
+ExecStart="/var/www/umber/venv/bin/uwsgi --ini wsgi.ini "
+
+[Install]
+WantedBy=multi-user.target

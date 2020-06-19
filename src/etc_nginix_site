@@ -1,0 +1,23 @@
+# For running under nginx + uwsgi in production, this goes into the nginx
+# site configuration file e.g. /etc/nginx/sites-available/cs.bennington.college
+
+server {
+
+    root /var/www/cs_bennington;
+
+    location / {
+        # Site files : try to serve request as file, then directory, then 404.
+        try_files $uri $uri/ =404;
+    }
+
+    location /courses/ {
+        # umber
+	include uwsgi_params;
+	uwsgi_read_timeout 60s;
+        uwsgi_send_timeout 60s;
+	uwsgi_pass unix:/var/rum/umber/uwsgi.sock;
+    }
+
+    # and of course any other configurations
+    # such as ssl certificates and http to https redirects .
+}

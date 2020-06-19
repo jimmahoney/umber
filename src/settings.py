@@ -65,7 +65,7 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     protocol = 'https://'
     hostname = 'cs.bennington.college'
     url_base = 'courses'      
-    route_prefix = ''      # in apache wsgi config route already has /cours/
+    route_prefix = ''    # in wsgi config route already has /courses/
     contact_url = '<a href="mailto:jimmahoney@bennington.college">Jim Mahoney</a>'
     site_url = 'https://cs.bennington.college'
     os_courses = '/var/www/courses'
@@ -88,4 +88,4 @@ umber_mime_types = {x:'text/plain' for x in
     )}
 umber_mime_types['.PNG'] = 'img/png'
 
-debug_logfilename = None
+debug_logfilename = "/var/logs/umber/umber_log.txt"

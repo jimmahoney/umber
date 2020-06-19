@@ -1,14 +1,19 @@
 # env/shell_production
 #
 # Definitions for the shell environment variables - production version
-# 
-# These or something like them needs to be put into the production server,
-# for example by copying them to /etc/apache2/envvar for apache2+wsgi,
-# or by putting them into a gunicorn config for a gunicorn proxy setup.
 #
-# Also see
-#   src/settings.py                     # more configuration settings
-#   src/umber.wsgi                      # an example wsgi script
+# To manipulate the production sql database from the command line,
+# activate this and run the console.
+#
+#   $ cd /var/www/umber
+#   $ . env/activate_production
+#   (venv)$ umber_console
+#   >>>
+#
+# The umber service environment itself is defined in the
+# systemd and nginx configuration files; see the notes in
+# the corresponding umber/src files.
+#
 #############################################################
 
 # Set this to PRODUCTION or DEVELOPMENT
@@ -18,14 +23,14 @@ export UMBER_CONFIG=PRODUCTION
 export UMBER_ROOT='/var/www/umber'
 
 # Define the absolute path to the sqlite3 database.
-export UMBER_DATA=/var/www/umber_data/umber_marlboro.db
+export UMBER_DATA=/var/www/umber_data/umber_bennington.db
 
 # Make the project's python files loadable from python.
 export PYTHONPATH=$UMBER_ROOT/src
 
 # Define the session crypto key.
 # *Don't* just copy-paste this; generate one with for example
-# >>> import os, binasci; binascii.hexlify(os.urandom(24))
+# >>> import os, binascii; binascii.hexlify(os.urandom(24))
 # (This is *not* the web server's session key;
 # it's here only so using the console to interact
 # with the production database has something defined
