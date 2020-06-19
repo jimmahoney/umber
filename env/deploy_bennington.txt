@@ -265,12 +265,97 @@ Deploying & provisioning umber on cs.bennington.college
        * checkstatic ... option to serve some static files without python
          https://uwsgi-docs.readthedocs.io/en/latest/StaticFiles.html
 
+ * setting up production files, folders, and rights for
+   production umber + nginx + uwsgi
 
+    # added mahoney to group www-data
+    
+    $ mkdir /var/run/umber                       # umber uwsgi <-> nginx sockets
+    $ chown www-data:www-data /var/run/umber
 
+    $ mkdir /var/log/umber
+    $ chown www-data:www-data /var/log/umber     # umber print_debug() logging
+    # chmod g+w /var/www/umber
 
+    $ chown www-data:www-data /var/www           # umber web files and data
+    $ chmod g+w /var/www
+    $ mkdir /var/www/courses                     # umber uwsgi course files
+    $ mkdir /var/www/umber_data                  # umber usgi sql database
+    $ mkdir /var/www/cs_bennington               # umber nginx (static) files
+     
+    $ cp /var/www/umber/src/etc_systemd_system_umber.service \
+         /etc/systemd/system/umber.service
+    # and then edit it so that it contains a unique UMBER_SECRET_KEY
 
+    # Edit /etc/nginx/sites-available/cs.bennington.college
+    # to contain the config in /var/www/umber/src/etc_nginx_site
 
+    # Copy courses from umber git repo to production instance
+    $ scp -r /var/www/umber/courses/umber /var/www/courses
+    $ scp -r /var/www/umber/courses/default_course /var/www/courses
+    $ scp /var/www/umber/courses/.access.yaml /var/www/courses
 
+    # Make  folder for my fall2020 courses
+    $ cd /var/www/courses ; mkdir fall2020
 
+    # And give all those some reasonable owners and rights.
+    $ chown -R www-data:www-data /var/www/courses
+    $ chmod -R g+ws /var/www/courses
 
+    # Initialize the production database
+    # (Starts with one site course (Umber), no users.
+    #  All created users are automatically enrolled in the site Umber course.
+    $ cd /var/www/umber
+    $ . env/activate_production
+    (venv)$ umber_init_db
+    (venv)$ umber_console
+    >>> jim = Person.create_person(
+    ...   username='mahoney',
+    ...   name='Jim Mahoney',
+    ...   email='jimmahoney@bennington.college',
+    ...   password='...', # AND RESET THIS SOON
+    ...   is_admin=True)
+    >>> jim.save()
 
+    # Set the database has reasonable ownership and rights.
+    $ chown -R www-data:www-data /var/www/umber_data
+    $ chmod g+ws /var/www/umber_data
+
+    # Set the log files ownership and rights.
+    $ touch /var/log/umber/umber.log
+    $ touch /var/log/umber/uwsgi.log
+    $ chown -R www-data:www-data /var/log/umber
+    $ chmod g+ws /var/log/umber
+    $ chmod g+ws /var/log/umber/*
+
+    # Set the socket folder ownership and rights.
+    $ mkdir /var/run/umber
+    $ chown www-data:www-data /var/run/umber
+    $ chmod g+ws /var/run/umber
+
+    # Make the system git is findable from our virtual environment path.
+    $ ln -s `which git` /var/www/umber/venv/bin
+
+    # Turn on the umber uwsgi daemon
+    $ systemctl start umber      # start now
+    $ systemctl enable umber     # start at system boot
+    # systemctl restart umber    # after editing sources, kick the tires.
+
+    # Turn on the nginx server
+    $ nginx -t                 # check config file syntax
+    $ systemctl start nginx    # start now
+    $ systemctl enable nginx   # start at boot (default after apt install)
+    $ systemctl restart nginx  # after editing soruces, kick the tires.
+
+    # --- debugging and monitoring ---
+    #
+    $ systemctl status umber
+    $ journalctl -u umber
+    $ more /var/log/umber/uwsgi.log
+    # after changes to umber.service, need "systemctl daemon-reload"
+    $ /var/www/umber/venv/bin/uwsgitop /var/run/umber/stats.sock
+    #
+    $ systemctl status nginx
+    $ journalctl -u nginx
+    $ more /var/log/nginx/*
+ 

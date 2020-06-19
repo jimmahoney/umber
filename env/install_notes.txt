@@ -51,7 +51,7 @@ June 2020 ; deploying bennington umber on a new linode
    - unattended security updates
    - 
 
- Ubuntu 20.04LTS (long term support ; released April 2020, supported to April 2025)
+ Ubuntu 20.04LTS (long term support ; released 2020, support to 2025
   - python 3.8 is the base system
   - ... but I don't like what I'm reading about their "snap" packages
 
