@@ -53,7 +53,7 @@ def _git_(command, course=None, page=None, user=None):
     git_command = f'git -C {repo} {command} {path}'
     git_commit = f'git -C {repo} commit -m "umber_editor {username}"'
     if command == 'init':
-        run(git_command, f'git -C {repo} add .', git_commit)
+        run(git_command, f'/bin/git -C {repo} add .', git_commit)
     else:
         run(git_command, git_commit)
 

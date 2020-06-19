@@ -9,20 +9,20 @@ from settings import url_base, debug_logfilename, \
     localtimezone, umber_debug, umber_cleanup
 from flask import url_for, app
 from dateutil.parser import parse as dateutil_parse
+import logging
 
 # So I wanted to be able to toggle it off for doctests and setup ...
 debug_settings = {'status': True}
 def toggle_debug():
     debug_settings['status'] = not debug_settings['status']
 
-debug_log = {'file': None}
+if debug_logfilename:
+    logging.basicConfig(filename=debug_logfilename, level=logging.INFO)
 def print_debug(message):
     if umber_debug and debug_settings['status']:
         print(message)
     if debug_logfilename:
-        if not debug_log['file']:
-            debug_log['file'] = open(debug_logfilename, 'a')
-        debug_log['file'].write(message + "\n")
+        logging.info(message)
 
 def myparsethedatetime(date_time_string):
     """ Return a date time string without timezone information
