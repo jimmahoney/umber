@@ -1,0 +1,276 @@
+
+June 2020
+=========
+
+Deploying & provisioning umber on cs.bennington.college
+
+  * Create a new ssh key on my laptop (bennington_linode) .
+    and added it to this machine at creation time in the linode GUI.
+
+  * Create cs_bennington linode
+     (Debian 10, Linode 4GG: 2CPU, 80GB/4GB, NewJersey ,
+     added the ssh key just created)
+
+  * Edited linode domains DNS record for bennington.college to point at
+
+    ipv4 96.126.108.24 , ipv6 2600:3c03::f03c:92ff:fecc:bf22
+
+  * Connect to linode as root
+  
+    $ ssh root@96.126.108.24
+
+  * Create user mahoney
+
+    $ adduser mahoney
+    passwd: **********
+
+  * Install emacs
+
+    $ apt-get install emacs
+
+  * Copy ~root/.ssh/authorized keys (installed by linode creation)
+    to ~mahoney and changed ownership (chown mahoney:mahoney ...)
+
+  * Add mahoney to sudo & allow without password 
+  
+    $ usermod -aG sudo username
+    $ export EDITOR="emacs -nw "  # default editor is emacs no window
+    $ visudo                      # edit sudoer's file , using emacs
+         # --- add this next line -------
+         mahoney ALL=(ALL) NOPASSWD:ALL
+
+  * Connect to linode as mahoney & become root
+  
+    laptop$ ssh 96.126.108.24   # from laptop with user=mahoney
+    remote$ sudo bash           # without password
+
+  * Disable root ssh & secure sshd
+  
+    edit /etc/ssh/sshd_config to include
+       PermitRootLogin no
+       PasswordAuthentication no
+       AddressFamily inet
+
+    $ systemctl restart sshd
+
+  * Remove password for mahoney (loging with ssh key only)
+  
+    $ sudo passwd -d mahoney
+
+  * Copied (scp) ~/.profile, ~/.emacs from laptop:system/dot_files
+    and edited host in prompt
+
+  * Edited /etc/hosts & /etc/hostname
+    -- /etc/hostname --
+    cs.bennington
+    -- /etc/hosts --
+    127.0.0.1       localhost
+    127.0.1.1       cs.bennington         # should match /etc/hostname
+    96.126.108.24   cs.bennington.college
+
+  * Edited message of the day (motd)
+    Moved /etc/motd to /etc/motd_disabled
+    Edited /etc/update-motd.d/10-uname
+       # uname -snrvm  # original
+       uname -nvm | sed "s/#1 SMP //"
+       # -- displays as --                                                                            
+       # cs.bennington Debian 4.19.118-2+deb10u1 (2020-06-07) x86_64                                                
+  * Enabled auto system upgrades (security stuff at least)
+    $ apt-get update && apt-get upgrade -y
+    $ apt-get install unattended-upgrades apt-listchanges
+    $ dpkg-reconfigure -plow unattended-upgrades # tab/return to answer "Yes"
+
+  * Set rDNS (reverse DNS) to cs.bennington.college
+    in linode GUI ; linode summary >> networking >> "..." after IP address
+
+  * Look to see which network servies are running.
+    See linode.com/docs/security/securing-your-server/
+
+    $ ss -atpu
+    Netid   State    Local Address:Port        Peer Address:Port
+    tcp     LISTEN   0.0.0.0:ssh               0.0.0.0:*         users:(("sshd", ...
+    tcp     LISTEN   127.0.0.1:smtp            0.0.0.0:*         users:(("exim4", ...
+    tcp     ESTAB    96.126.108.24:ssh     219.137.231:53487     users:(("sshd", ...
+    tcp     LISTEN   [::1]:smtp                [::]:*            users:(("exim4", ...
+
+    I do want ssh, but I don't see a need now for smtp/exim4 (email) 
+
+    $ apt list --installed | grep exim  # exim4-base, exim4-config, exim4-deamon-light
+    ... did "apt purge" on those three
+
+    ... but it seems that some sort of smtp is still running & other stuff too,
+    which I can see with nmap 
+
+  * nmap (from my laptop)
+
+    $ nmap -Pn cs.bennington.college
+    Nmap scan report for cs.bennington.college (96.126.108.24)
+    PORT    STATE    SERVICE
+    22/tcp  open     ssh
+    25/tcp  filtered smtp               email
+    135/tcp filtered msrpc              microsoft remote procedure call
+    139/tcp filtered netbios-ssn        microsoft session service
+    445/tcp filtered microsoft-ds       microsoft directory srevices, 
+
+    ... and I'm not clear on whether its a kernel thing or
+    a deamon or what that's listing on these various ports.
+
+    So I guess the simplest thing is to put in a firewall.
+    See : nlinuxconfig.org/how-to-use-ufw-on-debian-10-buster-linux
+    And also : linode.com/docs/networking/diagnostics/
+    UFW - uncomplicated firewall
+
+    $ apt install ufw
+    $ ufw default deny incoming
+    $ ufw default allow outgoing
+    $ ufw allow 22      # ssh
+    $ ufw allow 80      # http
+    $ ufw allow 443     # https
+    $ ufw enable
+    $ ufw status
+    Status: active
+    To                         Action      From
+    --                         ------      ----
+    22                         ALLOW       Anywhere                  
+    80                         ALLOW       Anywhere                  
+    443                        ALLOW       Anywhere                  
+    22 (v6)                    ALLOW       Anywhere (v6)             
+    80 (v6)                    ALLOW       Anywhere (v6)             
+    443 (v6)                   ALLOW       Anywhere (v6)  
+
+  * And ... reboot.
+
+  * nmap again
+
+    $ nmap cs.bennington.college
+    ... Nmap scan report for cs.bennington.college (96.126.108.24) ...
+    PORT    STATE  SERVICE
+    22/tcp  open   ssh
+    80/tcp  closed http            (nothing installed here yet)
+    443/tcp closed https           (ditto)
+
+    Also see https://www.linode.com/docs/networking/diagnostics/
+
+  ---- That's the basics ... now on to the specific services. ---
+
+  * git
+      laptop$ scp ~/.gitconfig cs.bennington.college: # setup my git id
+      $ apt install git
+      $ cd ~/.ssh
+      $ ssh-keygen -t ed25519 -C "git_cs_bennington" -f git_cs_bennington
+      # edit ~/.ssh/config --
+        # gitab identity                                                                             
+        Host github.com
+          IdentityFile ~/.ssh/git_cs_bennington
+      $ chmod config go-r
+      # installed the key in git_cs_bennington.pub in github's GUI
+      
+  * umber
+  
+      $ mkdir /var/www; cd /var/www; chown mahoney:mahoney /var/www
+      mahoney$ cd /var/www; git clone git@github.com:jimmahoney/umber.git
+      $ chown root:root /var/www
+
+      $ python --version
+      2.7.16
+      $ python3 --version
+      3.7.3
+
+      $ apt update
+      $ apt install python3-pip
+      $ apt install sqlite3
+      $ apt install virtualenv
+
+      mahoney$ cd /var/www/umber
+      mahoney$ virtualenv --python=python3.7 venv
+      mahoney$ . venv/bin/activate
+      (venv) mahoney$ python --version
+      Python 3.7.3
+      (venv) mahoney$ pip --version
+      pip 20.1.1 from /var/www/umber/venv/.../pip (python 3.7)
+      (venv) mahoney$ pip install -r env/requirements.txt
+
+      mahoney$ cd /var/www/umber
+      mahoney$ . env/activate_development
+      (venv) mahoney$ umber_test OR umber_console ... worked.
+
+  * uwsgi + nginx + flask + systemd 
+
+      see
+        * digitalocean.com/community/tutorials/
+          how-to-serve-flask-applications-with-uswgi-and-nginx-on-ubuntu-18-04
+	* stackoverflow.com/questions/37211115/
+	  how-to-enable-a-virtualenv-in-a-systemd-service-unit
+        * coreos.com/os/docs/latest/
+	  using-environment-variables-in-systemd-units.html
+
+      (venv) mahoney$ pip install uwsgi
+      Successfully installed uwsgi-2.0.19
+      # ... is now in requirements.txt
+      #     so next time will install with umber 
+
+      $ apt install nginx ssl-cert python-certbot-nginx
+      # ... and pointing a browser at http://cs.bennington.college
+            sees the default "Welcome to nginx!" script.
+
+      # other suggested libraries 
+      $ apt install libssl-dev libffi-dev
+
+      # installing ssl certificates
+      $ certbot
+      ... asked for my email, domain, and whether to redirect
+          http to https ... I said yes.
+	  see certbot.eff.org/lets-encrypt/debianstretch-nginx.html
+      ... and the redirect from http to https://cs.bennington.college works.
+      "You should test your configuration at
+       ssllabs.com/ssltest/analyze.html?d=cs.bennington.college "
+      Your certificates are stored at /etc/letsencrypt/ ...
+      auto renewal maybe already be set up ... I'm not sure.
+        $ certbot renew --dry-run  # worked
+	$ systemctl list-timers    # ... does have a certbot thingy
+
+      # setting up bare-bones nginx
+      copied /etc/nginx/sites-available/default to cs.bennington.college ,
+      put in a bare-bones config file & /var/www/html/index.html 
+        $ systemctl status nginx ... (process, tasks, memory details) : OK
+
+      added my username to /etc/group www-data (nginx's user:group) ;
+      changed /var/www and umber/misc/uwsgitest to user:group www-data:www-data
+      and set group to +w .
+
+      In emacs using package-list-packages,
+      installed systemd-mode for syntax highlighting .service files.)
+
+      "utest" uwsgi + nginx test 
+      from how-to-serve...usgi-and-nginx...on-ubuntu...)
+      * files :
+          umber/src/misc/uwsgitest/_readme_.txt        docs
+                                   utest.py            flask app
+   			           wsgi.py             utest wrapper
+	                           utest.ini           utest config
+			           utest.sock          utest sys(unix) socket
+	  /etc/systemd/system/utest.service            utest's systemd init
+	  /etc/nginx/sites-available/cs.bennington...  nginx config
+      * running it
+         $ systemctl start utest  # or "enable" to start at boot
+	 $ systemctl start nginx  # ditto
+	 ... and point a browser at the route in utest.py and nginx's config
+      * ... and it worked (!)
+
+      other uwsgi notes :
+       * techatbloomberg.com/blog/configuring-uwsgi-production-deployment/
+         - that one is worth looking through carefully; lots of tips.
+       * uwsgi-docs.readthedocs.io/en/latest/ThingsToKnow.html
+         - uwsgitop shows stats for the uwsgi processes
+       * checkstatic ... option to serve some static files without python
+         https://uwsgi-docs.readthedocs.io/en/latest/StaticFiles.html
+
+
+
+
+
+
+
+
+
+
