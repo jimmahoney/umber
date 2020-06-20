@@ -51,11 +51,11 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     umber_debug = True
     protocol = 'http://'
     hostname = '127.0.0.1:5000'
-    url_base = 'courses'        # all URLs start with this
+    url_base = 'courses'        # all URLs start with this ... except static
     route_prefix = '/courses'   # for URL route matching
     contact_url = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
     site_url = 'http://127.0.0.1:5000/courses/umber/docs/home'
-    static_prefix = '/courses/static/'
+    static_prefix = '/static/'
     os_courses = os.path.join(os_root, 'courses')
     os_default_course = os.path.join(os_root, 'courses/default_course')
     umber_cleanup = ''
