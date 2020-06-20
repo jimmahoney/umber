@@ -295,6 +295,12 @@ Deploying & provisioning umber on cs.bennington.college
     $ scp -r /var/www/umber/courses/default_course /var/www/courses
     $ scp /var/www/umber/courses/.access.yaml /var/www/courses
 
+    # Give the main 'umber' course a git repo for revisions.
+    $ cd /var/www/courses/umber
+    $ git init
+    $ chown -R www-data:www-data .git
+    $ chmod -R g+w .git
+
     # Make  folder for my fall2020 courses
     $ cd /var/www/courses ; mkdir fall2020
 
