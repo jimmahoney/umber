@@ -6,7 +6,7 @@ import os, shutil, urllib.parse, arrow, string, re, io
 from flask import url_for, app
 from markdown2 import markdown
 from settings import url_base, debug_logfilename, \
-    localtimezone, umber_debug, umber_cleanup
+    localtimezone, umber_debug, umber_cleanup, static_prefix
 from flask import url_for, app
 from dateutil.parser import parse as dateutil_parse
 import logging
@@ -17,12 +17,22 @@ def toggle_debug():
     debug_settings['status'] = not debug_settings['status']
 
 if debug_logfilename:
-    logging.basicConfig(filename=debug_logfilename, level=logging.INFO)
+    try:
+        logging.basicConfig(filename=debug_logfilename, level=logging.INFO)
+    except:
+        # I'm seeing "RuntimeError: cannot release un-acquired lock"
+        # in the uwsgi logs from the logging.py library.
+        # For now I'm just going to fail quietly if there's a problem.
+        pass
 def print_debug(message):
     if umber_debug and debug_settings['status']:
         print(message)
     if debug_logfilename:
-        logging.info(message)
+        try:
+            # For now I'm just going to fail quietly if there's a problem.
+            logging.info(message)
+        except:
+            pass
 
 def myparsethedatetime(date_time_string):
     """ Return a date time string without timezone information
@@ -364,7 +374,8 @@ def is_clean_folder_name(name):
     return set(name) <= allowed_chars
 
 def static_url(filename):
-    return url_for('static', filename=filename)
+    return static_prefix + filename
+    # return url_for('static', filename=filename)
 
 def size_in_bytes(n):
     """ Convert to human readable bytes size K,M,G, etc

@@ -55,6 +55,7 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     route_prefix = '/courses'   # for URL route matching
     contact_url = '<a href="mailto:adam@fake.fake">Adam Admin</a>'
     site_url = 'http://127.0.0.1:5000/courses/umber/docs/home'
+    static_prefix = '/courses/static/'
     os_courses = os.path.join(os_root, 'courses')
     os_default_course = os.path.join(os_root, 'courses/default_course')
     umber_cleanup = ''
@@ -66,9 +67,10 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     protocol = 'https://'
     hostname = 'cs.bennington.college'
     url_base = 'courses'      
-    route_prefix = ''    # in wsgi config route already has /courses/
+    route_prefix = '/courses'    # apache mod_wsgi needed '' ... go figure.
     contact_url = '<a href="mailto:jimmahoney@bennington.college">Jim Mahoney</a>'
     site_url = 'https://cs.bennington.college'
+    static_prefix = '/courses_static/'
     os_courses = '/var/www/courses'
     os_default_course = '/var/www/courses/default_course'
     #umber_cleanup = '/var/www/courses/etc/bin/umber_cleanup'
