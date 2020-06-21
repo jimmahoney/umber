@@ -100,7 +100,7 @@ img {
 a { 
   text-decoration: none;
    /* color: #002bb8; */
-  color: #0c5799;
+  color: #1d38c1;
   background: none;
 }
 a:hover { 
@@ -339,7 +339,7 @@ div#header {
 #login li input[type="submit"]{
   background-color: transparent;
   font-family: serif;
-  color: #0c5799;
+  color: #1d38c1;
   /* color: #002bb8; */
   border: none;
   margin: 0;
@@ -470,7 +470,8 @@ form.login {
 }
 
 #actions .front { 
-  z-index: 3;
+   z-index: 3;
+   padding-bottom: 0.03em;  /* slightly larger, to merge tab background with page content  */ 
 }
 #actions .behind { 
   z-index: 0;
@@ -1034,7 +1035,7 @@ form input[type="submit"]{
 }
 
 .enabledbutton {
-   color: #0c5799;
+   color: #1d38c1;
    /* color: #002bb8; */
    border-color: darkgrey;   /* darkgrey is #d9d9d9 */
 }

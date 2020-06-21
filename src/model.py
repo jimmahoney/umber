@@ -6,7 +6,7 @@
 
  The following tests assumes that the database has been created
  and that populate_database() has been run; see ../database/init_db.
-   
+
  The script ../bin/umber_test runs these and other tests.
 
    # Find the people and their role in a course given its name.
@@ -1531,6 +1531,42 @@ def init_db():
     # All these are "get_or_create", so running 'em multiple times won't hurt.
     Role.create_defaults()
     Course.create_site()
+
+def populate_production_db(interactive=False):
+    """ create initial objects for production database """
+    # see umber/bin/init_db
+    from utilities import toggle_debug
+    toggle_debug()
+    make_admin = False
+    if interactive:
+        make_admin = input(' Create admin? (y/n) ').lower()[0] == 'y'
+        if admin:
+            admin_username = input(' Admin username? ')
+            admin_name = input(' Admin full name? ')
+            admin_passwd = input(' Admin password? ')
+            admin_email = input(' Admin email? ')
+    with db.atomic():
+        defaultcourse = Course.create_course(
+            name = 'Default Course',
+            name_as_title = 'Default<br>Course',
+            path = 'default_course',
+            start = '2018-01-01',
+            copyfrom = False
+            )
+        if make_admin:
+            (admin, created) = Person.get_or_create(username = admin_username)
+            if created:
+                admin.name = admin_name
+                admin.email = admin_email
+                password = admin_passwd
+            else:
+                if interactive:
+                    print(f'   username "{admin_username}" already exists')
+                    print('      ... setting their is_admin=True')
+                    print('      ... leaving their name & email unchanged.')
+            admin.is_admin = True
+            admin.save()
+    toggle_debug()    
     
 def populate_db():
     """ Create test & example development objects """
@@ -1554,7 +1590,7 @@ def populate_db():
 
         defaultcourse = Course.create_course(
             name = 'Default Course',
-            name_as_title = 'default<br>Course',
+            name_as_title = 'Default<br>Course',
             path = 'default_course',
             start = '2018-01-01',
             copyfrom = False
