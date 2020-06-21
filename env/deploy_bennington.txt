@@ -365,3 +365,4 @@ Deploying & provisioning umber on cs.bennington.college
     $ journalctl -u nginx
     $ more /var/log/nginx/*
  
+ 
