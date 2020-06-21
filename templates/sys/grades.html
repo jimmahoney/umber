@@ -1,30 +1,26 @@
 {# {'read':'member' , 'write':'faculty' } #}
-{# #}
-{% if page.user_role.name == 'faculty' %}
+{#- #}
+{%- if page.user_role.name == 'faculty' %}
+<!-- start grades -->
 <h1>grades</h1>
 <div></div>
 <table class="layout">
   <tr class="heading">
     <td>&nbsp;</td>
-    {% for ass in page.course.assignments %}
-    <td style="font-size:80%; align=center"><span class="assign-id">- {{ ass.nth }} -</span><br><a
-	 href="{{ ass.get_url() }}">{{ ass.name_smaller() | safe }}</a></td>
-    {% endfor %}
+    {%- for ass in page.course.assignments %}
+    <td style="font-size:80%; align=center"><span class="assign-id">- {{ ass.nth }} -</span><br><a href="{{ ass.get_url() }}">{{ ass.name_smaller() | safe }}</a></td>
+    {%- endfor %}
   </tr>
-  {% for stud in page.course.grade_data_grid() %}
+  {%- for stud in page.course.grade_data_grid() %}
   <tr>
     <td><a href="mailto:{{ stud.email  }}">{{ stud.name }}</a></td>
-    {% for work in stud.works %}
-    <td style="font-size:80%"><a href="{{ work.url }}"
-	   ><span class="{{ work.css_grade }}"
-	   >{{ work.grade }}</span></a></td>
-    {% endfor %}
+    {%- for work in stud.works %}
+    <td style="font-size:80%"><a href="{{ work.url }}"><span class="{{ work.css_grade }}">{{ work.grade }}</span></a></td>
+    {%- endfor %}
   </tr>
-  {% endfor %}
+  {%- endfor %}
 </table>
-
-{% elif page.user_role.name == 'student' %}
-
+{%- elif page.user_role.name == 'student' %}
 <h1>grades - {{ page.user.name }}</h1>
 <div></div>
 <table class="layout">
@@ -33,23 +29,15 @@
   <td>due</td>
   <td>your work</td>
  </tr>
- {% for ass in page.course.grade_data_list(page.user) %}
+ {%- for ass in page.course.grade_data_list(page.user) %}
  <tr>
-  <td><span class="assign-id">{{ ass.nth }}.</span> <a
-       href="{{ ass.get_url() }}" >{{ ass.name }}</a></td>
+  <td><span class="assign-id">{{ ass.nth }}.</span> <a href="{{ ass.get_url() }}" >{{ ass.name }}</a></td>
   <td>{{ ass.duedate }}</td>
-  <td><a href="{{ ass.work.get_url() }}"
-	   ><span class="{{ ass.work_css_grade }}"
-	   >{{ ass.work_grade }}</span></a></td>
+  <td><a href="{{ ass.work.get_url() }}"><span class="{{ ass.work_css_grade }}">{{ ass.work_grade }}</span></a></td>
  </tr>
- {% endfor %}
-
+ {%- endfor %}
 </table>
-
-{% else %}
-
- <div>
- Only faculty and students are allowed to see grades.
- </div>
- 
-{% endif %}
+{%- else %}
+ <div>Only faculty and students are allowed to see grades.</div>
+{%- endif %}
+<!-- end grades -->

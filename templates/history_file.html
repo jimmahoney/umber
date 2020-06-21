@@ -7,12 +7,12 @@
      <td>date</td>
      <td>author</td>
     </tr>
-    {%   for (url, nth, date, author) in page.history %}
+    {%-   for (url, nth, date, author) in page.history %}
     <tr>
       <td><b><a href="{{url}}">{{nth}}</a></b></td>
       <td>{{date}}</td>
       <td>{{author}}</td>
     </tr>
-    {% endfor %}
+    {%- endfor %}
   </table>
 </div>

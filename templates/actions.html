@@ -1,35 +1,33 @@
-<!-- row of action buttons (tabs) for edit, history, and revisions -->
-{% if page.can['write'] %}
-<div id="actions">
+{%- if page.can['write'] %}
+<div id="actions"> <!-- start action tabs (edit|history|revisions) -->
   <ul>
-  {#  #}
-  {# --- edit tab --- #}
-  {% if page.action == 'edit' %}
+  {#- --- edit tab --- #}
+  {%- if page.action == 'edit' %}
     <li class='front'>edit</li>
-  {% elif page.action == 'history' %}
+  {%- elif page.action == 'history' %}
     <li class='behind'><span style='color:grey'>edit</span></li>
-  {% elif page.revision %}
+  {%- elif page.revision %}
     <li class='behind'><a
         href="{{page.url}}?revision={{page.revision}}&action=edit">edit</a></li>
-  {% else %}
+  {%- else %}
     <li class='behind'><a
-       {% if request.args.username %}
-       {%   set amp_user = "&username=" ~ request.args.username %}
-       {% else %}
-       {%   set amp_user = "" %}
-       {% endif %}
+       {%- if request.args.username %}
+       {%-   set amp_user = "&username=" ~ request.args.username %}
+       {%- else %}
+       {%-   set amp_user = "" %}
+       {%- endif %}
         href="{{ page.url }}?action=edit{{ amp_user }}">edit</a></li>
-  {% endif %}
-  {#  #}
-  {# --- history tab --- #}
-  {% if page.action == 'history' and page.is_file %}
+  {%- endif %}
+  {#-  #}
+  {#- --- history tab --- #}
+  {%- if page.action == 'history' and page.is_file %}
     <li class='front'>history</li>
-  {% elif page.is_file %}
+  {%- elif page.is_file %}
     <li class='behind'><a href="{{page.url}}?action=history">history</a></li>
-  {% endif %}
-  {# --- revision prev|info|next|current tab --- #}
-  {#  #}    
-  {% if page.revision and page.is_file %}
+  {%- endif %}
+  {#- --- revision prev|info|next|current tab --- #}
+  {#-  #}    
+  {%- if page.revision and page.is_file %}
   <li class='behind'><a href="{{page.url}}">current</a></li>
   <li class='behind'><span class='actionversion'>
      <a href="{{page.revision_prev_url}}{{page.action_query()}}">⏪</a> 
@@ -37,7 +35,7 @@
      &nbsp; <b>revision {{page.revision}} of {{page.revision_count}}</b>
      &nbsp; {{ page.revision_date }}
   </span></li>
-  {% endif %}
+  {%- endif %}
   </ul>
-</div>
-{% endif %}
+</div> <!-- end action tabs -->
+{%- endif %}

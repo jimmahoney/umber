@@ -1,39 +1,34 @@
-<!-- start login -->
-<div id="login">
-<form class="login" name="login" method="POST" action="{{ page.url }}" >
-  <ul>
-  {% if user.is_authenticated() %}
-    <li class="first {{ page.user_role.name }}">{{ user.username }}</li>
-    <li class="middle">{{ page.user_role.name }}</li>
-    {% if page.relpath == 'sys/user' %}
-    <li class="rest thispage">profile</li>
-    {% else %}
-    <li class="rest"><a href="{{ page.course.get_profile_url() }}">profile</a></li>
-    {% endif %}
-    <li class="rest"><input name="submit_logout" type="submit" value="log out"/></li>
-  {% elif page.action == 'login' %}
-    <li class="first any">user <input name="username" type="text" size="16"  /></li>
-    <li class="rest">pass <input name="password" type="password" size="16"  /></li>
-    <li class="rest"><input name="submit_login" type="submit" value="log in"/></li>
-  {% else %}
-    <li class="first any">
-      <a href="{{ url_for('mainroute', pagepath=page.path, action='login') }}"
-       >log in</a>
-    </li>
-  {% endif %}
-  </ul>
-</form>
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {# possible message here is 'Oops: wrong username or password' #}
-  {% if page.action == 'login' and messages %}
-    {% if messages[0][0] == 'login' %}
-      <div class="error"> {{ messages[0][1] }} </div>
-    {% else %}
-      <div class="error"> &nbsp; </div>
-    {% endif %}
-  {% else %}
+  <div id="login"> <!-- start login -->
+    <form class="login" name="login" method="POST" action="{{ page.url }}" >
+    <ul>
+    {%- if user.is_authenticated() %}
+      <li class="first {{ page.user_role.name }}">{{ user.username }}</li>
+      <li class="middle">{{ page.user_role.name }}</li>
+      {%- if page.relpath == 'sys/user' %}
+      <li class="rest thispage">profile</li>
+      {%- else %}
+      <li class="rest"><a href="{{ page.course.get_profile_url() }}">profile</a></li>
+      {%- endif %}
+      <li class="rest"><input name="submit_logout" type="submit" value="log out"/></li>
+    {%- elif page.action == 'login' %}
+      <li class="first any">user <input name="username" type="text" size="16" /></li>
+      <li class="rest">pass <input name="password" type="password" size="16" /></li>
+      <li class="rest"><input name="submit_login" type="submit" value="log in" /></li>
+    {%- else %}
+      <li class="first any"><a href="{{ url_for('mainroute', pagepath=page.path, action='login') }}">log in</a></li>
+    {%- endif %}
+    </ul>
+    </form>
+{%- with messages = get_flashed_messages(with_categories=true) %}
+  {#- possible message here is 'Oops: wrong username or password' #}
+  {%- if page.action == 'login' and messages %}
+    {%- if messages[0][0] == 'login' %}
+  <div class="error"> {{ messages[0][1] }} </div>
+    {%- else %}
   <div class="error"> &nbsp; </div>
-  {% endif %}
-{% endwith %}
-</div>
-<!-- end login -->
+    {%- endif %}
+  {%- else %}
+  <div class="error"> &nbsp; </div>
+  {%- endif %}
+{%- endwith %}
+</div> <!-- end login -->

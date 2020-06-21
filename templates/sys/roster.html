@@ -1,25 +1,23 @@
 {# {'read':'member'} #}
+<!-- start roster -->
 <h1>roster</h1>
 <table style="border-spacing:0.5em">
 <tr>
-{%   for _user in page.course.get_registered() %}
-   <td align='center' valign='top'><a
-       href="{{ page.course.url ~ '/sys/user?username=' ~ _user.username }}"><img
-       src="{{ _user.get_photo_url() }}"
-       alt="{{ _user.username }} photo" height="152" /
-       onerror=this.src="{{ static_url('images/generic_student.png') }}"
-       ></a><br/><b>{{ _user.name }}</b><br/
-       ><small> <a href="mailto:{{ _user.email }}">{{ _user.username }}</a></small></td>
-{%     if (loop.index % 5) == 0 %}{# 5 pictures per row #}
+{%-   for _user in page.course.get_registered() %}
+  <td align='center' valign='top'><a href="{{ page.course.url ~ '/sys/user?username=' ~ _user.username }}"><img
+   src="{{ _user.get_photo_url() }}" alt="{{ _user.username }} photo" height="152"
+   onerror=this.src="{{ static_url('images/generic_student.png') }}"></a><br/><b>{{ _user.name }}</b><br/><small> <a 
+   href="mailto:{{ _user.email }}">{{ _user.username }}</a></small></td>
+{%-     if (loop.index % 5) == 0 %}{# 5 pictures per row #}
 </tr><tr>
-{%     endif %}
-{%   endfor %}
+{%-     endif %}
+{%-   endfor %}
 </tr>
 <tr>
 </tr>  
 </table>
 <h2>mail</h2>
 <div><a href="{{ page.course.email_everyone_html() }}">email everyone</a></div>
-
+<!-- end roster -->
 
 

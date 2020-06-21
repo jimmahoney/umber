@@ -1,11 +1,12 @@
-{# edit folder  #}
-{# ######## #}
+{#- edit folder  #}
+{#- ######## #}
+<!-- start edit folder -->
 <h2 class='directory'>Index of {{ page.path }} </h2>
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages and messages[0][0] == 'formerror' %}
+  {%- with messages = get_flashed_messages(with_categories=true) %}
+  {%- if messages and messages[0][0] == 'formerror' %}
   <div class="error"> {{ messages[0][1] |e }} </div>  
-  {% endif %}
-  {% endwith %}
+  {%- endif %}
+  {%- endwith %}
 <div id='dir-ls'>
 <form class='folder' name='folder' method='POST' action='{{ page.url }}'>
   <div id='wasdragndrop'>
@@ -17,25 +18,19 @@
       <td class="heading">size</td>
       <td></td> {# checkbox column placeholder #}
     </tr>
-    {# <tr><td colspan=5><hr></td></tr> #}
-    {% for child in page.children() %}
+    {#- <tr><td colspan=5><hr></td></tr> #}
+    {%- for child in page.children() %}
     <tr>
       <td><img src='{{ child.icon_url() }}' alt='TXT'></td>
       <td><b><a href='{{ child.name_with_ext }}'>{{ child.name_with_ext }}</a></b></td>
       <td>{{ child.lastmodified.datetime() }}</td>
       <td>{{ child.bytesize }}</td>
-      <td><input type='checkbox' class='foldereditcheckbox'
-		 name='{{ child.abspath }}' value='checkboxdelete' }}'></td>
+      <td><input type='checkbox' class='foldereditcheckbox' name='{{ child.abspath }}' value='checkboxdelete' }}'></td>
     </tr>
-    {% endfor %}
+    {%- endfor %}
     <tr><td colspan=5> </td></tr>
     <tr><td colspan=4><td>
-        <td><input type='submit'
-		   name='submit_delete'
-		   id='folderdeletebutton'
-		   class='disabledbutton' 
-		   value='delete'
-		   disabled></td>
+        <td><input type='submit' name='submit_delete' id='folderdeletebutton' class='disabledbutton' value='delete' disabled></td>
     </tr>
   </table>
   </div>
@@ -44,25 +39,23 @@
 <form class='dropzone' id='umberdropzone' action='{{ page.url }}?dropzone=1'></form>
 <form class='folder' id='new_folder_form' method='POST' action='{{ page.url }}'>
   <div>
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages and messages[0][0] == 'formerror' %}
+  {%- with messages = get_flashed_messages(with_categories=true) %}
+  {%- if messages and messages[0][0] == 'formerror' %}
     <div class="error"> {{ messages[0][1] |e }} </div>  
-  {% endif %}
-  {% if messages and messages[0][0] == 'folder' %}
-    New folder <input type='input' name='foldername' id='foldername' size='24'
- 		      value='{{ messages[1][1] |e }}' >
+  {%- endif %}
+  {%- if messages and messages[0][0] == 'folder' %}
+    New folder <input type='input' name='foldername' id='foldername' size='24' value='{{ messages[1][1] |e }}' >
     <input  type='submit' name='submit_createfolder' value='create' >  
     <div class="error"> {{ messages[0][1] |e }} </div>
-    {# possible message here is 'Oops: folder names can only contain ...' #}
-  {% else %}
+    {#- possible message here is 'Oops: folder names can only contain ...' #}
+  {%- else %}
     New folder <input type='input' name='foldername' id='foldername' size='24' >
-    <input  type='submit' name='submit_createfolder' value='create' 
-	    id='foldercreatebutton' class='disabledbutton' disabled >    
-  {% endif %}
-  {% endwith %}
+    <input  type='submit' name='submit_createfolder' value='create' id='foldercreatebutton' class='disabledbutton' disabled >    
+  {%- endif %}
+  {%- endwith %}
   </div>
 </form>
-{% if page.user_role.name == 'faculty' %}
+{%- if page.user_role.name == 'faculty' %}
 <form class='folder' id='privileges_form' method='POST' action='{{ page.url }}'>
   <div>
   Access rights <small>(one of [all, guest, students, faculty, admin] or usernames)</small><br>
@@ -77,5 +70,4 @@
   <input type='submit' name='submit_done' value='done editing'/>
 </form>
 </div>
-
-
+<!-- end edit folder -->

@@ -1,35 +1,35 @@
-{# content  #}
-{# ######## #}
-{% if not page.can['read'] %}
-    {% include 'forbidden.html' %}
-{% elif page.is_sys and page.action == 'edit' and page.can['write'] %}
-    {% include page.sys_edit_template %}
-{% elif page.is_sys %}
+{#- content  #}
+{#- ######## #}
+{%- if not page.can['read'] %}
+    {%- include 'forbidden.html' %}
+{%- elif page.is_sys and page.action == 'edit' and page.can['write'] %}
+    {%- include page.sys_edit_template %}
+{%- elif page.is_sys %}
     {% include page.sys_template %}
-{% elif not page.exists and page.action == 'edit' and page.can['write'] %}
-    {% if page.is_work %}
-        {% include 'edit_work.html' %}
-    {% else %}
-        {% include 'edit_file.html' %}
-    {% endif %}
-{% elif not page.exists %}
-    {% include 'missing.html' %}
-{% elif page.is_dir and page.action == 'edit' and page.can['write'] %}
-    {% include 'edit_folder.html' %}
-{% elif page.is_dir %}
-    {% include 'folder.html' %}
-{% elif page.action == 'edit' and page.can['write'] %}
-    {% if page.is_work %}
-        {% include 'edit_work.html' %}
-    {% else %}
-        {% include 'edit_file.html' %}
-    {% endif %}
-{% elif page.action == 'history' %}
-    {% include 'history_file.html' %}
-{% else %}
-    {% if page.is_work %}
-        {% include 'work_header.html' %}
-    {% endif %}
+{%- elif not page.exists and page.action == 'edit' and page.can['write'] %}
+    {%- if page.is_work %}
+        {%- include 'edit_work.html' %}
+    {%- else %}
+        {%- include 'edit_file.html' %}
+    {%- endif %}
+{%- elif not page.exists %}
+    {%- include 'missing.html' %}
+{%- elif page.is_dir and page.action == 'edit' and page.can['write'] %}
+    {%- include 'edit_folder.html' %}
+{%- elif page.is_dir %}
+    {%- include 'folder.html' %}
+{%- elif page.action == 'edit' and page.can['write'] %}
+    {%- if page.is_work %}
+        {%- include 'edit_work.html' %}
+    {%- else %}
+        {%- include 'edit_file.html' %}
+    {%- endif %}
+{%- elif page.action == 'history' %}
+    {%- include 'history_file.html' %}
+{%- else %}
+    {%- if page.is_work %}
+        {%- include 'work_header.html' %}
+    {%- endif %}
     {{ page.content_as_html() | safe }}
-{% endif %}
-{# ######## #}
+{%- endif %}
+{#- ######## #}

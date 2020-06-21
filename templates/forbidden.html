@@ -1,10 +1,10 @@
 <h1>Forbidden</h1>
 <div>
-{% if not user.is_authenticated() %}
+{%- if not user.is_authenticated() %}
  <p>Try logging in first at the top right of this window.</p>
-{% else %}
+{%- else %}
  <p>You don't have enough privileges to access this page.</p>
-{% endif %}
+{%- endif %}
 <table class="layout">
 <tr>
  <td>page</td>
