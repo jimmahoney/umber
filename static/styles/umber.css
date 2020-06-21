@@ -471,7 +471,7 @@ form.login {
 
 #actions .front { 
    z-index: 3;
-   padding-bottom: 0.03em;  /* slightly larger, to merge tab background with page content  */ 
+   padding-bottom: 0.1em;  /* slightly larger, to merge tab background with page content  */ 
 }
 #actions .behind { 
   z-index: 0;
