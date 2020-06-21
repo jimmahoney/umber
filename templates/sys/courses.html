@@ -1,5 +1,5 @@
 {# {'read':'all'} #}
-{# #}
+{#- #}
 <h1>courses</h1>
 <div>
 <table class="layout">
@@ -9,15 +9,15 @@
     {# <td>directory</td> #}
     <td>faculty</td>
   </tr>
-  {% for course in Course.get_all() %}
+  {%- for course in Course.get_all() %}
   <tr>
     <td><a href="{{ course.url ~ '/home' }}">{{ course.name }}</a></td>
     <td>{{course.semester}}</td>
-    {# <td><a href="{{ course.url }}">{{ course.path }}</a></td> #}
+    {#- <td><a href="{{ course.url }}">{{ course.path }}</a></td> #}
     <td>{% for faculty in course.get_faculty_data() %}<a
 	     href="mailto:{{faculty.email}}">{{faculty.name}}</a
              ><br>{% endfor %}</td>
   </tr>
-  {% endfor %}
+  {%- endfor %}
 </table>
 </div>

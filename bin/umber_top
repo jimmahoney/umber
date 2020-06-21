@@ -1,0 +1,3 @@
+# Show a top-like display of umber uwsgi statistics;
+# see umber/src/wsgi.ini
+/var/www/umber/venv/bin/uwsgitop /var/log/umber/stats.sock

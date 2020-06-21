@@ -1,27 +1,26 @@
 {# {'read':'member' , 'write':'member'} #}
-{# #}
-{% if not user.is_authenticated() %}
-{%   include 'forbidden.html' %}
-{% else %}
-{%   if request.args.username %}
-{%     set username = request.args.username  %}
-{%     if page.course.has_username(username) %}
-{%       set _user = Person.by_username(username) %}
-{%     else %}
-{%       set _user = None %}
-{%     endif %}
-{%   else %}
-{%     set _user = user %}
-{%   endif %}
+{#- #}
+{%- if not user.is_authenticated() %}
+{%-   include 'forbidden.html' %}
+{%- else %}
+{%-   if request.args.username %}
+{%-     set username = request.args.username  %}
+{%-     if page.course.has_username(username) %}
+{%-       set _user = Person.by_username(username) %}
+{%-     else %}
+{%-       set _user = None %}
+{%-     endif %}
+{%-   else %}
+{%-     set _user = user %}
+{%-   endif %}
+<!-- start user -->
 <h1>user profile</h1>
-{%   if _user == None %}
-<div class="error"><b>OOPS</b
-   > : there is no username "{{ username }}" in this course. </div>
-{% else %}
+{%-   if _user == None %}
+<div class="error"><b>OOPS</b> : there is no username "{{ username }}" in this course. </div>
+{%- else %}
 <table>
   <tr>
-   <td class="userphoto"><img height="152"
-       src="{{ _user.get_photo_url() }}" alt="user photo"></td>
+   <td class="userphoto"><img height="152" src="{{ _user.get_photo_url() }}" alt="user photo"></td>
    <td>
      <table class="layout">
        <tr>
@@ -40,15 +39,16 @@
 	 <td class="heading">password</td>
 	 <td>*****</td>
        </tr>
-       {% if page.course.name == 'Umber' %}
+       {%- if page.course.name == 'Umber' %}
        <tr>
 	 <td class="heading" style="text-align:top">courses</td>
 	 <td>{% for cd in _user.course_data() %}{{ cd.role }} in <a href="{{ cd.url ~ '/home' }}">{{ cd.course }}</a> , {{ cd.semester }}<br>{% endfor %}</td>
        </tr>
-       {% endif %}
+       {%- endif %}
      </table>
    </td>
   </tr>
 </table>
-{% endif %}{# -- _user == None -- #}
-{% endif %}{# -- authenticated -- #}
+{%- endif %}{# -- _user == None -- #}
+{%- endif %}{# -- authenticated -- #}
+<!-- end user -->

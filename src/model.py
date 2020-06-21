@@ -389,6 +389,11 @@ class Course(BaseModel):
                 start_date = '2018-01-01')
         return sitecourse
 
+    def get_shortname(self):
+        """ used in html title ; see Page.html_title """
+        # TODO : ... something shorter ?
+        return self.name
+
     def is_site(self):
         """ true if this is the site course """
         return self.path == site_course_path
@@ -787,9 +792,17 @@ class Page(BaseModel):
         if revision or action=='history':
             page._setup_revision_data()     # sets page.history etc
         page._setup_attachments()           # sets .has_attachments
-        page._setup_work()                  # 
+        page._setup_work()                  #
+        page.html_title = page.get_html_title()
         return page
 
+    def get_html_title(self):
+        """ Return string for the <title></title> html tag. """
+        try:
+            return self.course.get_shortname() + ' : ' + self.relpath
+        except:
+            return self.path
+    
     def get_gitpath(self):
         """ Return file path of page relative to course path,
             including file extension if any """
@@ -1311,7 +1324,7 @@ class Assignment(BaseModel):
     def name_smaller(self):
         """ return html version of assignment name with <br> instead of spaces """
         return self.name.replace(' ', '<br>')
-    
+
     def get_work(self, person):
         """ Return Work for this assignment by given student """
         # i.e. work = assignment.get_work(student)

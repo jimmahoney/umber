@@ -1,5 +1,5 @@
-{# folder  #}
-{# ######## #}
+{#- folder  #}
+{#- ######## #}
 <h2 class="directory">Index of {{ page.path }} </h2>
 <div id="dir-ls">
   <table>
@@ -9,15 +9,13 @@
       <td class="heading">last modified</td>
       <td class="heading">size</td>
     </tr>
-    <!-- <tr><td colspan=4><hr></td></tr> -->
-    {% for child in page.children() %}
+    {%- for child in page.children() %}
     <tr>
       <td><img src="{{ child.icon_url() }}" alt="TXT"></td>
       <td><b><a href="{{ child.name_with_ext }}">{{ child.name_with_ext }}</a></b></td>
       <td>{{ child.lastmodified.datetime() }}</td>
       <td>{{ child.bytesize }}</td>
     </tr>
-    {% endfor %}
-    <!-- <tr><td colspan=4><hr></td></tr> -->
+    {%- endfor %}
   </table>
 </div>    

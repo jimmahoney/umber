@@ -16,7 +16,7 @@ server {
 	include uwsgi_params;
 	uwsgi_read_timeout 60s;
         uwsgi_send_timeout 60s;
-	uwsgi_pass unix:/var/run/umber/uwsgi.sock;
+	uwsgi_pass unix:/var/log/umber/uwsgi.sock;
     }
 
     # And other nginx configurations - at least ssl certificates

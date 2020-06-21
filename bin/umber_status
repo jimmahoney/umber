@@ -1,0 +1,3 @@
+# systemctl status for the production servers , nginx + uwsgi
+sudo systemctl status nginx | cat
+sudo systemctl status umber | cat

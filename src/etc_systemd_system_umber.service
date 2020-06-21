@@ -6,8 +6,8 @@
 #   * ./setting.py
 #   * ../env/activate_production
 #
-# DON'T just symlink to this file from /etc/systemd/service ,
-# since a value for UMBER_SECRET_KEY is not yet set.
+# DON'T just symlink to this file from /etc/systemd/service
+# (A value for UMBER_SECRET_KEY is not yet set.)
 
 [Unit]
 Description="umber uwsgi instance"
@@ -18,22 +18,23 @@ User=www-data
 Group=www-data
 WorkingDirectory=/var/www/umber/src
 
-Environment="UMBER_CONFIG=PRODUCTION"
-Environment="UMBER_ROOT=/var/www/umber"
-Environment="PYTHONPATH=/var/www/umber/src"
-Environment="UMBER_DATA=/var/www/umber_data/umber_bennington.db"
+Environment=UMBER_CONFIG=PRODUCTION
+Environment=UMBER_ROOT=/var/www/umber
+Environment=PYTHONPATH=/var/www/umber/src
+Environment=UMBER_DATA=/var/www/umber_data/umber_bennington.db
 
-# virtual python environment and its subprocess.run use /bin/git 
-Environment="PATH=/var/www/umber/venv/bin:/bin"
+# virtual python environment 
+Environment=PATH=/var/www/umber/venv/bin
 
-# When this is put into /stc/systemd/system/umber.service,
-# create and insert a unique random key here.
-# This can generate one for you :
-# $ python
-# >>> import os, binascii; print(binascii.hexlify(os.urandom(24)).decode())
-Environment="UMBER_SECRET_KEY=..."
+# --- TODO : EDIT THIS ----------------------------------
+# This should be a a unique and private random key.
+# This can generate one that you can paste at the ...
+# in the copy of this file that you install in /etc/systemd/service/
+#   $ python
+#   >>> import os, binascii; print(binascii.hexlify(os.urandom(24)).decode())
+Environment=UMBER_SECRET_KEY=....
 
-ExecStart="/var/www/umber/venv/bin/uwsgi --ini wsgi.ini "
+ExecStart=/var/www/umber/venv/bin/uwsgi --ini wsgi.ini
 
 [Install]
 WantedBy=multi-user.target

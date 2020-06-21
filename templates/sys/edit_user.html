@@ -1,22 +1,23 @@
-{% if not user.is_authenticated() %}
-{%   include 'forbidden.html' %}
-{% else %}
-{%   if user.is_admin() and request.args.username %}
-{%     set _user = Person.by_username(request.args.username) %}
-{%     set editall = True %}
-{%   else %}
-{%     set _user = user %}
-{%     set editall = False %}
-{%   endif %}
+<!-- start edit user -->
+{%- if not user.is_authenticated() %}
+{%-   include 'forbidden.html' %}
+{%- else %}
+{%-   if user.is_admin() and request.args.username %}
+{%-     set _user = Person.by_username(request.args.username) %}
+{%-     set editall = True %}
+{%-   else %}
+{%-     set _user = user %}
+{%-     set editall = False %}
+{%-   endif %}
 <h1>user profile</h1>
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages and messages[0][0] == 'formerror' %}
+  {%- with messages = get_flashed_messages(with_categories=true) %}
+  {%- if messages and messages[0][0] == 'formerror' %}
   <div class="error"> {{ messages[0][1] |e }} </div>  
-  {% endif %}
-  {% endwith %}
-{%   if _user == None %}
+  {%- endif %}
+  {%- endwith %}
+{%-   if _user == None %}
 <div class="error"><b>OOPS</b> : user not found </div>
-{% else %}
+{%- else %}
 <form class="user" id="edit_user_form" method="POST" action='{{ page.url }}'>
 <table>
   <tr>
@@ -27,23 +28,15 @@
      <table class="layout">
        <tr>
 	 <td class="heading">name</td>
-	 <td>{% if editall %}<input type="input"
-				    name="name"
-				    value="{{_user.name}}"
-	    >{% else %}{{ _user.name }}{% endif %}</td>
+	 <td>{% if editall %}<input type="input" name="name" value="{{_user.name}}">{% else %}{{ _user.name }}{% endif %}</td>
        </tr>
        <tr>
 	 <td class="heading">username</td>
-	 <td>{{ _user.username }}<input
-	   type="hidden" name="username" value="{{ _user.username }}"></td>
+	 <td>{{ _user.username }}<input type="hidden" name="username" value="{{ _user.username }}"></td>
        </tr>
        <tr>
 	 <td class="heading">email</td>
-	 <td>{% if editall %}<input type="input"
-				    name="email"
-				    value="{{_user.email}}"
-           >{% else %}<a href="mailto:{{ _user.email }}"
-	   >{{ _user.email }}</a>{% endif %}</td>
+	 <td>{% if editall %}<input type="input" name="email" value="{{_user.email}}">{% else %}<a href="mailto:{{ _user.email }}">{{ _user.email }}</a>{% endif %}</td>
        </tr>
        <tr>
 	 <td class="heading">password</td>
@@ -52,22 +45,21 @@
      </table>
    </td>
   </tr>
-  {% if editall %}
-  <tr><td></td><td><input type="submit" name="submit_edituser"
-			  value="edit_user"></td></tr>
-  {% else %}
-  <tr><td></td><td><input type="submit" name="submit_password"
-			  value="change password"></td></tr>
-  {% endif %}
+  {%- if editall %}
+  <tr><td></td><td><input type="submit" name="submit_edituser" value="edit_user"></td></tr>
+  {%- else %}
+  <tr><td></td><td><input type="submit" name="submit_password" value="change password"></td></tr>
+  {%- endif %}
 </table>
 </form>
-{% if not editall %}
+{%- if not editall %}
 <p>To make changes other than your password, contact {{ g.contact_url | safe}} .</td></tr>
-{% endif %}
-{% endif %}{# -- _user == None -- #}
-{% endif %}{# -- authenticated -- #}
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages and messages[0][0] == 'user' %}
+{%- endif %}
+{%- endif %}{# -- _user == None -- #}
+{%- endif %}{# -- authenticated -- #}
+{%- with messages = get_flashed_messages(with_categories=true) %}
+{%- if messages and messages[0][0] == 'user' %}
 <div class="error">{{ messages[0][1] | safe}}</div>
-{% endif %}
-{% endwith %}
+{%- endif %}
+{%- endwith %}
+<!-- end edit user -->
