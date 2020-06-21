@@ -14,8 +14,10 @@ fi
 # Create it and initialize the tables from the .sql definitions.
     
 # Initialize sqlite3 database and its tables if it doesn't already exist,
-# and populate with default data (roles & demo course stuff for tests).
-# (This shouldn't modify a database which has already been initialized.)
+# and populate with default data (roles, demo course and users for tests,
+# default_course, site course, and (optionally in production) an admin.
+# (This shouldn't modify a database which has already been initialized
+#  ... except for option to add an adminstrative user.)
 
 sqlite3 $UMBER_DATA  < $UMBER_ROOT/database/umber.sql
 
@@ -23,7 +25,8 @@ cd $UMBER_ROOT/src
 if [ $UMBER_CONFIG = "DEVELOPMENT" ]; then
     python3 -c "import model; model.init_db(); model.populate_db()"
 else
-    python3 -c "import model; model.init_db()"
+    python3 -c "import model; model.init_db(); " + \
+	       "model.populate_production_db(interactive=True)"
 fi
 
 # To create pwiz_model.py (which isn't loaded into the software but 

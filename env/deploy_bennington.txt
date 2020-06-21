@@ -295,16 +295,14 @@ Deploying & provisioning umber on cs.bennington.college
     $ scp -r /var/www/umber/courses/default_course /var/www/courses
     $ scp /var/www/umber/courses/.access.yaml /var/www/courses
 
-    # Make  folder for my fall2020 courses
+    # Make folder for my fall2020 courses
     $ cd /var/www/courses ; mkdir fall2020
 
     # And give all those some reasonable owners and rights.
     $ chown -R www-data:www-data /var/www/courses
     $ chmod -R g+ws /var/www/courses
 
-    # Initialize the production database
-    # (Starts with one site course (Umber), no users.
-    #  All created users are automatically enrolled in the site Umber course.
+    # Initialize the production database.
     $ cd /var/www/umber
     $ . env/activate_production
     (venv)$ umber_init_db
@@ -316,10 +314,22 @@ Deploying & provisioning umber on cs.bennington.college
     ...   password='...', # AND RESET THIS SOON
     ...   is_admin=True)
     >>> jim.save()
+    # (At the time that I did this, there were no users added by
+    #  umber_init_db in production. However, I have now added an
+    #  interactive prompt for an admin user.)
 
-    # Set the database has reasonable ownership and rights.
+    # Give the database reasonable ownership and rights.
     $ chown -R www-data:www-data /var/www/umber_data
     $ chmod g+ws /var/www/umber_data
+
+    # Make sure that site course (/var/www/courses/umber) and the
+    # default course (/var/www/courses/default_course) both have git
+    # repositories, owned by www-data, and are in the sql database.
+    $ cd /var/www/courses/default_course
+    $ git init
+    $ chown -R www-data:www-data .git
+    $ chown -R g+sw .git
+    # same for /var/www/courses/umber
 
     # Set the log files ownership and rights.
     $ touch /var/log/umber/umber.log
