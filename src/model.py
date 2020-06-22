@@ -1076,7 +1076,7 @@ class Page(BaseModel):
             date = self.lastmodified.daydatetimesec()
             author = ''
             self.githashes = tuple()
-            self.history = [link, 'current', date, author]
+            self.history = ([link, 'current', date, author], )
             self.revision_date = date
             self.revision_commit = ''
             self.revision_prev_url = ''
