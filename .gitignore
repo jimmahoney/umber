@@ -1,4 +1,8 @@
 
+# In the devel tree these are only for testing
+# as an imaginary course folder
+courses/fall2001/*
+
 # compiled files
 *.pyc
 *.pyo
