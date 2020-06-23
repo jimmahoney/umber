@@ -1,6 +1,30 @@
 # umber development history #
 
- TEST
+# June 23
+
+ Trying google authentication again.
+ 
+   * github : https://github-flask.readthedocs.io/en/latest/
+   * google : https://realpython.com/flask-google-login/
+
+ I need to choose "internal" or "external" credential type.
+   * 1st time I tried using jimmahoney@bennington.edu google devel account
+     ... since maybe that could be internal for other bennington.edu folks
+     ... but it doesn't seem to like me creating projects
+         (I don't own/manage that whole g-suite bennington thing)
+     ... and by adding an icon (which I thought they wanted)
+         it now says that it will take a month to verify. (ugh)
+   * 2nd attempt I tried using jim@mahoney.cc google devel account,
+     ... set "external" (so anyone)
+     ... created new project
+     ... didn't add an icon or ask for any user info
+     ... give it bennington.college URL (privacy/terms/etc)
+     ... and it seems to have worked; at least, gave me some credentials.
+   
+## June 22
+
+ deployed to bennington linode succesfully with nginx + uwsgi
+ see ../env/deploy_bennington.txt
 
 ## June 12
 
@@ -18,8 +42,8 @@
        Active Directory (AD)
        Google Cloud Directory Sync )
 
- ... but first I need to have it deployed
- and set up for google to let me try it.
+ ... but I think I first I need to have it deployed and set up for google
+ to let me try it.
 
  I think that nginx + uwsgi has more traction
  than apache + mod_wsgi (clunky, from what I read,

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# run local development server
+
 # Is the project environment setup?
 : ${UMBER_ROOT:?"Setup umber environment with '. env/activate_development' first."}
 cd $UMBER_ROOT   # Set the working folder to the project root.
