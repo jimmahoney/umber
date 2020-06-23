@@ -98,9 +98,22 @@ def do_after_request(exception=None):
     db.close()
 
 ### TESTING ###
-@app.route('/uploadtest', methods=['GET', 'POST'])
-def upload():
-    return render_template('uploadtest.html')
+#@app.route('/uploadtest', methods=['GET', 'POST'])
+#@def upload():
+#    return render_template('uploadtest.html')
+
+@app.route(route_prefix + '/fall<int:year>')
+def fall_course_listing(year):
+    return course_listing('fall', year)    
+
+@app.route(route_prefix + '/spr<int:year>')
+def spring_course_listing(year):
+    return course_listing('spring', year)
+
+def course_listing(term, year):
+    #return f'course_lising {term} {year} ' # debug
+    term_base = f'{url_base}/{site_course_path}/term'
+    return redirect(f'/{term_base}/{term}{year}')
 
 @app.route(route_prefix + '/', methods=['GET', 'POST'])
 def mainroute_blank():

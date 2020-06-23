@@ -20,7 +20,11 @@
      ... didn't add an icon or ask for any user info
      ... give it bennington.college URL (privacy/terms/etc)
      ... and it seems to have worked; at least, gave me some credentials.
-   
+     - from console.developers.google.app , set
+        authorized js origins : https://cs.bennington.college
+        authorized redirect URIs : 
+              https://cs.bennington.college/courses/google-login-callback
+ 
 ## June 22
 
  deployed to bennington linode succesfully with nginx + uwsgi
