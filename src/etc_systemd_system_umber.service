@@ -5,9 +5,11 @@
 #      using-environment-variables-in-systemd-units.html
 #   * ./setting.py
 #   * ../env/activate_production
+#   * https://docs.authlib.org/en/stable/
 #
-# DON'T just symlink to this file from /etc/systemd/service
-# (A value for UMBER_SECRET_KEY is not yet set.)
+# DON'T just symlink to this file from /etc/systemd/service ;
+# copy this file and insert your values for UMBER_SECRET_KEY and GOOGLE_* 
+# 
 
 [Unit]
 Description="umber uwsgi instance"
@@ -23,6 +25,11 @@ Environment=UMBER_ROOT=/var/www/umber
 Environment=PYTHONPATH=/var/www/umber/src
 Environment=UMBER_DATA=/var/www/umber_data/umber_bennington.db
 
+# google authorization client credentials
+# --- TODO : EDIT THIS ------------------------------
+Environment=GOOGLE_CLIENT_ID=xxx-put-your-id-here-xxx
+Environment=GOOGLE_CLIENT_SECRET=xxx-put-your-secret-here-xxx
+
 # virtual python environment 
 Environment=PATH=/var/www/umber/venv/bin
 
@@ -32,7 +39,7 @@ Environment=PATH=/var/www/umber/venv/bin
 # in the copy of this file that you install in /etc/systemd/service/
 #   $ python
 #   >>> import os, binascii; print(binascii.hexlify(os.urandom(24)).decode())
-Environment=UMBER_SECRET_KEY=....
+Environment=UMBER_SECRET_KEY=xxx-put-your-secret-here-xxx
 
 ExecStart=/var/www/umber/venv/bin/uwsgi --ini wsgi.ini
 

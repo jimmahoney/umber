@@ -5,8 +5,9 @@ import parsedatetime, pytz, random, hashlib
 import os, shutil, urllib.parse, arrow, string, re, io
 from flask import url_for, app
 from markdown2 import markdown
-from settings import url_base, debug_logfilename, \
-    localtimezone, umber_debug, umber_cleanup, static_prefix
+from settings import ( url_base, debug_logfilename,
+                       localtimezone, umber_debug, umber_cleanup,
+                       static_prefix )
 from flask import url_for, app
 from dateutil.parser import parse as dateutil_parse
 import logging

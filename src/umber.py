@@ -5,19 +5,22 @@
  
  Jim Mahoney | mahoney@marlboro.edu | May 2017 | MIT License
 """
-import sys, re, os, json, safe
-from flask import Flask, Response, request, session, g, \
-     redirect, url_for, abort, flash, get_flashed_messages, render_template
+import sys, re, os, json, safe, requests
+from authlib.integrations.flask_client import OAth
+from flask import ( Flask, Response, request, session, g, redirect, url_for, 
+                    abort, flash, get_flashed_messages, render_template )
 from flask_login import LoginManager, login_user, logout_user, current_user
 from werkzeug import secure_filename
-from model import db, Person, Role, Course, \
-     Registration, Assignment, Work, Page, Time
-from utilities import in_console, split_url, static_url, size_in_bytes, \
-     is_clean_folder_name, parse_access_string, parse_assignment_data, \
-     print_debug, pygmentize, name_to_htmltitle, path_to_startdate
-from settings import umber_flask_configure, umber_url, contact_url, help_url, \
-     about_url, site_url, url_base, os_root, umber_debug, route_prefix, \
-     os_courses, markup_url, site_course_path, site_home
+from model import ( db, Person, Role, Course, 
+                    Registration, Assignment, Work, Page, Time )
+from utilities import ( in_console, split_url, static_url, size_in_bytes,
+                        is_clean_folder_name, parse_access_string,
+                        parse_assignment_data, print_debug, pygmentize,
+                        name_to_htmltitle, path_to_startdate )
+from settings import ( umber_flask_configure, umber_url, contact_url,
+                       help_url, about_url, site_url, url_base, os_root,
+                       umber_debug, route_prefix, os_courses, markup_url,
+                       site_course_path, site_home, GOOGLE_DISCOVERY_URL )
 import gitlocal
 
 app = Flask('umber',
@@ -28,6 +31,15 @@ umber_flask_configure(app)
 login_manager = LoginManager()
 login_manager.anonymous_user = Person.get_anonymous
 login_manager.init_app(app)
+
+oath = OAuth(app)
+# Note that the google client_id and client_secret are configured
+# within umber_flask_configure, and so passed to oauth within the app.
+oath.register(
+    name = 'google',
+    server_metadata_url = GOOGLE_DISCOVERY_URL,
+    client_kwargs = {'scope' : 'openid email profile'}
+    )
 
 @login_manager.user_loader
 def load_user(user_session_id):
@@ -102,6 +114,40 @@ def do_after_request(exception=None):
 #@def upload():
 #    return render_template('uploadtest.html')
 
+# ------ authentication - testing -------------------
+# See
+#  * github.com/authlib/demo-oauth-client/tree/master/flask-google-login
+#  * console.cloud.google.com/apis/credentials
+#
+
+@app.route(route_prefix + '/login/home')
+def login_home():
+    if current_user.is_authenticated:
+        return (
+            f"<p>Hello, {current_user.name}! You're logged in! "
+            f"Email: {current_user.email}</p>"
+             '<div><p>Google Profile Picture:</p>'
+            f'<img src="{current_user.profile_pic}"'
+             'alt="Google profile pic"></img></div>'
+            f'<a class="button" href="{route_prefix}/logout">Logout</a>'
+        )
+    else:
+        return f'<a class="button" href="{route_prefix}/login">Google Login</a>'
+
+@app.route(route_prefix + '/login')
+def login():
+    return '/login'
+
+@app.route(route_prefix + '/login/authorize')
+def login_authorize():
+    return '/login/authorize'
+
+@app.route(route_prefix + '/logout')
+def logout():
+    return '/logout'
+
+# --- semester course listings redirect ---------------
+
 @app.route(route_prefix + '/fall<int:year>')
 def fall_course_listing(year):
     return course_listing('fall', year)    
@@ -114,6 +160,8 @@ def course_listing(term, year):
     #return f'course_lising {term} {year} ' # debug
     term_base = f'{url_base}/{site_course_path}/term'
     return redirect(f'/{term_base}/{term}{year}')
+
+# --- main ---------------
 
 @app.route(route_prefix + '/', methods=['GET', 'POST'])
 def mainroute_blank():
@@ -206,16 +254,18 @@ def mainroute(pagepath):
             return redirect(page.course.url)
 
     # Store the page object (and therefore page.course and page.user)
-    # in the request, so that the request action handler doesn't need args.
+    # in the request so that the request action handler doesn't need args.
     request.page = page
-
+    
     if request.method == 'POST' and 'dropzone' in request.args:
+        # Drag and drop events.
         print_debug('-- dropzone file upload --') # i.e. handle dropzonejs.com
         return ajax_upload()
     
     elif request.method == 'POST':
+        # user actions : forms, login, editing, ...
         print_debug(' mainroute: POST')
-        reload_url = form_post()
+        reload_url = form_post()   # handle an action w/ args in request.page  
         return redirect(reload_url)
         
     elif (not page.is_dir and
@@ -259,7 +309,7 @@ def mainroute(pagepath):
                                debug = True
                                )
 
-## debugging route : any url
+# --- debugging route : any url -----------
 #@app.route('/', defaults={'path':''})
 #@app.route('/<path:path>')
 #def catchall(path):
@@ -329,9 +379,8 @@ def ajax_response(status, msg):
 
 # --- forms ---
 
-# The input to the submit_* and authorize_* handlers
-# is through the request global;
-# see http://flask.pocoo.org/docs/0.12/api/#incoming-request-data :
+# Inputs to the submit_* and authorize_* handlers are in the request global.
+# See http://flask.pocoo.org/docs/0.12/api/#incoming-request-data :
 #   request.form      multidict with parsed form data from POST or PUT
 #   request.args      multidict with parsed contents of url query string
 #   request.values    both .form and .args

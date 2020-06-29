@@ -1,5 +1,13 @@
 # umber development history #
 
+# June 29
+
+ Still working on google authentication,
+ but having issues installing oathlib for realpython.com's instructions;
+ moving instead to
+   * https://docs.authlib.org/en/stable/
+   * https://github.com/authlib/demo-oauth-client/tree/master/flask-google-login
+
 # June 23
 
  Trying google authentication again.
@@ -21,9 +29,10 @@
      ... give it bennington.college URL (privacy/terms/etc)
      ... and it seems to have worked; at least, gave me some credentials.
      - from console.developers.google.app , set
-        authorized js origins : https://cs.bennington.college
+        authorized js origins :
+              https://cs.bennington.college
         authorized redirect URIs : 
-              https://cs.bennington.college/courses/google-login-callback
+              https://cs.bennington.college/courses/login/callback
  
 ## June 22
 

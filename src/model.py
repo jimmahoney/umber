@@ -49,15 +49,15 @@
 import os, yaml, re, mimetypes, shutil, random
 from functools import reduce
 from werkzeug.security import generate_password_hash, check_password_hash
-from peewee import SqliteDatabase, Model, \
-     TextField, IntegerField, PrimaryKeyField, ForeignKeyField
+from peewee import ( SqliteDatabase, Model, TextField, IntegerField,
+                     PrimaryKeyField, ForeignKeyField )
 from bs4 import BeautifulSoup
-from utilities import markdown2html, link_translate, static_url, \
-     ext_to_filetype, filetype_to_icon, size_in_bytes, \
-     Time, stringify_access, print_debug, clean_access_dict, md5
-from settings import os_db, umber_url, protocol, hostname, umber_mime_types, \
-    os_root, os_courses, photos_url, url_base, os_default_course, \
-    site_course_path, site_home
+from utilities import ( markdown2html, link_translate, static_url, md5, Time,
+                        ext_to_filetype, filetype_to_icon, size_in_bytes,
+                        stringify_access, print_debug, clean_access_dict )
+from settings import ( os_db, umber_url, protocol, hostname, umber_mime_types,
+                       os_root, os_courses, photos_url, url_base,
+                       os_default_course, site_course_path, site_home )
 import gitlocal
 
 db = SqliteDatabase(os_db)

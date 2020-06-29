@@ -4,15 +4,17 @@
  Edit these to match your situation.
 
  The environment variables 
-    UMBER_CONFIG        (either DEVELOPMENT or PRODUCTION)
-    UMBER_SECRET_KEY    (session crypto key)
+    UMBER_CONFIG          either DEVELOPMENT or PRODUCTION
+    UMBER_SECRET_KEY      session crypto key
+    GOOGLE_CLIENT_ID      google authentication keys
+    GOOGLE_CLIENT_SECRET 
  must be defined elsewhere before this runs.
 
- See ../env/shell_* .
+ See ../env/shell_* and ../src/etc_systemd_...
 
  ------------------------------------------------------------
  
- The urls have this form :
+ The urls for this app have this form :
                              
         protocol  hostname       url_base    page_path
    e.g. https://  umber.cc:433 / umber    /  demo/home
@@ -42,10 +44,12 @@ site_home = 'docs/home'
 
 def umber_flask_configure(app):
     """ Configure some of Flask's internal settings. """
-    app.config['DEBUG'] = (os.environ['UMBER_CONFIG'] == 'DEVELOPMENT')
+    app.config['DEBUG'] = (os.environ.get('UMBER_CONFIG') == 'DEVELOPMENT')
     app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=1)
     app.config['SESSION_COOKIE_NAME'] = 'umber'
-    app.config['SECRET_KEY'] = os.environ['UMBER_SECRET_KEY']
+    app.config['SECRET_KEY'] = os.environ.get('UMBER_SECRET_KEY')
+    app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
+    app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
 
 if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     umber_debug = True
@@ -62,12 +66,12 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     debug_logfilename = ''
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
-    # TODO : find a better way to pull this stuff out of the source tree.
+    # TODO : find a better way to pull all this out of the source tree.
     umber_debug = False
     protocol = 'https://'
     hostname = 'cs.bennington.college'
     url_base = 'courses'      
-    route_prefix = '/courses'    # apache mod_wsgi needed '' ... go figure.
+    route_prefix = '/courses'    # consistent with uwsgi; apache mod_wsgi needed ''
     contact_url = '<a href="mailto:jimmahoney@bennington.college">Jim Mahoney</a>'
     site_url = 'https://cs.bennington.college'
     static_prefix = '/courses_static/'
@@ -84,6 +88,8 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')
 
+GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+
 umber_url = protocol + hostname + '/' + url_base
 about_url = umber_url + '/umber/docs/about'
 help_url = umber_url + '/umber/docs/help'
@@ -96,5 +102,3 @@ umber_mime_types = {x:'text/plain' for x in
      '.java', '.hs', '.clisp', '.pl', '.tex', '.rb', '.yvtm', '.vtm', '.csv'
     )}
 umber_mime_types['.PNG'] = 'img/png'
-
-
