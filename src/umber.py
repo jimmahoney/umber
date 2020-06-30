@@ -136,15 +136,21 @@ def login_home():
 
 @app.route(route_prefix + '/login')
 def login():
-    return '/login'
+    redirect_uri = url_for('login_authorize', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
 
 @app.route(route_prefix + '/login/authorize')
 def login_authorize():
-    return '/login/authorize'
+    token = oauth.google.authorize_access_token()
+    user = oauth.google.parse_id_token(token)
+    login_user(user) # Flask-Login library
+    #user.logged_in = True
+    return redirect(url_for('login_home'))
 
 @app.route(route_prefix + '/logout')
 def logout():
-    return '/logout'
+    session.pop('user', None)
+    return redirect(url_for('login_home'))
 
 # --- semester course listings redirect ---------------
 
@@ -624,7 +630,7 @@ def submit_login():
         flash('Oops: wrong username or password.', 'login')
         return url_for('mainroute', pagepath=request.page.path, action='login')
     else:
-        user.logged_in = True
+        #user.logged_in = True
         login_user(user)
         return url_for('mainroute', pagepath=request.page.path)
 

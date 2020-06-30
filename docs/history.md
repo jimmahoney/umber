@@ -7,6 +7,22 @@
  moving instead to
    * https://docs.authlib.org/en/stable/
    * https://github.com/authlib/demo-oauth-client/tree/master/flask-google-login
+ still with google credentials and authorized URIs from
+   *  https://console.cloud.google.com/apis/credentials
+
+ On greymaple, see ../umber_misc/demo_oath_client .
+      authorized redirects:
+         http://127.0.0.1:5000/auth
+	 https://cs.bennington.college/courses/login/authorize
+ The flask-google-login demo appy worked!
+   $ cd umber; . env/activate_development  # get python with flask stuff
+   $ cd ../umber_misc/demo-oauth-client/flask-google-login
+   $ export GOOGLE_CLIENT_ID=....
+   $ export GOOGLE_CLIENT_SECRET=...
+   $ export FLASK_APP=app.py
+   $ flask run
+   #   ... and then visit http://127.0.0.1:5000
+   #   got back {{ user | tojson }} with {"email":"jimmahoney@bennington.edu" etc}
 
 # June 23
 
@@ -32,7 +48,7 @@
         authorized js origins :
               https://cs.bennington.college
         authorized redirect URIs : 
-              https://cs.bennington.college/courses/login/callback
+              https://cs.bennington.college/courses/login/authorize
  
 ## June 22
 
