@@ -12,8 +12,9 @@
 
  On greymaple, see ../umber_misc/demo_oath_client .
       authorized redirects:
-         http://127.0.0.1:5000/auth
-	 https://cs.bennington.college/courses/login/authorize
+         http://127.0.0.1:5000/auth (for oauth's demo code)
+         http://127.0.0.1:5000/course/login/google/authorize (for umber devel)
+	 https://cs.bennington.college/courses/login/google/authorize
  The flask-google-login demo appy worked!
    $ cd umber; . env/activate_development  # get python with flask stuff
    $ cd ../umber_misc/demo-oauth-client/flask-google-login

@@ -64,6 +64,7 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     os_default_course = os.path.join(os_root, 'courses/default_course')
     umber_cleanup = ''
     debug_logfilename = ''
+    umber_authentication = 'password'
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     # TODO : find a better way to pull all this out of the source tree.
@@ -84,7 +85,8 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     #   * systemctl mwssages , command line "journalctl -u umber"
     #   * uwsgi stats; command line "uwsgitop /var/run/umber/stats.sock"
     debug_logfilename = '/var/log/umber/umber.log'
-    
+    umber_authentication = 'google'
+
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')
 

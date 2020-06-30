@@ -6,7 +6,7 @@
  Jim Mahoney | mahoney@marlboro.edu | May 2017 | MIT License
 """
 import sys, re, os, json, safe, requests
-from authlib.integrations.flask_client import OAth
+from authlib.integrations.flask_client import OAuth
 from flask import ( Flask, Response, request, session, g, redirect, url_for, 
                     abort, flash, get_flashed_messages, render_template )
 from flask_login import LoginManager, login_user, logout_user, current_user
@@ -20,7 +20,8 @@ from utilities import ( in_console, split_url, static_url, size_in_bytes,
 from settings import ( umber_flask_configure, umber_url, contact_url,
                        help_url, about_url, site_url, url_base, os_root,
                        umber_debug, route_prefix, os_courses, markup_url,
-                       site_course_path, site_home, GOOGLE_DISCOVERY_URL )
+                       site_course_path, site_home, GOOGLE_DISCOVERY_URL,
+                       umber_authentication )
 import gitlocal
 
 app = Flask('umber',
@@ -32,10 +33,10 @@ login_manager = LoginManager()
 login_manager.anonymous_user = Person.get_anonymous
 login_manager.init_app(app)
 
-oath = OAuth(app)
+oauth = OAuth(app)
 # Note that the google client_id and client_secret are configured
 # within umber_flask_configure, and so passed to oauth within the app.
-oath.register(
+oauth.register(
     name = 'google',
     server_metadata_url = GOOGLE_DISCOVERY_URL,
     client_kwargs = {'scope' : 'openid email profile'}
@@ -98,6 +99,7 @@ def do_before_request():
     g.markup_url = markup_url
     g.site_url = site_url
     g.site_course_path = site_course_path
+    g.authentication = umber_authentication
     g.now = Time()
     
     ## Set information to be passed to the template engine as in
@@ -109,48 +111,40 @@ def do_before_request():
 def do_after_request(exception=None):
     db.close()
 
-### TESTING ###
+# -- upload tests ---
 #@app.route('/uploadtest', methods=['GET', 'POST'])
 #@def upload():
 #    return render_template('uploadtest.html')
 
-# ------ authentication - testing -------------------
+# ------ google authentication -------------------
+#
 # See
 #  * github.com/authlib/demo-oauth-client/tree/master/flask-google-login
 #  * console.cloud.google.com/apis/credentials
-#
 
-@app.route(route_prefix + '/login/home')
-def login_home():
-    if current_user.is_authenticated:
-        return (
-            f"<p>Hello, {current_user.name}! You're logged in! "
-            f"Email: {current_user.email}</p>"
-             '<div><p>Google Profile Picture:</p>'
-            f'<img src="{current_user.profile_pic}"'
-             'alt="Google profile pic"></img></div>'
-            f'<a class="button" href="{route_prefix}/logout">Logout</a>'
-        )
-    else:
-        return f'<a class="button" href="{route_prefix}/login">Google Login</a>'
-
-@app.route(route_prefix + '/login')
-def login():
-    redirect_uri = url_for('login_authorize', _external=True)
+@app.route(route_prefix + '/login/google')
+def login_google():
+    try:
+        # url will be /login/google?pagepath=path/to/page ;
+        # where path/to/page is where "login" was clicked ,
+        # so that after the google back-and-forth
+        # that page can be restored.
+        session['pagepath'] = request.args['pagepath']
+    except:
+        session['pagepath'] = ''
+    redirect_uri = url_for('login_google_authorize', _external=True)
     return oauth.google.authorize_redirect(redirect_uri)
 
-@app.route(route_prefix + '/login/authorize')
-def login_authorize():
+@app.route(route_prefix + '/login/google/authorize')
+def login_google_authorize():
     token = oauth.google.authorize_access_token()
-    user = oauth.google.parse_id_token(token)
-    login_user(user) # Flask-Login library
-    #user.logged_in = True
-    return redirect(url_for('login_home'))
-
-@app.route(route_prefix + '/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('login_home'))
+    userinfo = oauth.google.parse_id_token(token)
+    try:
+        user = Person.get(email=userinfo['email'])
+        login_user(user)
+    except:
+        flash('Oops - invalid login.')
+    return redirect(route_prefix + session['pagepath'])
 
 # --- semester course listings redirect ---------------
 
@@ -630,7 +624,6 @@ def submit_login():
         flash('Oops: wrong username or password.', 'login')
         return url_for('mainroute', pagepath=request.page.path, action='login')
     else:
-        #user.logged_in = True
         login_user(user)
         return url_for('mainroute', pagepath=request.page.path)
 

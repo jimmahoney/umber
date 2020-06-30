@@ -768,6 +768,7 @@ class Page(BaseModel):
         page.revision = revision
         page._setup_file_properties()           # sets page.is_file etc
         page.gitpath = os.path.join(os_courses, page.path_with_ext)
+        page.login_google_url = url_for('login_google', pagepath=path)
         page.course = page.get_course()
         try:
             if page.course.page_error:
