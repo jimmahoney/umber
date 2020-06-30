@@ -144,7 +144,7 @@ def login_google_authorize():
         login_user(user)
     except:
         flash('Oops - invalid login.')
-    return redirect(route_prefix + session['pagepath'])
+    return redirect(route_prefix + '/' + session['pagepath'])
 
 # --- semester course listings redirect ---------------
 
