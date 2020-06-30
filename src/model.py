@@ -48,6 +48,7 @@
 
 import os, yaml, re, mimetypes, shutil, random
 from functools import reduce
+from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from peewee import ( SqliteDatabase, Model, TextField, IntegerField,
                      PrimaryKeyField, ForeignKeyField )
