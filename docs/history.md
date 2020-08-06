@@ -1,5 +1,15 @@
 # umber development history #
 
+# July 21
+
+ related open software - repeating some that I've listed before
+ 
+   * https://wiki.js.org/ - an open source wiki app built on NodeJS
+   * https://www.getlektor.com/ - flat file lightweight CMS
+   * https://github.com/sagemathinc/cocalc - jupyter on steroids
+   * https://tljh.jupyter.org/en/latest/ - the littlest jupyter hub
+   * https://gitlab.com/gitlab-org/gitlab - gitlab source ; rails cloud git 
+
 # June 29
 
  Still working on google authentication,
@@ -232,14 +242,14 @@ rabbithole of wsgi, subprocesses, and all that ...
  and too buggy (using dulwich.io).
 
  Software projects to look at :
+
    https://gitlab.com/gitlab-org/gitlab-foss
    https://tljh.jupyter.org/en/latest/
    https://tljh.jupyter.org/en/latest/contributing/plugins.html
    edX : https://github.com/edx/edx-platform ; big python based open source LMS
 
-   flexible and lightweight static content management system
-   for building websites out of flat files
-   https://www.getlektor.com/
+   flexible and lightweight static content management system 
+   for building websites out of flat files : https://www.getlektor.com/`
 
    GitPython
    https://gitpython.readthedocs.io/en/stable/tutorial.html#using-git-directly
