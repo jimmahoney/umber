@@ -35,10 +35,12 @@
 	 <td class="heading">email</td>
 	 <td><a href="mailto:{{ _user.email }}">{{ _user.email }}</a></td>
        </tr>
+       {%- if g.authentication == "password" %}
        <tr>
 	 <td class="heading">password</td>
 	 <td>*****</td>
        </tr>
+       {%- endif %}
        {%- if page.course.name == 'Umber' %}
        <tr>
 	 <td class="heading" style="text-align:top">courses</td>

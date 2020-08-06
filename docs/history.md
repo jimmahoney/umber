@@ -1,5 +1,9 @@
 # umber development history #
 
+Aug 5
+
+# BUG : removing a folder in the umber/ course failed to do anything.
+
 # June 29
 
  Still working on google authentication,

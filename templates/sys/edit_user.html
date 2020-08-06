@@ -38,23 +38,31 @@
 	 <td class="heading">email</td>
 	 <td>{% if editall %}<input type="input" name="email" value="{{_user.email}}">{% else %}<a href="mailto:{{ _user.email }}">{{ _user.email }}</a>{% endif %}</td>
        </tr>
+       {%- if g.authentication == "password" %}
        <tr>
 	 <td class="heading">password</td>
 	 <td><input type="password" name="password" value=""></td>
        </tr>
+       {%- endif %}
      </table>
    </td>
   </tr>
   {%- if editall %}
-  <tr><td></td><td><input type="submit" name="submit_edituser" value="edit_user"></td></tr>
+  <tr><td></td><td><input type="submit" name="submit_edituser" value="submit"></td></tr>
   {%- else %}
-  <tr><td></td><td><input type="submit" name="submit_password" value="change password"></td></tr>
-  {%- endif %}
+  {%- if g.authentication == "password" %}
+  <tr><td></td><td><input type="submit" name="submit_password" value="submit"></td></tr>
+  {%- endif %}{# -- password -- #}
+  {%- endif %}{# -- editall -- #}
 </table>
 </form>
 {%- if not editall %}
-<p>To make changes other than your password, contact {{ g.contact_url | safe}} .</td></tr>
-{%- endif %}
+{%- if g.authentication == "password" %}
+<p>To make changes other than your password, talk to {{ g.contact_url | safe}} .</td></tr>
+{%- else %}
+<p>To make changes, talk to {{ g.contact_url | safe}} .</td></tr>
+{%- endif %}{# -- authentication -- #}
+{%- endif %}{# -- editall -- #}
 {%- endif %}{# -- _user == None -- #}
 {%- endif %}{# -- authenticated -- #}
 {%- with messages = get_flashed_messages(with_categories=true) %}

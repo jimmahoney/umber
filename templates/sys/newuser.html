@@ -19,10 +19,12 @@
 	 <td class="heading">email</td>
 	 <td><input type="input" name="email" value=""></td>	 
        </tr>
+       {%- if g.authentication == "password" %}
        <tr>
 	 <td class="heading">password</td>
 	 <td><input type="input" name="password" value=""></td>
        </tr>
+       {%- endif %}
      </table>
    </td>
   </tr>

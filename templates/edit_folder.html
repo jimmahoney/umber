@@ -55,7 +55,7 @@
   {%- endwith %}
   </div>
 </form>
-{%- if page.user_role.name == 'faculty' %}
+{%- if page.user_role.name == 'faculty' or page.user_role.name == 'admin' %}
 <form class='folder' id='privileges_form' method='POST' action='{{ page.url }}'>
   <div>
   Access rights <small>(one of [all, guest, students, faculty, admin] or usernames)</small><br>

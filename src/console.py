@@ -16,6 +16,7 @@ from settings import *
 sys.path.insert(0, os.path.join(os_root, 'src'))
 
 from umber import *
+from admintools import *
 from utilities import markdown2html
 
 # Set a context for a page request (see flask.pocoo.org/docs/0.11/shell/).
