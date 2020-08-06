@@ -33,10 +33,22 @@ and then add them to umber's sql database :
 
 """
 from model import Course, Person
-import csv, random, re, sys
+import csv, random, re, sys, os
 
 term = '2020-09-01'       # CHANGEME
 termfolder = 'fall2020'   # CHANGEME
+
+def read_csv(filename):
+    """ Return list of dicts from file.csv """
+    lines = []
+    with open(filename) as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for line in csv_reader:
+            lines.append(line)
+    return lines
+
+def pwd(): return os.getcwd()
+def cd(folder): os.chdir(folder); return None
 
 def make_faculty():
     Person.create_person(
@@ -51,7 +63,7 @@ def make_faculty():
     #    name = 'Matt Ollis',
     #    email = 'matt@marlboro.edu',
     #    password = 'matt*05344*'
-    )
+    #)
     #Person.create_person(
     #    username = 'kminden',
     #    name = 'Kaethe Minden',
@@ -73,7 +85,7 @@ def make_courses(csvfilename='courses_jan2018.csv'):
         faculty = Person.by_username(row['faculty'])
         course.enroll(faculty, 'faculty', spring2018)
         
-def add_users(csvfilename, passwd=False, enroll=False):
+def add_users(csvfilename, passwd=False, enroll=False, domain='bennington.edu'):
     """ create users from a .csv file defining them """
     # csvfile: username, name, (if enroll) course
     for row in csv.DictReader(open(csvfilename)):
@@ -84,7 +96,7 @@ def add_users(csvfilename, passwd=False, enroll=False):
         student = Person.create_person(
             username = row['username'],
             name = row['name'],
-            email = row['username'] + '@marlboro.edu',
+            email = row['username'] + '@' + domain,
             password = password)
         if enroll:
             course = Course.get(path = termfolder + '/' + row['course'])
@@ -113,4 +125,3 @@ def make_csv(userdict, csvfilename):
     for u in userdict:
         csv.write("{},{}\n".format(u['name'], u['username']))
     csv.close()
-

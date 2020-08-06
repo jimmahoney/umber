@@ -5,10 +5,9 @@ export UMBER_CONSOLE=True
 
 # Is the project environment setup?
 : ${UMBER_ROOT:?"Setup umber environment with 'source env/activate' first."}
-cd $UMBER_ROOT   # Set the working folder to the project root.
+#cd $UMBER_ROOT   # Set the working folder to the project root.
 
 # PYTHONSTARTUP=$UMBER_ROOT/src/console.py flask shell
 # same; may allow other python options (I wanted -q for 'quiet')
 #  -B : don't generate .pyc files
 PYTHONSTARTUP=$UMBER_ROOT/src/console.py python3 -B -m flask shell
-
