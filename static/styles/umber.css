@@ -862,7 +862,7 @@ pre code {
   border-bottom: none;
   margin-top: 0.25em;  /* h1 is 0.2em, but it's bigger */
 }
-.directory img { /* paper clip */
+#paperclip {
   position: relative;
   left: 3em;          /*  for paper_clip_2.png  */
   bottom: -22px;      /*  ditto                 */
