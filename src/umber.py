@@ -556,7 +556,12 @@ def submit_delete():
     abspaths = list([path for path in list(request.form.keys())
                      if request.form[path]=='checkboxdelete'])
     print_debug(' submit_delete : {}'.format(abspaths))
-    gitlocal.rm_commit(request.page)
+    for abspath in abspaths:
+        basename = os.path.basename(abspath)                  # eg 'stuff.md'
+        relpath = os.path.join(request.page.path, basename)   # eg 'demo/folder/stuff.md'
+        page = Page.get_from_path(relpath)
+        print_debug('   calling rm_commit on page.path={}'.format(page.path))
+        gitlocal.rm_commit(page)
     return url_for('mainroute', pagepath=request.page.path, action='edit')
     
 def submit_edit():

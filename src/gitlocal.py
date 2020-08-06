@@ -67,7 +67,7 @@ def add_commit(page):
 
 def rm_commit(page):
     """ Remove one file or folder from a course's git repo, and commit. """
-    _git_('rm', course=page.course, page=page, user=page.user)
+    _git_('rm -r', course=page.course, page=page, user=page.user)
 
 def get_history(page):
     """ Get a file's git log, returning [(revision, date, author),... ] """

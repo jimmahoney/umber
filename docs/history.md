@@ -1,6 +1,11 @@
 # umber development history #
 
-<<<<<<< HEAD
+# Aug 5
+
+    BUG : removing a folder in the umber/ course failed to do anything.
+    Fixed : problem was in umber.py submit_delete logic,
+            and how it used the new-ish git_local "rm"
+
 # July 21
 
  related open software - repeating some that I've listed before
@@ -10,11 +15,6 @@
    * https://github.com/sagemathinc/cocalc - jupyter on steroids
    * https://tljh.jupyter.org/en/latest/ - the littlest jupyter hub
    * https://gitlab.com/gitlab-org/gitlab - gitlab source ; rails cloud git 
-=======
-Aug 5
-
-# BUG : removing a folder in the umber/ course failed to do anything.
->>>>>>> ff328c9a7d7fb71fc8acf00ba4dbaf6833a0a768
 
 # June 29
 
