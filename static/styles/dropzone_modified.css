@@ -176,7 +176,7 @@
 
 .dropzone {
   min-height: 80px;             /* was '150px' */
-  border: 1px solid #8f765e;    /* was '2px solid rgba(0,0,0,0.3)'  */
+  border: 1px solid #cec4ab;    /* was '2px solid rgba(0,0,0,0.3)'  */
   background: #FCFCFC;          /* was 'white' */
   padding: 20px 20px; }
 
