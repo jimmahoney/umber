@@ -84,23 +84,40 @@ def make_courses(csvfilename='courses_jan2018.csv'):
             )
         faculty = Person.by_username(row['faculty'])
         course.enroll(faculty, 'faculty', spring2018)
-        
-def add_users(csvfilename, passwd=False, enroll=False, domain='bennington.edu'):
-    """ create users from a .csv file defining them """
-    # csvfile: username, name, (if enroll) course
+
+def read_populi_csv(csvfilename):
+    """ Return user data from student populi csv export """
+    # populi csv export fields :
+    #   "Student ID",Prefix,"First Name","Preferred Name",
+    #   "Middle Name","Last Name","Former Name",Email,
+    #   Street,City,State,ZIP,Country,Phone,Type,"Receives Mail"
+    # If there is a 'Preferred Name', use that as the first,
+    # then let 'name' be 'first last'. Ignore (prefix, middle, former)
+    # Return fields for (username,name,email,password)
+    result = []
     for row in csv.DictReader(open(csvfilename)):
-        if passwd:
-            password = row['username'] + '*05344*'  # i.e. mahoney*05344*
-        else:
-            password = '' # blank => make random passwd in Person.create_person
-        student = Person.create_person(
-            username = row['username'],
-            name = row['name'],
-            email = row['username'] + '@' + domain,
-            password = password)
-        if enroll:
-            course = Course.get(path = termfolder + '/' + row['course'])
-            course.enroll(student, 'student', term)
+        name = ((row['Preferred Name'] or row['First Name'])
+                ' ' row['Last Name'])
+        email = row['Email']
+        result.append({'name':name, 'email':email}]
+    return result
+
+def email_to_username(email):
+    return email.split('@')[0]
+
+def add_users(csvfilename, read_csv=read_populi_csv,
+              course=None, date='2020-09-01'):
+    """ create users and optionally enroll in a course """
+    users = read_csv(csvfilename)
+    for user in users:
+        username = email_to_username(user['email'])
+        student = Person.create_person(name=user['name'],
+                                       email=user['email'],
+                                       username=username,
+                                       password='')
+        if course:
+            course.enroll(student, 'student',
+                          datestring=date, create_work=True)
 
 def parse_directory(filename):
     """ read html file (nook directory listing),
