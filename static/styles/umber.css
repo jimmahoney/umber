@@ -603,10 +603,11 @@ form.login {
   padding: 0;
 }
 
-#mc-logo { 
+#benn-cs-logo { 
   position: relative;
-  left: 40px;
   padding: 1em 0 1em 0;
+  left: 2em;
+  width: 7em;
 }
 
 /* ---- edit tags ---------------------------------------------------  */
