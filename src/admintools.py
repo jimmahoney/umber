@@ -96,10 +96,10 @@ def read_populi_csv(csvfilename):
     # Return fields for (username,name,email,password)
     result = []
     for row in csv.DictReader(open(csvfilename)):
-        name = ((row['Preferred Name'] or row['First Name'])
-                ' ' row['Last Name'])
+        name = (row['Preferred Name'] or row['First Name']) + \
+               ' ' + row['Last Name']
         email = row['Email']
-        result.append({'name':name, 'email':email}]
+        result.append({'name':name, 'email':email})
     return result
 
 def email_to_username(email):

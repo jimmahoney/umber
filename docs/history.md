@@ -1,5 +1,11 @@
 # umber development history #
 
+# Aug 15 2020
+
+  Adding .csv data and some purpose-built scripts in umber_data folder
+  (which also has sql .db) for enrolling students, as well as
+  supporting code in admintools.py
+
 # Aug 5
 
     BUG : removing a folder in the umber/ course failed to do anything.

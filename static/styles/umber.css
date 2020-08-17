@@ -97,6 +97,10 @@ img {
   vertical-align: middle;
 }
 
+#roster {
+  width: 200px;
+}
+
 a { 
   text-decoration: none;
    /* color: #002bb8; */
