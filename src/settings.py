@@ -52,7 +52,7 @@ def umber_flask_configure(app):
     app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
 
 if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
-    umber_debug = True
+    umber_debug = False
     protocol = 'http://'
     hostname = '127.0.0.1:5000'
     url_base = 'courses'        # all URLs start with this ... except static
@@ -101,6 +101,7 @@ photos_url = umber_url + '/umber/photos'
 # custom mime-types for files within courses (does not include static files)
 umber_mime_types = {x:'text/plain' for x in
     ('.py', '.c', '.cc', '.cpp', '.c++', '.c#', '.dot', '.lisp',
-     '.java', '.hs', '.clisp', '.pl', '.tex', '.rb', '.yvtm', '.vtm', '.csv'
+     '.java', '.hs', '.clisp', '.pl', '.tex', '.rb', '.yvtm', '.vtm', '.csv',
+     '.i', '.s', '.objdump'
     )}
 umber_mime_types['.PNG'] = 'img/png'
