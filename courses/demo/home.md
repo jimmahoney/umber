@@ -21,7 +21,6 @@ demo logins
     janedoe    | test    | role=student (in Demo Course)
     johnsmith  | test    | role=student (in Demo Course)
 
-Change eleven.
 
 
 

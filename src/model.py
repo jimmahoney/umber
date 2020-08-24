@@ -161,6 +161,14 @@ class Person(BaseModel):
 
     def get_username(self, username):
         return Person.by_username(username)
+
+    def make_admin(self):
+        """ Turn this person into a site admin """
+        with db.atomic():
+            umber = Course.get_site()
+            site_registration = Registration.get(course=umber, person=self)
+            site_registration.role = Role.by_name('admin')
+            site_registration.save()
     
     def works(self, course):
         query = (Work.select()
@@ -1018,9 +1026,11 @@ class Page(BaseModel):
         
         if self.user.is_admin():
             # Let site admins do what they want in any course.
-            # But don't change their display name.
-            # self.user_role = Role.by_name('admin')
+            # Change their display name to 'admin' if it isn't 'faculty'.
+            # i.e. leave 'faculty' or 'student' display names as is.
             self.user_rank = Role.by_name('admin').rank
+            if self.user_role.name != 'faculty':
+                self.user_role = Role.by_name('admin')
     
         self.can = {'read':False, 'write':False} # default is deny access
         for permission in ('read', 'write'):
