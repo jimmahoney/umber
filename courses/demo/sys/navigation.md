@@ -16,6 +16,11 @@
 <div markdown=1>
 * [roster](~/sys/roster)
 * [grades](~/sys/grades)
+
+----
+
+* [project 1](~/protected/project_1/home)
+
 </div>
 </div>
 
