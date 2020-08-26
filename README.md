@@ -49,13 +49,17 @@ Like any Flask app, this can be deployed using WSGI, using for example
 libapache2-mod-wsgi or gunicorn.  See src/umber.wsgi, env/production,
 and docs/readme.txt for more information.
 
-sample
-------
+deployed
+--------
 
-I used this for my courses at
+I was using this for my courses at
 [cs.marlboro.college](https://cs.marlboro.college/cours/site/docs/about),
-which is running on a linode using apache mod_wsgi.
+running on a linode using apache mod_wsgi and password authentication.
+
+And I am using it my courses at
+[cs.bennington.college](https://cs.bennington.college/courses/umber/docs/home),
+running on another linode using nginx, uwsgi, and openid authentication.
 
 ----------------------------------------------------------
 
-Jim Mahoney | May 2020 | MIT License | github.com/jimmahoney/umber
+Jim Mahoney | Aug 2020 | MIT License | github.com/jimmahoney/umber
