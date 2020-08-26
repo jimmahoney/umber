@@ -1,5 +1,9 @@
 # umber development history #
 
+# Aug 24
+
+  TODO : hide attachments on history & previous versions
+
 # Aug 15 2020
 
   Adding .csv data and some purpose-built scripts in umber_data folder
