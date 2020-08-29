@@ -105,10 +105,7 @@ def read_populi_csv(csvfilename):
 def email_to_username(email):
     return email.split('@')[0]
 
-def add_users(csvfilename, read_csv=read_populi_csv,
-              course=None, date='2020-09-01'):
-    """ create users and optionally enroll in a course """
-    users = read_csv(csvfilename)
+def _add_users(users, course=None, date='2020-09-01'):
     for user in users:
         username = email_to_username(user['email'])
         student = Person.create_person(name=user['name'],
@@ -118,6 +115,12 @@ def add_users(csvfilename, read_csv=read_populi_csv,
         if course:
             course.enroll(student, 'student',
                           datestring=date, create_work=True)
+
+def add_users(csvfilename, read_csv=read_populi_csv,
+              course=None, date='2020-09-01'):
+    """ create users and optionally enroll in a course """
+    users = read_csv(csvfilename)
+    _add_users(users, course=course, date=date)
 
 def parse_directory(filename):
     """ read html file (nook directory listing),
