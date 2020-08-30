@@ -459,12 +459,12 @@ class Course(BaseModel):
             home_path = 'home'
         return os.path.join(self.url, home_path)
 
-    def get_registered(self):
+    def get_registered(self, rolename='student'):
         registrations = list(Registration.select(Registration.person,
                                                  Registration.role)
                                          .where((Registration.course == self)
                                           &  (Registration.status != 'drop')))
-        people = [reg.person for reg in registrations]
+        people = [reg.person for reg in registrations if reg.role.name==rolename]
         people.sort(key=lambda p: p.get_last_first())
         return people
 
