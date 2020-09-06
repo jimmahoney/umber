@@ -1,5 +1,23 @@
 # umber development history #
 
+# Sep 3
+
+  TODO : debug "delete" ... on production, student attachment,
+         isn't deleting the file. permissions? path??
+	 ... but delete is working OK at least some of the time.
+
+  TODO : add a "grace period" to "late" submission;
+         changing server time zone seems like it could have other weirdness,
+	 but I don't want due dates (midnight) to start showing up
+	 "overdue" hours before that in eastern time.
+	 DONE
+
+  TODO : skip tutors in grade grade
+         ... done with notes='tutor' ; need to set manually for now
+
+  TODO : safari css display bug : edit field is below everything else
+         Fixed ... I think (css kludge in edit_work template to make it a block)
+
 # Aug 24
 
   TODO : hide attachments on history & previous versions

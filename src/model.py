@@ -58,7 +58,8 @@ from utilities import ( markdown2html, link_translate, static_url, md5, Time,
                         stringify_access, print_debug, clean_access_dict )
 from settings import ( os_db, umber_url, protocol, hostname, umber_mime_types,
                        os_root, os_courses, photos_url, url_base,
-                       os_default_course, site_course_path, site_home )
+                       os_default_course, site_course_path, site_home,
+                       due_grace_hours )
 import gitlocal
 
 db = SqliteDatabase(os_db)
@@ -526,6 +527,9 @@ class Course(BaseModel):
         #
         result = []
         for stud in self.students:
+            # skip grade line for student if their .notes is 'tutor'
+            # ... though I don't have a GUI to set that property yet.
+            if stud.notes == 'tutor': next
             works = []
             for ass in self.assignments:
                 work = ass.get_work(stud)
@@ -856,6 +860,11 @@ class Page(BaseModel):
             self.work = self.work_assignment.get_work(self.work_person)
             duedate = Time(self.work_assignment.due)
             self.work_due = duedate.assigndate()
+            # ... but give students a extra grace period of a few hours
+            # before marking things as "late";
+            # this let's me get "end of day" to something reasonable,
+            # without changing server timezone
+            duedate.arrow.shift(hours=due_grace_hours)
             if self.work.submitted:
                 submitdate = Time(self.work.submitted)
                 self.work_submitted = submitdate.assigndate()

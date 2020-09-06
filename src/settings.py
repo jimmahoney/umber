@@ -38,6 +38,12 @@ localtimezone = 'US/Eastern'
 # This timezone designation must be understood by the python arrow library;
 # see http://arrow.readthedocs.io/en/latest & arrow.get().to(localtimezone) .
 
+# time after assignment due when they're marked late
+# ... if server is UTC (4 or 5 off), this makes sure
+# assignments aren't until after midnight ;  see model.py
+due_grace_hours = 8 
+
+
 # The 'Umber' course has site docs, home, etc; this is its course URL path.
 site_course_path = 'umber'
 site_home = 'docs/home'
