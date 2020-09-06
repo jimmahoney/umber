@@ -35,6 +35,7 @@
 </p>
 {# -- edit content -- #}
 <textarea id="edit_text" name="edit_text" cols=45 rows=20
+	  style="display:block;  /* safari float bugfix  */" 
 {%- if page.exists %}
 >{{ page.content() }}</textarea>
 {%- else %}

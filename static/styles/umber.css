@@ -1002,7 +1002,8 @@ form input[type="submit"]{
     border-radius: 0.3em;
 }
 
-
+/* #edit_text { float:right;  }  */
+ 
 /* edit password button */
 .edit_user_form input[type="submit"]{
     font-family: serif;
