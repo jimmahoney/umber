@@ -529,7 +529,7 @@ class Course(BaseModel):
         for stud in self.students:
             # skip grade line for student if their .notes is 'tutor'
             # ... though I don't have a GUI to set that property yet.
-            if stud.notes == 'tutor': next
+            if stud.notes == 'tutor': continue
             works = []
             for ass in self.assignments:
                 work = ass.get_work(stud)

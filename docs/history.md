@@ -13,7 +13,9 @@
 	 DONE
 
   TODO : skip tutors in grade grade
-         ... done with notes='tutor' ; need to set manually for now
+         ... skip studs with notes='tutor' ; need to set manually for now
+         TRIED ... but it isn't working; needs testing & more work.
+	       ... see model:grade_data_grid
 
   TODO : safari css display bug : edit field is below everything else
          Fixed ... I think (css kludge in edit_work template to make it a block)
