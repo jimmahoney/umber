@@ -104,10 +104,17 @@ help_url = umber_url + '/umber/docs/help'
 markup_url = umber_url + '/umber/docs/markup'
 photos_url = umber_url + '/umber/photos'
 
-# custom mime-types for files within courses (does not include static files)
+# Custom mime-types for dynamic files (i.e. within courses);
+# note that this may not change mime types for static files.
 umber_mime_types = {x:'text/plain' for x in
     ('.py', '.c', '.cc', '.cpp', '.c++', '.c#', '.dot', '.lisp',
      '.java', '.hs', '.clisp', '.pl', '.tex', '.rb', '.yvtm', '.vtm', '.csv',
      '.i', '.s', '.objdump'
     )}
-umber_mime_types['.PNG'] = 'img/png'
+# image mime type variations
+umber_mime_types['.PNG'] = 'image/png'
+umber_mime_types['.JPG'] = 'image/jpeg'
+umber_mime_types['.JPEG'] = 'image/jpeg'
+# pdf's
+umber_mime_types['.pdf'] = 'application/pdf'
+umber_mime_types['.PDF'] = 'application/pdf'

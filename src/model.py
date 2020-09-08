@@ -864,7 +864,7 @@ class Page(BaseModel):
             # before marking things as "late";
             # this let's me get "end of day" to something reasonable,
             # without changing server timezone
-            duedate.arrow.shift(hours=due_grace_hours)
+            duedate.arrow = duedate.arrow.shift(hours=due_grace_hours)
             if self.work.submitted:
                 submitdate = Time(self.work.submitted)
                 self.work_submitted = submitdate.assigndate()
@@ -1494,7 +1494,12 @@ class Work(BaseModel):
 
     def get_grade_css(self, faculty_view):
         css_class = 'black'      # the default
-        before_due_date = Time() < Time(self.assignment.due)
+        #
+        duedate = Time(self.assignment.due)
+        duedate.arrow = duedate.arrow.shift(hours=due_grace_hours)
+        now = Time()
+        before_due_date = now < duedate
+        #
         # Set blank times to '1901' to avoid errors.
         faculty_modified = self.faculty_modified or '1901'
         faculty_seen = self.faculty_seen or '1901'
@@ -1530,7 +1535,7 @@ class Work(BaseModel):
                 if before_due_date:
                     grade = '…'
                 else:
-                    grade = 'overdue'
+                    grade = 'l͟a͟t͟e͟'  # l͟a͟t͟e͟
                     css_class = 'green'
             else:
                 if not self.grade:
