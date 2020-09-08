@@ -460,12 +460,23 @@ class Course(BaseModel):
             home_path = 'home'
         return os.path.join(self.url, home_path)
 
-    def get_registered(self, rolename='student'):
+    def get_registered(self, rolename=None):
         registrations = list(Registration.select(Registration.person,
                                                  Registration.role)
                                          .where((Registration.course == self)
                                           &  (Registration.status != 'drop')))
-        people = [reg.person for reg in registrations if reg.role.name==rolename]
+        if rolename == 'tutor':
+            people = [reg.person for reg in registrations
+                      if reg.person.notes == 'tutor']
+        elif not rolename:
+            people = [reg.person for reg in registrations]
+        elif rolename == 'student':
+            people = [reg.person for reg in registrations
+                      if (reg.role.name == rolename
+                          and reg.person.notes != 'tutor')]
+        else:
+            people = [reg.person for reg in registrations
+                      if reg.role.name==rolename]
         people.sort(key=lambda p: p.get_last_first())
         return people
 
