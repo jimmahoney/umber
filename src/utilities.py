@@ -189,17 +189,15 @@ class Time:
                 parsed = Time._parse(datetimestring)
                 parsed = re.sub(r'\.\d+', '', parsed) # remove decimal seconds
                 self.arrow = arrow.get(parsed)
-                # dulwich git python stores dates in utc timezone
-                # as e.g. 'Tue Jul 10 2018 18:01:33 +0000'
-                # So if the string looked like that, convert to local timezone.
-                # (Note that command line git does e.g. 'Tue Jul 10 2018 14:01:33 -4000')
-                if datetimestring[-5:] == '+0000':
-                    self.arrow = self.arrow.to('local')
         except:
             # if all else fails, use current time
             self.arrow = arrow.get() 
-        # Set timezone.
-        self.arrow = self.arrow.replace(tzinfo=localtimezone)
+        # Set timezone using the umber localtimezone from settings.py
+        # (This .replace() method doesn't change d:h:m:s,
+        #  so we also need to shift the time to match the timezone shift.)
+        local_arrow = self.arrow.replace(tzinfo=localtimezone)
+        offset = self.arrow - local_arrow
+        self.arrow = local_arrow + offset
         
     def __lt__(self, other):
         try:

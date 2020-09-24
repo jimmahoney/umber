@@ -1,5 +1,19 @@
 # umber development history #
 
+# Sep 23
+  
+  Attempted fix of time on assignments page bug in linode deployed umber.
+  Even after multiple previous attempts, I wasn't handling timezones correctly.
+  This one has some testing on my deployed linode (which has a UTC system time).
+
+# Sep 10
+
+  TODO : increase size of allowed file upload
+         ... and revisit how all of that is handled
+
+  TODO : attachment files don't seem to be added to the github repo
+
+
 # Sep 3
 
   TODO : debug "delete" ... on production, student attachment,
