@@ -1,5 +1,12 @@
 # umber development history #
 
+# Sep 30
+
+ Still trying to fix the date to do what I want.
+ Getting closer, but "default time" 23:59:00
+ and timezones are still messy; if I set that default
+ time before setting timezone, I end up with e.g. 19:59:00 i.e. 7:49pm
+
 # Sep 23
   
   Attempted fix of time on assignments page bug in linode deployed umber.

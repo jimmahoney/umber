@@ -40,7 +40,7 @@ def myparsethedatetime(date_time_string):
         that arrow() can understand, given a human-friendly 
         description.
     """
-    return str(dateutil_parse(date_time_string, ignoretz=True))
+    return str(dateutil_parse(date_time_string))
 
 def md5(data):
     """ Return md5 hash of a string 
@@ -156,10 +156,12 @@ class Time:
             >>> Time._parse('Tue Jul 10 2018 14:01:33 -4000')
             '2018-07-10 14:01:33'
         """
-        # date_time_string does not do what seems reasonable with time zones,
-        # so I'm ignoring it if present and trying to do the right thing later.
+        # (1) date_time_string didn't do what seems reasonable with time zones,
+        #     so I was  ignoring it ...
+        # (2) Sep 2020 ; seeing issues now - other changes may mean I need to reverse that choice
         try:
-            result = str(dateutil_parse(date_time_string, ignoretz=True))
+            #result = str(dateutil_parse(date_time_string, ignoretz=True))
+            result = str(dateutil_parse(date_time_string))
         except:
             result = str(Time())  # If it can't be parsed, use "now" time.
         if re.search(r'00:00:00', result):
@@ -167,7 +169,8 @@ class Time:
             #print("found zeros")
             try:
                 date_time_string += ' ' + Time.default24time
-                result = str(dateutil_parse(date_time_string, ignoretz=True))
+                #result = str(dateutil_parse(date_time_string, ignoretz=True))
+                result = str(dateutil_parse(date_time_string))
             except:
                 pass
         return result
@@ -195,10 +198,15 @@ class Time:
         # Set timezone using the umber localtimezone from settings.py
         # (This .replace() method doesn't change d:h:m:s,
         #  so we also need to shift the time to match the timezone shift.)
+        # But if the time is the default end of day (23:59:00),
+        # leave that as is.
         local_arrow = self.arrow.replace(tzinfo=localtimezone)
-        offset = self.arrow - local_arrow
-        self.arrow = local_arrow + offset
-        
+        if not Time.default24time in local_arrow.isoformat():
+            offset = self.arrow - local_arrow
+            self.arrow = local_arrow + offset
+        else:
+            self.arrow = local_arrow
+
     def __lt__(self, other):
         try:
             return self.arrow < other.arrow
@@ -259,6 +267,10 @@ class Time:
             return self.arrow.format('ddd MMM D')
         else:
             return datetime
+    def assigndatedetail(self):
+        """ Return as e.g. 'Tue Jan 23 2pm' """
+        # Always include h:mm ; for detailed assignment date
+        return self.arrow.format('ddd MMM D h:mm a')
     def assignISOdate(self):
         """ Return as e.g. '2017-09-03' or '2017-09-4 2pm' """
         datetime = self.arrow.format('YYYY-MM-DD h:mm a')

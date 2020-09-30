@@ -870,7 +870,7 @@ class Page(BaseModel):
             self.work_assignment = self.course.get_assignment_by_nth(work_nth)
             self.work = self.work_assignment.get_work(self.work_person)
             duedate = Time(self.work_assignment.due)
-            self.work_due = duedate.assigndate()
+            self.work_due = duedate.assigndatedetail()
             # ... but give students a extra grace period of a few hours
             # before marking things as "late";
             # this let's me get "end of day" to something reasonable,

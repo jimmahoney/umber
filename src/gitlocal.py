@@ -74,6 +74,7 @@ def get_history(page):
     path = quote(page.get_gitpath())
     repo = quote(page.course.abspath)
     format = """--pretty=format:'{"commit":"%H", "date":"%aI", "msg": "%s"},'"""
+    # Note that git log dates are in UTC, not local time zone.
     log_string = run(f'git -C {repo} log {format} {path}').replace(
         system_username, '')
     print_debug(f" gitlocal get_history log_string='{log_string}' ")
