@@ -37,7 +37,8 @@
  using the python "logging" library.
  
  google "python logging RuntimeError: cannot release un-acquired lock"
- See https://stackoverflow.com/questions/62250160/uwsgi-runtimeerror-cannot-release-un-acquired-lock
+ See https://stackoverflow.com/questions/62250160/
+ uwsgi-runtimeerror-cannot-release-un-acquired-lock
      https://github.com/unbit/uwsgi/issues/1978
  suggested fix : remove "py-call-osafterfork = true" in wsgi.ini
 
@@ -70,6 +71,13 @@
    * fix file attachment / work submissions git repo (is it put in?)
    * ... which is likely related to the "can't delete" issue
      for work file attachments.
+
+# Sep 30
+
+ Still trying to fix the date to do what I want.
+ Getting closer, but "default time" 23:59:00
+ and timezones are still messy; if I set that default
+ time before setting timezone, I end up with e.g. 19:59:00 i.e. 7:49pm
 
 # Sep 23
   
