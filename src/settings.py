@@ -57,7 +57,7 @@ def umber_flask_configure(app):
     app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
 
 if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
-    umber_debug = False
+    umber_debug = True
     protocol = 'http://'
     hostname = '127.0.0.1:5000'
     url_base = 'courses'        # all URLs start with this ... except static

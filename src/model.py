@@ -828,10 +828,13 @@ class Page(BaseModel):
         except:
             return self.path
     
-    def get_gitpath(self):
-        """ Return file path of page relative to course path,
+    def get_gitpath(self, abspath=None):
+        """ Return file path of page (or abspath file) relative to course path,
             including file extension if any """
-        return os.path.relpath(self.abspath, self.course.abspath)
+        # This abspath option is used in gitlocal.py and umber.py:ajax_upload ;
+        # for attachments the page is not the upload file.
+        _abspath = self.abspath if abspath==None else abspath
+        return os.path.relpath(_abspath, self.course.abspath)
     
     def _get_relpath(self):
         """ Return path of page relative to course path, 

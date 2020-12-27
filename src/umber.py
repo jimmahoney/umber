@@ -364,10 +364,10 @@ def ajax_upload():
         # TODO: send something other than success if there's a problem here,
         # probably with a try: except: block.
         filename = secure_filename(upload.filename)
-        print_debug('   file : "{}"'.format(filename))
         destination = os.path.join(abspath, filename)
+        print_debug(f"   ajax_response destination='{destination}'")
         upload.save(destination)
-        gitlocal.add_commit(page)
+        gitlocal.add_commit(page, abspath=destination)
 
     print_debug(" sending ajax response ")
     return ajax_response(True, 'upload success')
@@ -555,13 +555,9 @@ def submit_delete():
     #                                '/full/path/folder2/':'checkboxdelete'}
     abspaths = list([path for path in list(request.form.keys())
                      if request.form[path]=='checkboxdelete'])
-    print_debug(' submit_delete : {}'.format(abspaths))
-    for abspath in abspaths:
-        basename = os.path.basename(abspath)                  # eg 'stuff.md'
-        relpath = os.path.join(request.page.path, basename)   # eg 'demo/folder/stuff.md'
-        page = Page.get_from_path(relpath)
-        print_debug('   calling rm_commit on page.path={}'.format(page.path))
-        gitlocal.rm_commit(page)
+    page = request.page
+    print_debug(f"   rm_commit : page.path={page.path}, abspath='{abspaths}'")
+    gitlocal.rms_commit(page, abspaths)
     return url_for('mainroute', pagepath=request.page.path, action='edit')
     
 def submit_edit():

@@ -1,5 +1,76 @@
 # umber development history #
 
+# Dec 27 2020
+
+ concurrent gitlocal retries implmented ;
+ multiple file uploads seem to work on development laptop
+
+# Dec 26 2020
+
+ updated dropzone version ; now has button to launch dialog.
+ seems to be compatible with older version
+
+ working on file attachments, git, and removing.
+
+ git locking remains an issue. When uploading multiple files,
+ there is an ajax request per file, and so multiple uploads
+ happen concurrently; calling 'git' for each means that
+ the repo is locked and some of them fail.
+
+ workarounds :
+   (1) I can have the failures wait and retry,
+       possibly with variable-time wait to (try) to avoid congenstion.
+       But if (say) 20 files are uploaded at once, I may well need
+       many retries.
+   (2) I can have the 'git' stuff done by a different non-forked server,
+       so that it can do one at a time. See for example
+       https://pymotw.com/2/SocketServer/ . This is the "right" 
+       way to do do it I think, at the cost of more coding and
+       infrastructure complexity (starting,stopping,security,...)
+
+# Dec 23 2020
+
+ https://blog.miguelgrinberg.com/post/handling-file-uploads-with-flask
+ reviewing file upload stuff ...
+
+ On the production server, I'm writing lots of stuff to the logs,
+ using the python "logging" library.
+ 
+ google "python logging RuntimeError: cannot release un-acquired lock"
+ See https://stackoverflow.com/questions/62250160/uwsgi-runtimeerror-cannot-release-un-acquired-lock
+     https://github.com/unbit/uwsgi/issues/1978
+ suggested fix : remove "py-call-osafterfork = true" in wsgi.ini
+
+ File upload size:
+   From what I see of the dropzone setting (see umber.js), its set to 5GB.
+   The wsgi.ini various worker limits (ie resident memory) may well be a factor.
+
+ ---
+  web file transfer app : node server; client-to-client , webrtc
+  "local file sharing in your browser, inspired by apple airdrop"
+  https://news.ycombinator.com/item?id=25524472
+  https://github.com/RobinLinus/snapdrop
+  https://snapdrop.net/
+
+# Nov 21
+
+ A page on sqlite and preformance that migth be worth studying :
+  https://news.ycombinator.com/item?id=25167423
+  https://sqlite.org/lpc2019/doc/trunk/briefing.md
+
+# Oct 6
+
+ If I want to have the git stuff happen asynchronously,
+ this might be another tech to consider :
+
+ https://docs.celeryproject.org/en/latest/getting-started/introduction.html
+
+ TODO :
+   * think about 3MB (?) uploada limit
+   * fix file attachment / work submissions git repo (is it put in?)
+   * ... which is likely related to the "can't delete" issue
+     for work file attachments.
+
 # Sep 23
   
   Attempted fix of time on assignments page bug in linode deployed umber.

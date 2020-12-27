@@ -1,23 +1,39 @@
 """
  gitlocal.py
 
- These git utilities work with a local repository.
+ These git utilities work with a local repository,
+ which provides a revision history for each file.
+
  They can :
    * set up a git repository in a course's folder
    * add and remove files or folders from the repo
    * get the history (git log) of versions of a file
    * get the content of one previous version of a file
 
+ This implementation is designed for one repo per course.  (I used to have one
+ repo per site, which eventually got too big and too slow.)
+
+ Concurrency is an issue here.  For drag'n'drop file uploads, with multiple
+ file uploads, each one fires off an ajax request and each save file invokes
+ "git add ...; git commit ...". Git uses a lock file to avoid conflicts, so
+ these will fail if another concurrent web server process is already running.
+ My current approach is to simply wait a bit (with some randomness to try to
+ avoid spread things out) and try again, hopefully giving enough time for the
+ conflict to resolve. A better approach might be to set up a dedicated single
+ git server to catch these and process them one at a time, perhaps just using
+ python's socket server.
+
 """
-# This implementation is based on python subprocess.run
-# ... which may be problematic in a web app environment.
 
 from utilities import print_debug
+from os import getpid
+from time import sleep
 from shlex import quote
+from random import random
 import subprocess
 import json
 
-def run(*commands, timeout=1.0, verbose=True):
+def run(*commands, timeout=1.0, verbose=True, attempt=0):
     """ Run commands in a subprocess and return their output.
         >>> print(run('echo hello', 'echo goodbye', verbose=False))
         hello
@@ -25,49 +41,79 @@ def run(*commands, timeout=1.0, verbose=True):
         <BLANKLINE>
     """
     # Since I'm using && between the commands,
-    # each will only run if the previous ones succeed.
+    # the commands in the sequence will only run
+    # if the previous ones succeed.
+    error_signature = 'fatal'  # start of result.stderr for retry
+    retry_delay = 0.5          # seconds
+    max_attempts = 10          # perhaps up to drag'n'drop file upload count?
     argstring = ' && '.join(commands)
-    if verbose:
-        print_debug(f" gitlocal run argstring='{argstring}'")
+    success = True
+    pid = getpid() # process id
     try:
+        # An attempt at preemptive git lock collision avoidance :
+        # wait a random amount of time from 0 to 0.01 sec,
+        # so that concurrent file uploads start at slightly different times.
+        sleep(0.01 * random())
         result = subprocess.run([argstring], timeout = timeout,
                                 shell = True, capture_output = True,
                                 text = True, check = False)
         if verbose:
-            print_debug(f" gitlocal run result.stdout='{result.stdout}'")
-            print_debug(f" gitlocal run result.stderr='{result.stderr}'")
-        return result.stdout
+            print_debug(f" gitlocal {pid} attempt={attempt}")
+            print_debug(f" gitlocal {pid} run result.stdout='{result.stdout}'")
+            print_debug(f" gitlocal {pid} run result.stderr='{result.stderr}'")
     except Exception as e:
-        print_debug(f" gitlocal run error '{e}' ")
-        # TODO : ... handle this properly in the calling routines
-        return 'FAIL'
+        success = False
+    if result.stderr.startswith(error_signature):
+        success = False
+    if success:
+        return result.stdout
+    if attempt > max_attempts:
+        return ' gitlocal {pid} fatal error: run() failed after too many attempts'
+    # -- try again --
+    delay = random()*retry_delay
+    if verbose:
+        print_debug(" gitlocal {pid} : failed; wait {delay} sec & try again")
+    sleep(delay)
+    retry = run(*commands, attempt=attempt+1)
+    return retry
 
 system_username = '__system__'
     
-def _git_(command, course=None, page=None, user=None):
+def _git_(command, course=None, page=None, user=None, abspath=None):
     """ Run a sequence of git command strings 
         e.g. ('git init ...', 'git add ...', 'git commit ...') """
     username = quote(user.username) if user else system_username
-    path = quote(page.get_gitpath()) if page else ''
     repo = quote(course.abspath)
-    git_command = f'git -C {repo} {command} {path}'
+    if command == 'rm -r':
+        # abspath is a list of absolute paths
+        git_command = []
+        for _abspath in abspath:
+            path = quote(page.get_gitpath(_abspath)) if page else ''
+            git_command.append(f'git -C {repo} {command} {path}')
+    else:
+        path = quote(page.get_gitpath(abspath)) if page else ''
+        git_command = f'git -C {repo} {command} {path}'
     git_commit = f'git -C {repo} commit -m "umber_editor {username}"'
+    print_debug(f" _git_ : git_command='{git_command}' git_commit='{git_commit}'")
     if command == 'init':
         run(git_command, f'/bin/git -C {repo} add .', git_commit)
+    elif command == 'rm -r':
+        git_command.append(git_commit)
+        run(*git_command)
     else:
         run(git_command, git_commit)
 
 def init_add_commit(course, user):
     """ Create a new .git repo in a course, add its files, and commit. """
-    _git_('init', course=course, page=None, user=user)
+    _git_('init', course=course, page=None, user=user, abspath=None)
 
-def add_commit(page):
+def add_commit(page, abspath=None):
     """ Add one file or folder to the course's git repo, and commit. """
-    _git_('add', course=page.course, page=page, user=page.user)
+    _git_('add', course=page.course, page=page, user=page.user, abspath=abspath)
 
-def rm_commit(page):
-    """ Remove one file or folder from a course's git repo, and commit. """
-    _git_('rm -r', course=page.course, page=page, user=page.user)
+def rms_commit(page, abspaths):
+    """ Remove a list of files from a course's git repo, and commit. """
+    _git_('rm -r', course=page.course, page=page, user=page.user, abspath=abspaths)
 
 def get_history(page):
     """ Get a file's git log, returning [(revision, date, author),... ] """
