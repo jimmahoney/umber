@@ -11,6 +11,7 @@ from flask import ( Flask, Response, request, session, g, redirect, url_for,
                     abort, flash, get_flashed_messages, render_template )
 from flask_login import LoginManager, login_user, logout_user, current_user
 from werkzeug import secure_filename
+from time import sleep
 from model import ( db, Person, Role, Course, 
                     Registration, Assignment, Work, Page, Time )
 from utilities import ( in_console, split_url, static_url, size_in_bytes,
@@ -476,6 +477,7 @@ def submit_newcourse():
         if faculty:
             today = str(Time())[:10]
             newcourse.enroll(faculty, 'faculty', today, create_work=False)
+    sleep(0.1) # trying to be safe for github & concurrent issues
     return newcourse.url
 
 def submit_edituser():

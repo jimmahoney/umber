@@ -67,13 +67,13 @@ if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     static_prefix = '/static/'
     os_courses = os.path.join(os_root, 'courses')
     os_default_course = os.path.join(os_root, 'courses/default_course')
-    umber_cleanup = ''
+    #umber_cleanup = ''
     debug_logfilename = ''
     umber_authentication = 'password'
 
 elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     # TODO : find a better way to pull all this out of the source tree.
-    umber_debug = False
+    umber_debug = False  # i.e. don't print debug stuff to console
     protocol = 'https://'
     hostname = 'cs.bennington.college'
     url_base = 'courses'      
@@ -84,12 +84,13 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     os_courses = '/var/www/courses'
     os_default_course = '/var/www/courses/default_course'
     #umber_cleanup = '/var/www/courses/etc/bin/umber_cleanup'
-    umber_cleanup = '' # TODO : figure out what's needed for bennington deploy
+    #umber_cleanup = '' # TODO : figure out what's needed for bennington deploy
     # debugging: see also
     #   * uwsgi errors in /var/log/umber/uwsgi.log
     #   * systemctl mwssages , command line "journalctl -u umber"
     #   * uwsgi stats; command line "uwsgitop /var/run/umber/stats.sock"
-    debug_logfilename = '/var/log/umber/umber.log'
+    #debug_logfilename = '/var/log/umber/umber.log'  # ... lots of output
+    debug_logfilename = False   # disable debug logging
     umber_authentication = 'google'
 
 else:

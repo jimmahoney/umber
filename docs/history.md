@@ -1,5 +1,16 @@
 # umber development history #
 
+# Jan 2 2021
+
+ removed debug_logging by default from production
+ ... will add if/when needed, case by case
+
+ removed "umber_cleanup" from settings & other (unused at present) mentions
+
+ "new course" apparently works now, at least for a small test
+ case, after updates to github concurrency ... perhaps related.
+ I've added a short delay before that page reload, too.
+
 # Dec 27 2020
 
  concurrent gitlocal retries implmented ;
