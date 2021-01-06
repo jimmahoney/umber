@@ -8,7 +8,7 @@ You can explore it by logging in as either a faculty
 member or student with one of the accounts listed below.
 
 Check out the [assignments](~/special/assignments) page for
-suggestions of things to try, and the [help page](/help_page_url)
+suggestions of things to try, and the [help page](~~/help_page_url)
 for more information. 
 
 demo logins

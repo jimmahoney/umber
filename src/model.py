@@ -591,7 +591,8 @@ class Course(BaseModel):
                 if md5(new_blurb) != db_assignments[nth].blurb_hash: # is this changed?
                     db_assignments[nth].blurb = new_blurb             # yes: update it
                     db_assignments[nth].blurb_hash = md5(new_blurb)
-                    db_assignments[nth].blurb_html = markdown2html(new_blurb)
+                    db_assignments[nth].blurb_html = markdown2html(
+                        link_translate(self, new_blurb))
                     #print_debug("   updating cache ")
                 #else:
                     #print_debug("   NOT updating cache ")
@@ -1205,9 +1206,8 @@ class Page(BaseModel):
 
     def revision_content_as_html(self):
         content = gitlocal.get_revision(self)
-        html = markdown2html(content)
-        html_with_links = link_translate(self.course, html)
-        return html_with_links
+        content_with_links = link_translate(self.course, content)
+        return markdown2html(content_with_links)
 
     def content(self):
         """ Return file or github (revision) data for a page """
@@ -1256,15 +1256,15 @@ class Page(BaseModel):
             #            f"html_lastmodified='{self.html_lastmodified}'")
             if self.revision:
                 content = self.content()  # pull from git repo
-                raw_html = markdown2html(content)
-                self.html = link_translate(self.course, raw_html)
+                content_with_links = link_translate(self.course, content)
+                self.html = markdown2html(content_with_links)
                 self.html_lastmodified = str(self.lastmodified)
             elif str(self.lastmodified) != self.html_lastmodified:
                  #print_debug(f"   updating {self.path}")
                 with db.atomic():
                     content = self.content()  # pull from file
-                    raw_html = markdown2html(content)
-                    self.html = link_translate(self.course, raw_html)
+                    content_with_links = link_translate(self.course, content)
+                    self.html = markdown2html(content_with_links)
                     self.html_lastmodified = str(self.lastmodified)
                     self.save()
             #else:
@@ -1297,7 +1297,13 @@ class Page(BaseModel):
         #    </div>
         # This method converts the content of that file to html,
         # keeping only the parts that this user is allowed to see.
-        parser = BeautifulSoup(self.content(), 'html.parser')
+        #
+        # And do the link_translate first, before any markdown stuff,
+        # so that it can see the context.
+        content = self.content()
+        content = link_translate(self.course, content)
+        #        
+        parser = BeautifulSoup(content, 'html.parser')
         for role in list(Role.name_rank.keys()):
             divs = parser.find_all('div', access=role)
             if self.user_rank < Role.by_name(role).rank:
@@ -1314,7 +1320,6 @@ class Page(BaseModel):
         while insides:
             inside = insides.pop(0)
             html = html.replace(marker, inside, 1)
-        html = link_translate(self.course, html)
         # If the current page is one of the links in the nav menu,
         # that link should be unlinkified ... which I'm doing
         # with another (ugh) pass through BeautifulSoup,

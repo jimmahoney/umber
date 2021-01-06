@@ -1,5 +1,21 @@
 # umber development history #
 
+# Jan 6
+
+ worked on the ~/ and ~~/ "link_translate" issues, namely
+  (1) it wasn't being applied in assignments, and
+  (2) I was mangling "$ cd ~/foo" .
+ The current partial fix matches [](~/ ...) markdown links
+ only, and only at the start of those, by matching simply "(~/".
+ The right thing would be to use regexes to look for the whole
+ []() pattern, which I worked on but have not deployed.
+ (This took me much longer than it should have because
+ that part of the code is a mess : the link_translate
+ was running after the markdown2html, and so the []()
+ context was already gone. And I do that in several places
+ (nav left menu, assignment blocks, page content, ...)
+ in slightly different ways. Ugh. 
+
 # Jan 2 2021
 
  removed debug_logging by default from production
