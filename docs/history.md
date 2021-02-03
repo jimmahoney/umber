@@ -6,6 +6,28 @@
  And I'd rather not change the database schema.
  So I've decided to signal tutor status with registration.grade = tutor.
 
+ This is still more than a bit of a kludge - I'm trying to use it as a role
+ without actually adding a new role, and adapting the various functions
+ to shoehorn that in.
+
+ Most of the GUI interface understands this new tutor quasi-role :
+   * I can enroll someone as a tutor
+   * they show up as "tutor" in manage users
+   * they don't show up in the faculty grade grid
+   * they have the same permissions as students
+   * their login status says "tutor"
+   * they have their own category in the roster
+ ... but I now have several similar-but-not-quite-thesame apis
+ such as course.username_to_rolename (which has 'tutor')
+ and course.username_to_role (which doesn't) and page.user_rolename
+ (which does have 'tutor') and page.user_role (which doesn't).
+
+ I should probably just bite the bullet and add a 'tutor' Role,
+ but am at this point not sure what else that would break.
+
+ For now, things seem to be working in this kludgy state,
+ and I'll just try it this way for now.
+
 # Jan 6
 
  worked on the ~/ and ~~/ "link_translate" issues, namely

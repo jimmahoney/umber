@@ -15,7 +15,7 @@
   <tr>
     <td><a href="user?username={{ _user.username }}">{{ _user.name }}</a></td>
     <td><a href="mailto:{{ _user.email }}">{{ _user.username }}</a></td>
-    <td>{{ page.course.username_to_role[_user.username].name }}</td>
+    <td>{{ page.course.username_to_rolename[_user.username] }}</td>
   </tr>
 {%- endfor %}
 </table>

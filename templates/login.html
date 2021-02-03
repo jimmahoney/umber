@@ -3,7 +3,7 @@
     <ul>
     {%- if user.is_authenticated() %}
       <li class="first {{ page.user_role.name }}">{{ user.username }}</li>
-      <li class="middle">{{ page.user_role.name }}</li>
+      <li class="middle">{{ page.user_rolename }}</li>
       {%- if page.relpath == 'sys/user' %}
       <li class="rest thispage">profile</li>
       {%- else %}

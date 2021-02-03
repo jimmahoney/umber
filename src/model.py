@@ -11,12 +11,13 @@
 
    # Find the people and their role in a course given its name.
    >>> democourse = Course.get(Course.name == 'Demo Course')
-   >>> for (username, role) in sorted(democourse.username_to_role.items()):
-   ...   user = Person.by_username(username)
-   ...   print("{} is {} in {}.".format(user.name, role.name, democourse.name))
+   >>> for (uname, rname) in sorted(democourse.username_to_rolename.items()):
+   ...   user = Person.by_username(uname)
+   ...   print("{} is {} in {}.".format(user.name, rname, democourse.name))
    ...
    Jane Q. Doe is student in Demo Course.
    Johnny Smith is student in Demo Course.
+   Tammy Tutor is tutor in Demo Course.
    Ted Teacher is faculty in Demo Course.
  
    # Find a person from their username.
@@ -42,9 +43,9 @@
    >>> rows_changed = john.save()
 
  Another example: all registrations for democourse :
-   >>> regs = list(Registration.select().where(Registration.course==democourse))
-   >>> len(regs) # (jane, john, ted) in demo course
-   3
+   >>> rs = list(Registration.select().where(Registration.course==democourse))
+   >>> len(rs) # (jane, john, ted, tammy) in demo course
+   4
 
  See docs/model_notes.txt for more about the database model.
 
@@ -154,8 +155,7 @@ class Person(BaseModel):
     def course_data(self):
         """ return courses that this person is registered in 
             as a dict with keys role,course,url,semester """
-        registrations = list(Registration.select(Registration.role,
-                                                 Registration.course)
+        registrations = list(Registration.select()
                                          .where(Registration.person == self))
         registrations.sort(key=lambda r: r.course.name)
         registrations.sort(key=lambda r: r.course.start_date, reverse=True)
@@ -326,8 +326,9 @@ class Course(BaseModel):
         
     def _set_users(self):
         """ define self.students, .faculty, .guests, .username_to_role """
-        registrations = list(Registration.select(Registration.person,
-                                                 Registration.role)
+        # .students includes tutors;
+        # username_to_rolename lists their role as 'tutor'
+        registrations = list(Registration.select()
                                          .where((Registration.course == self)
                                           &  (Registration.status != 'drop')))
         self.students = [reg.person for reg in registrations
@@ -340,7 +341,9 @@ class Course(BaseModel):
         self.faculty.sort(key=lambda s: s.name)
         self.username_to_role = {reg.person.username : reg.role
                                  for reg in registrations}
-    
+        self.username_to_rolename = {reg.person.username : reg.rolename()
+                                     for reg in registrations}
+
     @staticmethod
     def get_all():
         """ Return all but the 'Umber' course, sorted by semester & name """
@@ -466,8 +469,7 @@ class Course(BaseModel):
         return os.path.join(self.url, home_path)
     
     def get_registered(self, rolename=None):
-        registrations = list(Registration.select(Registration.person,
-                                                 Registration.role)
+        registrations = list(Registration.select()
                                          .where((Registration.course == self)
                                           &  (Registration.status != 'drop')))
         if rolename == 'tutor':
@@ -476,8 +478,7 @@ class Course(BaseModel):
             people = [reg.person for reg in registrations]
         elif rolename == 'student':
             people = [reg.person for reg in registrations
-                      if (reg.role.name == rolename
-                          and reg.person.notes != 'tutor')]
+                      if (reg.role.name == rolename and reg.grade != 'tutor')]
         else:
             people = [reg.person for reg in registrations
                       if reg.role.name==rolename]
@@ -542,9 +543,8 @@ class Course(BaseModel):
         #
         result = []
         for stud in self.students:
-            # skip grade line for student if their .notes is 'tutor'
-            # ... though I don't have a GUI to set that property yet.
-            if stud.notes == 'tutor': continue
+            # skip grade line for student if they are a tutor
+            if self.username_to_rolename[stud.username] == 'tutor': continue
             works = []
             for ass in self.assignments:
                 work = ass.get_work(stud)
@@ -680,11 +680,9 @@ class Course(BaseModel):
         # Optionally create their work folder (if it doesn't already exist)
         #
         # add tutors by using student role with registration.grade='tutor'
+        is_tutor = rolename=='tutor'
         if rolename == 'tutor':
             rolename = 'student'
-            is_tutor = True
-        else:
-            is_tutor = False
         if not datestring:
             datestring = str(Time())
         with db.atomic():
@@ -692,8 +690,7 @@ class Course(BaseModel):
                 person = person,
                 course = self)
             reg.role = Role.by_name(rolename)
-            if is_tutor:
-                reg.grade = 'tutor'
+            reg.grade = 'tutor' if is_tutor else ''
             reg.status = ''     # if re-enrolling would have been 'drop'
             reg.date = datestring
             reg.save()
@@ -1051,8 +1048,15 @@ class Page(BaseModel):
         # but will have admin access to nav menus etc.
         assert self.course != None  # call self.set_course() first.
         assert self.access != None  # call self.set_access() first.
-        assert self.user != None    #
+        assert self.user != None
         self.user_role = self.course.person_to_role(self.user)
+        # this includes 'tutor' even though there is no 'tutor' role;
+        # and so I'm using this one in the displayed login role
+        try:
+            self.user_rolename = self.course.username_to_rolename[
+                self.user.username]
+        except:
+            self.user_rolename = 'visitor'
         self.user_rank = self.user_role.rank
         
         if self.user_role.name in ('faculty', 'admin') and not self.is_sys:
@@ -1416,6 +1420,7 @@ class Role(BaseModel):
                   'faculty':         'faculty',
                   'student':         'student',
                   'students':        'student',
+                  'tutor':           'student',
                   'class':           'student',
                   'guests':          'member',
                   'guest':           'member',
@@ -1470,7 +1475,11 @@ class Registration(BaseModel):
     role = ForeignKeyField(model=Role,
                            db_column='role_id',
                            to_field='role_id')
-        
+
+    def rolename(self):
+        """ return rolname for this registration, including 'tutor' """
+        return 'tutor' if self.grade=='tutor' else self.role.name
+    
 class Work(BaseModel):
     class Meta:
         db_table = 'Work'
@@ -1672,6 +1681,12 @@ def populate_db():
             email = 'ted@fake.address',
             password = 'test' )
 
+        tammy = Person.create_person(
+            username = 'tammytutor',
+            name = 'Tammy Tutor',
+            email = 'tammy@fake.address',
+            password = 'test' )
+        
         adam = Person.create_person(
             username = 'adamadmin',
             name = 'Adam Administrator',
@@ -1682,6 +1697,7 @@ def populate_db():
         default_date = '2018-01-02'
         democourse.enroll(john, 'student', default_date, create_work=False)
         democourse.enroll(jane, 'student', default_date, create_work=False)
+        democourse.enroll(tammy, 'tutor', default_date,  create_work=False)
         democourse.enroll(ted,  'faculty', default_date, create_work=False)
 
         # Assignments are set with a dict {nth: {name, due, blurb}.

@@ -18,6 +18,7 @@ demo logins
     ----------- ---------- -----------------------------------
     adamadmin  | test    | role=admin
     tedteacher | test    | role=faculty (in Demo Course)
+    tammytutor | test    | role=tutor   (in Demo Course)    
     janedoe    | test    | role=student (in Demo Course)
     johnsmith  | test    | role=student (in Demo Course)
 
