@@ -41,6 +41,11 @@
    >>> john.name = 'Johnny Smith'
    >>> rows_changed = john.save()
 
+ Another example: all registrations for democourse :
+   >>> regs = list(Registration.select().where(Registration.course==democourse))
+   >>> len(regs) # (jane, john, ted) in demo course
+   3
+
  See docs/model_notes.txt for more about the database model.
 
  Jim Mahoney | mahoney@marlboro.edu | MIT License
@@ -459,15 +464,14 @@ class Course(BaseModel):
         else:
             home_path = 'home'
         return os.path.join(self.url, home_path)
-
+    
     def get_registered(self, rolename=None):
         registrations = list(Registration.select(Registration.person,
                                                  Registration.role)
                                          .where((Registration.course == self)
                                           &  (Registration.status != 'drop')))
         if rolename == 'tutor':
-            people = [reg.person for reg in registrations
-                      if reg.person.notes == 'tutor']
+            people = [reg.person for reg in registrations if reg.grade == 'tutor']
         elif not rolename:
             people = [reg.person for reg in registrations]
         elif rolename == 'student':
@@ -674,6 +678,13 @@ class Course(BaseModel):
         # Also enroll this person in the site couse if they aren't already
         # and if this isn't the site course itself.
         # Optionally create their work folder (if it doesn't already exist)
+        #
+        # add tutors by using student role with registration.grade='tutor'
+        if rolename == 'tutor':
+            rolename = 'student'
+            is_tutor = True
+        else:
+            is_tutor = False
         if not datestring:
             datestring = str(Time())
         with db.atomic():
@@ -681,6 +692,8 @@ class Course(BaseModel):
                 person = person,
                 course = self)
             reg.role = Role.by_name(rolename)
+            if is_tutor:
+                reg.grade = 'tutor'
             reg.status = ''     # if re-enrolling would have been 'drop'
             reg.date = datestring
             reg.save()

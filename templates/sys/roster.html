@@ -13,11 +13,12 @@
 {%-     endif %}
 {%-   endfor %}
 </tr>
-<!-- tutors -->
-<!-- 
+<!-- ========== start tutors ==============  -->
+{%- set tutors = page.course.get_registered('tutor') %}
+{%- if tutors %}
 <tr><td colspan=5><h3>tutors</h3></tr>  
 <tr>
-{%-   for _user in page.course.get_registered('tutor') %}
+{%-   for _user in tutors %}
     <td align='center' valign='top'><a href="{{ page.course.url ~ '/sys/user?username=' ~ _user.username }}"><img class="roster" width=120
      src="{{ _user.get_photo_url() }}" alt="{{ _user.username }} photo" onerror=this.src="{{ static_url('images/generic_student.png') }}"></a><br/><b>{{ _user.name }}</b><br/><small> <a 
    href="mailto:{{ _user.email }}">{{ _user.username }}</a></small></td>
@@ -26,8 +27,8 @@
 {%-     endif %}
 {%-   endfor %}
 </tr>
--->
-
+{%- endif %} <!-- end if tutors -->
+<!-- ========== end tutors ==============  -->
 <!-- faculty -->
 <tr><td colspan=5><h3>faculty</h3></tr>  
 <tr>

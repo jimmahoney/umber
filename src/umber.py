@@ -407,8 +407,7 @@ def submit_enroll():
     rolename = request.form['submit_enroll']
     print_debug(' submit_enroll: user={}, role={}'.format(username, rolename))
     user = Person.by_username(username)
-    request.page.course.enroll(user, rolename,
-                               create_work=(rolename=='student'))
+    request.page.course.enroll(user, rolename, create_work=(rolename=='student'))
     return request.page.url
 
 def submit_removeuser():

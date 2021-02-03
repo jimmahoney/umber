@@ -1,5 +1,11 @@
 # umber development history #
 
+# Feb 3 2021
+
+ Revisiting tutor designation ... want per registration, not per user.
+ And I'd rather not change the database schema.
+ So I've decided to signal tutor status with registration.grade = tutor.
+
 # Jan 6
 
  worked on the ~/ and ~~/ "link_translate" issues, namely
