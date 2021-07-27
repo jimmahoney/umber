@@ -11,8 +11,9 @@
 
 (function(){
 
-    function init_dropzone(){
-    }
+    /*  function init_dropzone(){
+     *   }
+     */
     
     function any_folder_checkbox(){
 	/*  true if any checkbox in the folder edit form is checked. */
@@ -58,6 +59,12 @@
         // (The form is in edit_folder.html and attachments.html).
 	Dropzone.options.umberdropzone = {
 	    maxFilesize: 5000,    	/* in MB ; default 256 ; 5000 ~ 5GB */
+
+	    // see https://github.com/dropzone/dropzone/blob/main/src/options.js
+	    // default options
+	    //   uploadMultiple: false;  // in one request
+	    //   chunking: false;        // if true, *all* files are chunked
+	    //   parallelUploads: 2;
 	};
     }
 
