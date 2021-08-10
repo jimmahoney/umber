@@ -1,5 +1,28 @@
 # umber development history #
 
+# July 2021
+
+ Going back to the file download issue.
+
+ Possibly related :
+ 
+   https://medium.com/django-deployment/which-wsgi-server-should-i-use-a70548da6a83
+   https://github.com/EUDAT-B2SHARE/b2share/issues/1583
+   https://stackoverflow.com/questions/24127601/uwsgi-request-timeout-in-python
+   https://github.com/dropzone/dropzone
+   https://github.com/dropzone/dropzone/blob/main/src/options.js
+
+   my settings :
+     templates/main.html           load js/dropzone.min.js , js/umber.js
+     templates/attachments.html    <form class='cropzone' id='umberdropzone' ...
+     static/umber.js               Dropzone.options.umberdropzone = ...
+     src/umber.py                  if ... 'dropzone' in ... return ajax_upload()
+                                   ajaxupload : request.files.getlist("file")
+                                   gitlocal.add_commit(...)
+     src/gitlocal.py               run git in a subprocess ... with retries
+     src/etc_nginx_site            nginx settings, uwsgi read/write timeouts
+     src/wsgi.ini                  harakiri (worker timeout), ...
+   
 # Feb 3 2021
 
  Revisiting tutor designation ... want per registration, not per user.
