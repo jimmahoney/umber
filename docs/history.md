@@ -1,5 +1,12 @@
 # umber development history #
 
+# Aug 2021
+
+ Small changes to workflow to enroll students in my Fall 2021 courses.
+ The .csv files with student data and description of what to do
+ (mostly manual for now) are in /var/www/umber_data/ , the same
+ folder as the production sql database.
+
 # July 2021
 
  Going back to the file download issue.
