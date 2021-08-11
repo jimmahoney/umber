@@ -96,6 +96,7 @@ def read_populi_csv(csvfilename):
     # Return fields for (username,name,email,password)
     result = []
     for row in csv.DictReader(open(csvfilename)):
+        if row['Type']=='faculty': continue
         name = (row['Preferred Name'] or row['First Name']) + \
                ' ' + row['Last Name']
         email = row['Email']
@@ -108,6 +109,8 @@ def email_to_username(email):
 def _add_users(users, course=None, date='2020-09-01'):
     for user in users:
         username = email_to_username(user['email'])
+        # This is actually get_or_create ;
+        # it does do the right thing if the user exists already.
         student = Person.create_person(name=user['name'],
                                        email=user['email'],
                                        username=username,
