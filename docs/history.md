@@ -1,5 +1,25 @@
 # umber development history #
 
+# Sep 5 2021
+
+Finally some handle on file upload limit ...
+
+ (1) in /etc/nginx/nginx.conf :
+        # file upload size
+	# https://www.cyberciti.biz/faq/linux-unix-bsd-nginx-413-request-entity-too-large/
+	client_max_body_size 5M;
+
+ ... and I was successful in uploading a 3.3M image which
+ had been failing. So I think that was part of the the issue.
+
+I had also changed already changed this
+
+ (2) There's also a setting which I think should be consistent
+     within the Flask system :
+        # 5MB file upload limit
+        # see https://blog.miguelgrinberg.com/post/handling-file-uploads-with-flask
+        app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024   
+
 # Aug 2021
 
  Small changes to workflow to enroll students in my Fall 2021 courses.

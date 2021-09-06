@@ -55,6 +55,9 @@ def umber_flask_configure(app):
     app.config['SECRET_KEY'] = os.environ.get('UMBER_SECRET_KEY')
     app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
     app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
+    # 5MB file upload limit
+    # see https://blog.miguelgrinberg.com/post/handling-file-uploads-with-flask
+    app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024   
 
 if os.environ['UMBER_CONFIG'] == 'DEVELOPMENT':
     umber_debug = True
