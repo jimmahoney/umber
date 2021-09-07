@@ -112,7 +112,7 @@ photos_url = umber_url + '/umber/photos'
 umber_mime_types = {x:'text/plain' for x in
     ('.py', '.c', '.cc', '.cpp', '.c++', '.c#', '.dot', '.lisp',
      '.java', '.hs', '.clisp', '.pl', '.tex', '.rb', '.yvtm', '.vtm', '.csv',
-     '.i', '.s', '.objdump', '.sql', '.scm', '.rkt', 
+     '.i', '.s', '.objdump', '.sql', '.scm', '.rkt', '.rs', 
     )}
 # image mime type variations
 umber_mime_types['.PNG'] = 'image/png'
