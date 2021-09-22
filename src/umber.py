@@ -229,9 +229,14 @@ def mainroute(pagepath):
         print_debug('redirecting directory to /')
         return redirect(url_for('mainroute', pagepath=pagepath) + '/')
 
-    # Redirect directories to index.md or index.html if either exists.
+    # Redirect directories to indexy.md or indexy.html if either exists.
+    # (This file is typically "index.html", but since I have had some
+    # students upload web files as part of internet courses, if they
+    # upload an index.html then they can't access the "edit this folder"
+    # ... which is a problem. So I'm using a more unusual name
+    # for the special "hide this folder" file.)
     if page.is_dir:
-        for index in ('index.md', 'index.html'):
+        for index in ('indexy.md', 'indexy.html'):
             if os.path.exists(os.path.join(page.abspath, index)):
                     indexpath = os.path.join(pagepath, index)
                     return redirect(url_for('mainroute', pagepath=indexpath))
