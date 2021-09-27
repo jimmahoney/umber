@@ -52,6 +52,8 @@ def umber_flask_configure(app):
     app.config['DEBUG'] = (os.environ.get('UMBER_CONFIG') == 'DEVELOPMENT')
     app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=1)
     app.config['SESSION_COOKIE_NAME'] = 'umber'
+    app.config['SESSION_COOKIE_SECURE'] = True  # updated 2021 to follow MDN suggested config
+    app.config['REMEMBER_COOKIE_SECURE'] = True #
     app.config['SECRET_KEY'] = os.environ.get('UMBER_SECRET_KEY')
     app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
     app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
