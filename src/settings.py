@@ -115,7 +115,7 @@ umber_mime_types = {x:'text/plain' for x in
     ('.py', '.c', '.cc', '.cpp', '.c++', '.c#', '.dot', '.lisp',
      '.java', '.hs', '.clisp', '.pl', '.tex', '.rb', '.yvtm', '.vtm', '.csv',
      '.i', '.s', '.objdump', '.sql', '.scm', '.rkt', '.rs', '.out', '.swift',
-     '.scss', '.map'
+     '.scss', '.map', '.svelte', '.jsx', '.ino', '.lua'
     )}
 # image mime type variations
 umber_mime_types['.PNG'] = 'image/png'
