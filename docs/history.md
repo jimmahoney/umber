@@ -1,5 +1,32 @@
 # umber development history #
 
+# Jan 5 2023
+
+I retired about six months ago ... and am now
+moving away from relying on Bennington stuff like
+its google authentication. So, back to passwords,
+and back to email that doesn't rely on Bennington.
+
+I've updated the settings to have authentication='password'
+and have modifed the help pages to tell old students
+who want access (I don't expect many) to email me
+and ask for a password.
+
+To set one for (say) user janedoe with password seekrit :
+
+   $ cd /var/www/umber
+   $ . env/activate_production
+   $ umber_console
+   == Umber console | flask shell | production ==
+   Database file is /var/www/umber_data/umber_bennington.db
+   ...
+   >>> jane = Person.get(username='janedoe')
+   >>> jane.set_password('seekrit')
+   >>> jane.save()
+
+I also changed the privileges in umber/bin and umber_data
+so that the files are not readable or executable by "other".
+
 # Sep 5 2021
 
 Finally some handle on file upload limit ...

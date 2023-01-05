@@ -83,7 +83,8 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     hostname = 'cs.bennington.college'
     url_base = 'courses'      
     route_prefix = '/courses'    # consistent with uwsgi; apache mod_wsgi needed ''
-    contact_url = '<a href="mailto:jimmahoney@bennington.college">Jim Mahoney</a>'
+    #contact_url = '<a href="mailto:jimmahoney@bennington.college">Jim Mahoney</a>'
+    contact_url = '<a href="mailto:jim@mahoney.cc">Jim Mahoney</a>'
     site_url = 'https://cs.bennington.college'
     static_prefix = '/courses_static/'
     os_courses = '/var/www/courses'
@@ -96,7 +97,9 @@ elif os.environ['UMBER_CONFIG'] == 'PRODUCTION':
     #   * uwsgi stats; command line "uwsgitop /var/run/umber/stats.sock"
     #debug_logfilename = '/var/log/umber/umber.log'  # ... lots of output
     debug_logfilename = False   # disable debug logging
-    umber_authentication = 'google'
+    #
+    #umber_authentication = 'google'   # ** Bennington google auth
+    umber_authentication = 'password'  # ** changed to passwords Jan 2023
 
 else:
     raise Exception('Oops: UMBER_CONFIG environment variable is undefined.')
